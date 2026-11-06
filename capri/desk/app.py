@@ -988,6 +988,11 @@ class DeskApp:
         lms.setEnabled(not self.swapping)
         bgroup.addAction(lms)
         lms.triggered.connect(lambda _=False: self._swap_brain("lm-studio"))
+        api = menu.addAction(i18n.t("brain.external_api"))
+        api.setCheckable(True)
+        api.setChecked(self.cfg["llm"].get("backend") == "openai")
+        api.setEnabled(not self.swapping)
+        api.triggered.connect(lambda _=False, a=api: self._edit_external_api(a))
         menu.addSeparator()
         if self.dev:
             paths = [str(p) for p in portable.brains()]
@@ -1271,17 +1276,144 @@ class DeskApp:
 
         threading.Thread(target=check, daemon=True).start()
 
-    def _swap_brain(self, path: str):
-        if self.agent is None or self.swapping or \
-                os.path.normcase(path) == os.path.normcase(self.cfg["llm"].get("model_path") or ""):
+    def _edit_external_api(self, action=None):
+        """Edit an OpenAI-compatible API provider and switch Capri to it without restarting."""
+        from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QLabel,
+                                       QLineEdit, QMessageBox, QSpinBox, QVBoxLayout)
+
+        llm = self.cfg["llm"]
+        dlg = QDialog(None)
+        dlg.setWindowTitle(i18n.t("brain.api.title"))
+        dlg.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        dlg.setStyleSheet(
+            "QDialog { background: rgb(14,6,22); } QLabel { color: rgb(246,240,250); font-size: 13px; }"
+            "QLineEdit, QComboBox, QSpinBox { background: rgb(28,20,36); color: rgb(246,240,250);"
+            " border: 1px solid rgb(80,55,92); padding: 6px; }"
+            "QPushButton { background: rgb(38,32,48); color: rgb(246,240,250); border: 1px solid rgb(60,30,70);"
+            " padding: 7px 12px; } QPushButton:hover { background: rgb(255,46,112); color: black; }")
+        box = QVBoxLayout(dlg)
+        note = QLabel(i18n.t("brain.api.note"))
+        note.setWordWrap(True)
+        box.addWidget(note)
+        form = QFormLayout()
+        box.addLayout(form)
+
+        provider = QComboBox()
+        provider.addItem(i18n.t("brain.api.groq"), "groq")
+        provider.addItem(i18n.t("brain.api.openai"), "openai")
+        provider.addItem(i18n.t("brain.api.custom"), "custom")
+        form.addRow(i18n.t("brain.api.provider"), provider)
+
+        endpoint = QLineEdit(str(llm.get("base_url", "")))
+        endpoint.setPlaceholderText("https://api.example.com/v1")
+        form.addRow(i18n.t("brain.api.endpoint"), endpoint)
+        model = QLineEdit(str(llm.get("model", "")))
+        model.setPlaceholderText("model-name")
+        form.addRow(i18n.t("brain.api.model"), model)
+        key = QLineEdit(str(llm.get("api_key", "")))
+        key.setEchoMode(QLineEdit.EchoMode.Password)
+        form.addRow(i18n.t("brain.api.key"), key)
+        reveal = QCheckBox(i18n.t("brain.api.show_key"))
+        reveal.toggled.connect(lambda show: key.setEchoMode(QLineEdit.EchoMode.Normal if show else
+                                                             QLineEdit.EchoMode.Password))
+        form.addRow("", reveal)
+
+        token_param = QComboBox()
+        token_param.addItem("max_tokens", "max_tokens")
+        token_param.addItem("max_completion_tokens", "max_completion_tokens")
+        form.addRow(i18n.t("brain.api.token_field"), token_param)
+        token_param.setCurrentIndex(max(0, token_param.findData(llm.get("max_tokens_param", "max_tokens"))))
+        effort = QComboBox()
+        for label, value in ((i18n.t("brain.api.none"), ""), ("Low", "low"), ("Medium", "medium"),
+                             ("High", "high")):
+            effort.addItem(label, value)
+        form.addRow(i18n.t("brain.api.reasoning"), effort)
+        effort.setCurrentIndex(max(0, effort.findData(llm.get("reasoning_effort", ""))))
+        max_tokens = QSpinBox()
+        max_tokens.setRange(1, 32768)
+        max_tokens.setValue(int(llm.get("max_tokens", 256)))
+        form.addRow(i18n.t("brain.api.max_tokens"), max_tokens)
+
+        def preset(kind):
+            if kind == "groq":
+                endpoint.setText("https://api.groq.com/openai/v1")
+                model.setText("openai/gpt-oss-120b")
+                token_param.setCurrentIndex(token_param.findData("max_completion_tokens"))
+                effort.setCurrentIndex(effort.findData("low"))
+                max_tokens.setValue(max(max_tokens.value(), 256))
+            elif kind == "openai":
+                endpoint.setText("https://api.openai.com/v1")
+                model.setText("gpt-4o-mini")
+                token_param.setCurrentIndex(token_param.findData("max_tokens"))
+                effort.setCurrentIndex(effort.findData(""))
+
+        current_url = endpoint.text().rstrip("/").lower()
+        if "api.groq.com" in current_url:
+            provider.setCurrentIndex(provider.findData("groq"))
+        elif "api.openai.com" in current_url:
+            provider.setCurrentIndex(provider.findData("openai"))
+        else:
+            provider.setCurrentIndex(provider.findData("custom"))
+        if provider.currentData() == "groq" and max_tokens.value() < 256:
+            max_tokens.setValue(256)
+        provider.activated.connect(lambda idx: preset(provider.itemData(idx)))
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        box.addWidget(buttons)
+        dlg.setMinimumWidth(480)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            if action is not None:
+                action.setChecked(llm.get("backend") == "openai")
             return
-        if path not in ("none", "claude-code", "lm-studio") and self.cfg["llm"].get("backend") == "server" and \
+
+        from urllib.parse import urlparse
+
+        url = endpoint.text().strip().rstrip("/")
+        model_id = model.text().strip()
+        api_key = key.text().strip()
+        parsed = urlparse(url)
+        if parsed.scheme not in ("https", "http") or not parsed.netloc or not model_id or not api_key:
+            QMessageBox.warning(dlg, i18n.t("brain.api.title"), i18n.t("brain.api.invalid"))
+            if action is not None:
+                action.setChecked(llm.get("backend") == "openai")
+            return
+
+        updated = dict(llm)
+        updated.update(backend="openai", model_path="external-api", base_url=url, model=model_id, api_key=api_key,
+                       api_key_env="", max_tokens_param=token_param.currentData(),
+                       reasoning_effort=effort.currentData(), max_tokens=max_tokens.value())
+        try:
+            config.save_api_profile(updated)
+        except Exception as e:
+            QMessageBox.critical(dlg, i18n.t("brain.api.title"), i18n.t("brain.api.save_error", err=e))
+            if action is not None:
+                action.setChecked(llm.get("backend") == "openai")
+            return
+        llm.update(updated)
+        self._swap_brain("external-api", force=True)
+
+    def _swap_brain(self, path: str, force: bool = False):
+        if self.agent is None or self.swapping or \
+                (not force and os.path.normcase(path) == os.path.normcase(self.cfg["llm"].get("model_path") or "")):
+            return
+        if path not in ("none", "claude-code", "lm-studio", "external-api") and \
+                self.cfg["llm"].get("backend") == "server" and \
                 self._engine():
             # a brain without its engine (llama.cpp) only says "brain chip's not slotted": get the engine first
             self._fetch(self._engine(), i18n.t("brain.what.engine"), then=lambda: self._swap_brain(path))
             return
         self.swapping = True
+        if path == "external-api":
+            self.cfg["llm"]["backend"] = "openai"
+        elif path not in ("none", "claude-code", "lm-studio"):
+            self.cfg["llm"]["backend"] = "server" if self.dev else "llama_cpp"
         self.s.set("brain", path)
+        try:
+            config.save_api_profile(self.cfg["llm"])
+        except Exception as e:
+            print(f"[capri] couldn't save selected brain: {e}")
         self.capri.say(i18n.t("lines.brain.swap"))
 
         def work():

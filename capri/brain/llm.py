@@ -176,23 +176,59 @@ class OpenAICompatLLM(LLM):
         import requests
 
         self.c = cfg["llm"]
+        self.key_env = self.c.get("api_key_env", "GROQ_API_KEY")
+        self.api_key = os.environ.get(self.key_env) or self.c.get("api_key", "")
+        if not self.api_key:
+            raise RuntimeError(f"Set the {self.key_env} environment variable to use this AI provider")
         self.session = requests.Session()
 
-    def _post(self, body: dict):
+    def _post(self, body: dict, stream: bool = False):
         r = self.session.post(self.c["base_url"].rstrip("/") + "/chat/completions",
-                              headers={"Authorization": f"Bearer {self.c['api_key']}"}, json=body, timeout=120)
+                              headers={"Authorization": f"Bearer {self.api_key}"}, json=body,
+                              timeout=120, stream=stream)
         r.raise_for_status()
         return r
 
+    def _completion_limit(self, max_tokens):
+        key = self.c.get("max_tokens_param", "max_tokens")
+        return {key: max_tokens or self.c["max_tokens"]}
+
+    def _reasoning(self):
+        effort = self.c.get("reasoning_effort")
+        return {"reasoning_effort": effort} if effort else {}
+
     def chat(self, messages, temperature=None, max_tokens=None, avoid=None, raw=False):
-        r = self._post({"model": self.c["model"], "messages": list(messages) if raw else _alternate(messages),
-                        "temperature": self.c["temperature"] if temperature is None else temperature,
-                        "max_tokens": max_tokens or self.c["max_tokens"]})
-        return r.json()["choices"][0]["message"]["content"]
+        body = {"model": self.c["model"], "messages": list(messages) if raw else _alternate(messages),
+                "temperature": self.c["temperature"] if temperature is None else temperature,
+                **self._completion_limit(max_tokens), **self._reasoning()}
+        r = self._post(body)
+        return r.json()["choices"][0]["message"].get("content") or ""
+
+    def stream(self, messages, temperature=None, max_tokens=None, avoid=None, raw=False):
+        body = {"model": self.c["model"], "messages": list(messages) if raw else _alternate(messages),
+                "temperature": self.c["temperature"] if temperature is None else temperature,
+                **self._completion_limit(max_tokens), **self._reasoning(), "stream": True}
+        with self._post(body, stream=True) as r:
+            r.encoding = "utf-8"
+            for line in r.iter_lines(decode_unicode=True):
+                if not line or not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    piece = json.loads(data)["choices"][0]["delta"].get("content")
+                except (ValueError, KeyError, IndexError, TypeError):
+                    continue
+                if piece:
+                    yield piece
 
     def chat_tools(self, messages, tools, temperature=None, max_tokens=None):
-        r = self._post({"model": self.c["model"], "messages": list(messages), "tools": tools, "tool_choice": "auto",
-                        "temperature": 0.45 if temperature is None else temperature, "max_tokens": max_tokens or 400})
+        body = {"model": self.c["model"], "messages": list(messages), "tools": tools, "tool_choice": "auto",
+                "parallel_tool_calls": False,
+                "temperature": 0.45 if temperature is None else temperature,
+                **self._completion_limit(max_tokens or 400), **self._reasoning()}
+        r = self._post(body)
         msg = r.json()["choices"][0]["message"]
         return {"content": (msg.get("content") or "").strip(), "tool_calls": msg.get("tool_calls") or []}
 

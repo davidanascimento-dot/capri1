@@ -257,6 +257,36 @@ STRINGS: dict[str, dict[str, str]] = {
         "de": "LM Studio  (jedes Modell, das du dort lädst, kostenlos, auf deinem PC)",
         "pl": "LM Studio  (dowolny model wczytany tam, za darmo, na twoim PC)",
     },
+    "brain.external_api": {
+        "en": "External API...  (Groq / OpenAI-compatible)", "pt": "API externa...  (Groq / compatível com OpenAI)",
+    },
+    "brain.api.title": {"en": "External API settings", "pt": "Configurar API externa"},
+    "brain.api.note": {
+        "en": "Use an OpenAI-compatible chat API. On Windows the key is encrypted for this account and saved locally. "
+              "Chat context, requested screen text and tool results may be sent to this provider.",
+        "pt": "Use uma API de chat compatível com OpenAI. No Windows, a chave fica criptografada para esta conta e "
+              "salva localmente. O contexto da conversa, texto da tela solicitado e resultados de ferramentas podem "
+              "ser enviados a esse provedor.",
+    },
+    "brain.api.provider": {"en": "Provider", "pt": "Provedor"},
+    "brain.api.groq": {"en": "Groq", "pt": "Groq"},
+    "brain.api.openai": {"en": "OpenAI", "pt": "OpenAI"},
+    "brain.api.custom": {"en": "Custom compatible API", "pt": "API compatível personalizada"},
+    "brain.api.endpoint": {"en": "API address", "pt": "Endereço da API"},
+    "brain.api.model": {"en": "Model ID", "pt": "ID do modelo"},
+    "brain.api.key": {"en": "API key", "pt": "Chave da API"},
+    "brain.api.show_key": {"en": "Show key", "pt": "Mostrar chave"},
+    "brain.api.token_field": {"en": "Token limit field", "pt": "Campo de limite de tokens"},
+    "brain.api.reasoning": {"en": "Reasoning effort", "pt": "Nível de raciocínio"},
+    "brain.api.none": {"en": "Not set", "pt": "Desativado"},
+    "brain.api.max_tokens": {"en": "Max response tokens", "pt": "Máximo de tokens da resposta"},
+    "brain.api.invalid": {
+        "en": "Enter a valid HTTP/HTTPS API address, model ID and API key.",
+        "pt": "Informe um endereço HTTP/HTTPS válido, o ID do modelo e a chave da API.",
+    },
+    "brain.api.save_error": {
+        "en": "Couldn't save the API settings: {err}", "pt": "Não consegui salvar as configurações da API: {err}",
+    },
     "brain.none": {
         "en": "No AI  (just her: apps, timers, music... no chatting)",
         "es": "Sin IA  (solo ella: apps, temporizadores, música... sin charla)",

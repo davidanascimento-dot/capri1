@@ -1,0 +1,19 @@
+# Capri, the portable / dev build's settings. Everything not set here comes from the defaults in
+# capri/config.py. Keep this file in the repo (portable/config.yaml): capri_dev.py copies it to config.yaml
+# on the first run.
+edition: dev  # the portable test build: no stream mode, no ERU AI bridge; models + engines live in this folder
+eru:
+  memory: false  # the ERU AI vector memory isn't part of this build (JSON facts are still used)
+llm:
+  backend: openai  # Groq's OpenAI-compatible API; set GROQ_API_KEY in your user environment
+  model_path: ""
+  base_url: https://api.groq.com/openai/v1
+  api_key: ""
+  api_key_env: GROQ_API_KEY
+  max_tokens_param: max_completion_tokens
+  reasoning_effort: low
+  model: openai/gpt-oss-120b
+  temperature: 0.7
+  max_tokens: 90
+sight:
+  model_dir: ""  # no separate InternVL model: her brain's mmproj gives her eyes

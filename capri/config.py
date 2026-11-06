@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import copy
+import base64
+import json
 import os
 import sys
 from pathlib import Path
@@ -20,6 +22,7 @@ if os.environ.get("CAPRI_HOME"):  # run from source against another folder (test
     ROOT = Path(os.environ["CAPRI_HOME"]).resolve()
 ASSETS = (Path(getattr(sys, "_MEIPASS", _SRC)) if FROZEN else _SRC) / "assets"
 DATA = ROOT / "data"
+API_PROFILE = DATA / "api_profile.json"
 
 DEFAULTS: dict = {
     # "full": everything (DJ, ERU AI). "dev": the portable test build for other devs: no DJ,
@@ -52,16 +55,19 @@ DEFAULTS: dict = {
         "energy_threshold": 0.015,
     },
     "llm": {
-        # llama_cpp: load a GGUF directly; openai: any OpenAI-compatible server (LM Studio, Ollama, llama-server, ...)
-        "backend": "llama_cpp",
-        "model_path": r"D:\ERU AI\models\llm\Mistral-Nemo-Instruct-2407\Mistral-Nemo-Instruct-2407-IQ4_XS.gguf",
-        "n_ctx": 5120,  # her prompt is ~2.4k tokens plus ~1.4k of chat history and the reply; 8-bit cache keeps it small
+        # openai: any OpenAI-compatible server; this custom build uses Groq GPT-OSS by default
+        "backend": "openai",
+        "model_path": "",
+        "n_ctx": 5120,
         "n_gpu_layers": -1,
-        "base_url": "http://127.0.0.1:1234/v1",
-        "api_key": "not-needed",
-        "model": "local-model",
+        "base_url": "https://api.groq.com/openai/v1",
+        "api_key": "",
+        "api_key_env": "GROQ_API_KEY",
+        "max_tokens_param": "max_completion_tokens",
+        "reasoning_effort": "low",
+        "model": "openai/gpt-oss-120b",
         "temperature": 0.7,
-        "max_tokens": 90,  # she talks in one or two short sentences; a cap keeps a rambling reply from costing seconds
+        "max_tokens": 256,  # enough room for hosted reasoning models to finish a short reply
     },
     # Claude Code as her brain: an extra pick in her Brain menu when the `claude` CLI is installed and signed in
     "claude_code": {
@@ -122,5 +128,44 @@ def load() -> dict:
     if path.exists() and yaml is not None:
         with open(path, encoding="utf-8") as f:
             cfg = _merge(DEFAULTS, yaml.safe_load(f) or {})
+    # API settings made in Capri's Brain menu live in a separate user-data file, so changing providers doesn't
+    # rewrite config.yaml or its comments. Windows protects the key with DPAPI for this user account.
+    try:
+        profile = json.loads(API_PROFILE.read_text(encoding="utf-8"))
+        if not isinstance(profile, dict):
+            raise ValueError("saved API settings must be an object")
+        api_key = profile.pop("api_key", "")
+        encrypted = profile.pop("api_key_dpapi", "")
+        if encrypted and os.name == "nt":
+            import win32crypt
+
+            api_key = win32crypt.CryptUnprotectData(base64.b64decode(encrypted), None, None, None, 0)[1].decode("utf-8")
+        if isinstance(profile, dict):
+            cfg["llm"].update({k: v for k, v in profile.items() if k in _API_PROFILE_KEYS})
+            if api_key:
+                cfg["llm"]["api_key"] = api_key
+    except Exception as e:
+        print(f"[capri] couldn't load saved API settings: {e}")
     DATA.mkdir(exist_ok=True)
     return cfg
+
+
+_API_PROFILE_KEYS = {
+    "backend", "base_url", "model", "api_key_env", "max_tokens_param", "reasoning_effort", "temperature",
+    "max_tokens", "model_path", "n_ctx", "n_gpu_layers",
+}
+
+
+def save_api_profile(llm: dict) -> None:
+    """Persist the active brain settings without rewriting config.yaml; protect the API key on Windows."""
+    profile = {k: llm[k] for k in _API_PROFILE_KEYS if k in llm}
+    key = llm.get("api_key", "")
+    if key and os.name == "nt":
+        import win32crypt
+
+        encrypted = win32crypt.CryptProtectData(key.encode("utf-8"), "Capri API key", None, None, None, 0)
+        profile["api_key_dpapi"] = base64.b64encode(encrypted).decode("ascii")
+    elif key:
+        profile["api_key"] = key
+    DATA.mkdir(parents=True, exist_ok=True)
+    API_PROFILE.write_text(json.dumps(profile, indent=2), encoding="utf-8")

@@ -475,11 +475,13 @@ def qwen_ears(name: str) -> bool:
 
 
 def needs_setup() -> bool:
-    """Nothing to think with yet? Not when a brain was picked (downloaded, your own .gguf anywhere, or "none")."""
+    """Whether the local llama.cpp brain needs to be downloaded before use."""
     import json
 
-    from .config import DATA
+    from .config import DATA, load
 
+    if load()["llm"].get("backend") == "openai":
+        return False  # a remote OpenAI-compatible brain needs no local model or server
     try:
         picked = json.loads((DATA / "settings.json").read_text(encoding="utf-8")).get("brain", "")
     except (OSError, ValueError):

@@ -4,6 +4,10 @@ import os
 import sys
 import time
 
+# PyInstaller skips .pth startup hooks: trust certificates installed in Windows so HTTPS stays verified.
+import pip_system_certs.wrapt_requests
+pip_system_certs.wrapt_requests.inject_truststore()
+
 
 def _log():
     """No console in the exe: everything she prints goes to data\\capri.log, timestamped."""
@@ -111,6 +115,13 @@ def main():
     _first_config()
     if sys.stdout is None or getattr(sys, "frozen", False):
         _log()
+    if os.name == "nt" and getattr(sys, "frozen", False):
+        # Put both the bundle root and PySide6's folder on Windows' DLL search path before loading QtCore.
+        from pathlib import Path
+
+        bundle_dir = Path(sys._MEIPASS)
+        qt_dir = bundle_dir / "PySide6"
+        _qt_dll_directories = [os.add_dll_directory(str(p)) for p in (bundle_dir, qt_dir) if p.is_dir()]
     from PySide6.QtCore import Qt
     from PySide6.QtGui import QGuiApplication, QIcon
     from PySide6.QtWidgets import QApplication
