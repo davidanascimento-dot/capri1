@@ -4,28 +4,110 @@ Uma adaptação pessoal da Capri para Windows, reunindo a presença animada da p
 
 > Este repositório é o espaço do projeto **capri1**. A versão fusionada mais recente ainda está no workspace local e não foi publicada como release aqui.
 
-## Prévia visual
+## Galeria visual por repositório
 
-As imagens abaixo vêm da galeria do [Capri Desktop de referência](https://github.com/lachydotmcg/capri-desktop) e mostram a personagem, suas animações e exemplos de personalização. A build fusionada pode ter diferenças de interface.
+Copiei para este repositório as imagens de apresentação e as prévias de mods encontradas nos projetos Capri consultados. As galerias ficam recolhidas; abra cada seção para ver as imagens. Cada pasta mantém os arquivos separados por origem. A galeria é material de apresentação, não uma cópia de todos os sprites internos dos aplicativos.
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/idle.webp" alt="Capri em animação de espera" height="180">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/talk.webp" alt="Capri falando" height="180">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/glitch.webp" alt="Capri em efeito de glitch" height="180">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/sleep.webp" alt="Capri descansando" height="180">
-</div>
+| Capri antiga | Desktop para PC | Electron | Mods | VR | Android |
+| --- | --- | --- | --- | --- | --- |
+| <img src="assets/repositories/capri-ai-legacy/entrance.gif" alt="Entrada animada da Capri antiga" width="130"> | <img src="assets/repositories/capri-desktop/idle.webp" alt="Capri Desktop em animação de espera" width="130"> | <img src="assets/repositories/capri-electron/intro.png" alt="Animação de entrada da Capri Electron" width="130"> | <img src="assets/repositories/capri-mods/all-mod-previews.jpg" alt="Montagem com as prévias de todos os mods" width="130"> | <img src="assets/repositories/capri-vr/capri-icon.png" alt="Ícone da Capri Room VR" width="130"> | <img src="assets/repositories/capri-android/android-chat.png" alt="Capri para Android em conversa" width="130"> |
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/perch.webp" alt="Capri sentada na borda de uma janela" height="170">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/perch-music.webp" alt="Capri sentada e vibrando com a música" height="170">
-</div>
+<details>
+<summary><b>Capri antiga / Capri Rápida — animação, fala e passeio</b></summary>
 
-<p align="center"><sub>Animações, passeio e reação à música.</sub></p>
+Imagens de apresentação da [versão Python clássica](https://github.com/Capri-cmd/capri-ai).
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/mods.png" alt="Prévia de skins, cores e mods da Capri" width="820">
-  <br><sub>Exemplos de cores, skins e mods disponíveis no projeto de referência.</sub>
+  <img src="assets/repositories/capri-ai-legacy/entrance.gif" alt="Entrada da Capri antiga" width="300">
+  <img src="assets/repositories/capri-ai-legacy/talking.gif" alt="Capri antiga falando" width="300">
+  <img src="assets/repositories/capri-ai-legacy/teleport.gif" alt="Capri antiga passeando em pixels" width="560">
+  <img src="assets/repositories/capri-ai-legacy/peek.gif" alt="Capri espiando pela borda da tela" width="280">
+  <img src="assets/repositories/capri-ai-legacy/outro.gif" alt="Animação de saída da Capri antiga" width="280">
 </p>
+</details>
+
+<details>
+<summary><b>Capri Desktop — sprites, chamadas, painel, mods e mini player</b></summary>
+
+Imagens de apresentação do [repositório Desktop para PC](https://github.com/lachydotmcg/capri-desktop). Inclui os GIFs, sprites e telas ilustrativas que aparecem na documentação do projeto.
+
+<p align="center">
+  <img src="assets/repositories/capri-desktop/idle.webp" alt="Capri parada e piscando" height="180">
+  <img src="assets/repositories/capri-desktop/talk.webp" alt="Capri falando" height="180">
+  <img src="assets/repositories/capri-desktop/tossed.webp" alt="Capri sendo arremessada" height="180">
+  <img src="assets/repositories/capri-desktop/glitch.webp" alt="Capri em glitch" height="180">
+  <img src="assets/repositories/capri-desktop/sleep.webp" alt="Capri dormindo" height="180">
+  <img src="assets/repositories/capri-desktop/perch.webp" alt="Capri sentada na janela" height="160">
+  <img src="assets/repositories/capri-desktop/perch-music.webp" alt="Capri dançando sentada na janela" height="160">
+  <img src="assets/repositories/capri-desktop/call.gif" alt="Capri em uma chamada" width="720">
+  <img src="assets/repositories/capri-desktop/mods.png" alt="Prévia de cores, skins e mods" width="720">
+  <img src="assets/repositories/capri-desktop/intros.gif" alt="Animações de inicialização" width="620">
+</p>
+
+<p align="center">
+  <img src="assets/repositories/capri-desktop/bubble.png" alt="Balão de conversa da Capri" width="280">
+  <img src="assets/repositories/capri-desktop/intros.png" alt="Cartões das animações de entrada" width="420">
+  <img src="assets/repositories/capri-desktop/mainframe.png" alt="Painel principal da Capri Desktop" width="220">
+  <img src="assets/repositories/capri-desktop/mini-player.png" alt="Mini player com a Capri" width="360">
+  <img src="assets/repositories/capri-desktop/sit.png" alt="Capri sentada na janela" width="320">
+  <img src="assets/repositories/capri-desktop/mac-desktop.png" alt="Capri em uma área de trabalho Mac" width="260">
+  <img src="assets/repositories/capri-desktop/mac-mainframe.png" alt="Painel da Capri em um Mac" width="500">
+</p>
+</details>
+
+<details>
+<summary><b>Capri Electron — cenas e expressões</b></summary>
+
+Capturas de demonstração do [projeto Electron](https://github.com/mochiiwuff/capri-desktop).
+
+<p align="center">
+  <img src="assets/repositories/capri-electron/intro.png" alt="Entrada da Capri Electron" width="280">
+  <img src="assets/repositories/capri-electron/teleport.png" alt="Capri se teleportando" width="280">
+  <img src="assets/repositories/capri-electron/sit.png" alt="Capri sentada" width="280">
+  <img src="assets/repositories/capri-electron/peek.png" alt="Capri espiando da borda" width="280">
+  <img src="assets/repositories/capri-electron/possess.png" alt="Efeito de possessão da janela" width="280">
+  <img src="assets/repositories/capri-electron/sleep.png" alt="Capri dormindo" width="280">
+  <img src="assets/repositories/capri-electron/point.png" alt="Capri apontando para a tela" width="280">
+  <img src="assets/repositories/capri-electron/faces.png" alt="Expressões da Capri" width="280">
+  <img src="assets/repositories/capri-electron/done.png" alt="Capri reagindo ao fim de uma tarefa" width="280">
+  <img src="assets/repositories/capri-electron/guide.png" alt="Capri mostrando uma permissão na tela" width="280">
+  <img src="assets/repositories/capri-electron/star.png" alt="Cena da animação da Capri" width="280">
+  <img src="assets/repositories/capri-electron/victory.png" alt="Capri comemorando" width="280">
+</p>
+</details>
+
+<details>
+<summary><b>Capri Mods — prévias de todos os mods do catálogo</b></summary>
+
+O mosaico reúne as prévias de todos os mods disponíveis no [repositório de mods](https://github.com/lachydotmcg/capri-mods). Os PNGs originais também estão guardados separadamente, um por mod, em [`assets/repositories/capri-mods`](assets/repositories/capri-mods/).
+
+<p align="center"><img src="assets/repositories/capri-mods/all-mod-previews.jpg" alt="Mosaico com as prévias dos mods da Capri" width="1000"></p>
+</details>
+
+<details>
+<summary><b>Capri para Android — telas do projeto móvel local</b></summary>
+
+Capturas da versão Android que está no workspace local. Ela tem interface e limites próprios para celular; o código Android ainda não está publicado neste repositório.
+
+<p align="center">
+  <img src="assets/repositories/capri-android/android-chat.png" alt="Conversa com a Capri no Android" height="360">
+  <img src="assets/repositories/capri-android/android-settings.png" alt="Ajustes do cérebro, voz, aparência e tamanho da Capri Android" height="360">
+</p>
+</details>
+
+<details>
+<summary><b>Capri Room VR — ícone e sprites do projeto Quest</b></summary>
+
+Seleção de imagens do [projeto Capri Room VR](https://github.com/fadievr/capri-BD-VR). O repositório VR contém mais sprites de animação; esta galeria mostra exemplos representativos.
+
+<p align="center">
+  <img src="assets/repositories/capri-vr/capri-icon.png" alt="Ícone da Capri Room" height="160">
+  <img src="assets/repositories/capri-vr/arrive.png" alt="Sprite de chegada da Capri VR" height="200">
+  <img src="assets/repositories/capri-vr/idle.png" alt="Sprite de espera da Capri VR" height="200">
+  <img src="assets/repositories/capri-vr/walk.png" alt="Sprite de caminhada da Capri VR" height="200">
+  <img src="assets/repositories/capri-vr/perch.png" alt="Sprite da Capri VR sentada" height="200">
+</p>
+</details>
 
 ## Download para Windows
 
