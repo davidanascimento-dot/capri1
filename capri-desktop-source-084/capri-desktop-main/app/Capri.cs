@@ -150,7 +150,7 @@ namespace CapriDesktop
             Preferences old;
             try { using (FileStream stream = File.OpenRead(crashed)) old = (Preferences)new DataContractJsonSerializer(typeof(Preferences)).ReadObject(stream); }
             catch (Exception) { return; }
-            Preferences fresh = new Preferences { Language = Brain.SystemLanguage(System.Globalization.CultureInfo.CurrentUICulture) };
+            Preferences fresh = new Preferences { Language = Brain.SystemLanguage(System.Globalization.CultureInfo.CurrentUICulture) ?? "Portuguese", SpokenLanguageRevision = 1 };
             fresh.VoiceKey = old.VoiceKey; fresh.VoiceId = old.VoiceId; fresh.VoiceModel = old.VoiceModel;
             fresh.AgentId = old.AgentId; fresh.AgentVersion = old.AgentVersion; fresh.AgentPolyglot = old.AgentPolyglot; fresh.AgentPersonality = old.AgentPersonality;
             fresh.TextKey = old.TextKey; fresh.TextModel = old.TextModel;
@@ -831,6 +831,7 @@ namespace CapriDesktop
         // was on by default, so everyone starts with it off.
         [DataMember] public bool UpsetChaos;
         [DataMember] public string Language;
+        [DataMember] public int SpokenLanguageRevision;
         [DataMember] public string Nickname;
         [DataMember] public int Wordiness;
         [DataMember] public int Recall = 8;
@@ -980,7 +981,7 @@ namespace CapriDesktop
         // A new install: she starts in the PC's own language when she speaks it, and with her tuned voice.
         internal static Preferences Fresh()
         {
-            Preferences fresh = new Preferences { Language = Brain.SystemLanguage(System.Globalization.CultureInfo.CurrentUICulture) };
+            Preferences fresh = new Preferences { Language = Brain.SystemLanguage(System.Globalization.CultureInfo.CurrentUICulture) ?? "Portuguese", SpokenLanguageRevision = 1 };
             fresh.Tune();
             try
             {
@@ -2363,6 +2364,12 @@ namespace CapriDesktop
             heyCapri = new WakeWord(data);
             presence = new Presence(Assembly.GetExecutingAssembly().GetName().Version.ToString(3));
             preferences = smoke ? new Preferences() : LoadPreferences();
+            bool migratedToPortuguese = !smoke && preferences.SpokenLanguageRevision < 1;
+            if (migratedToPortuguese)
+            {
+                if (Brain.LanguageCode(preferences.Language) == "en") preferences.Language = "Portuguese";
+                preferences.SpokenLanguageRevision = 1;
+            }
             Brain.Secrets = SavedKeys;
             Speaker.Chosen = preferences.Speaker;
             Speaker.Missing = delegate(string id) { Post(delegate { SpeakerGone(id); }); };
@@ -2799,7 +2806,7 @@ namespace CapriDesktop
             Size = CanvasSize(preferences.Size);
             Rectangle work = Screen.PrimaryScreen.WorkingArea;
             anchor = preferences.HasPosition ? new Point(preferences.X, preferences.Y) : new Point(work.Right - Width - 28, work.Bottom - Height - 12);
-            if (!smoke && careNew && preferences.CareWritten) SavePreferences();
+            if (!smoke && ((careNew && preferences.CareWritten) || migratedToPortuguese)) SavePreferences();
             anchor = KeepOnScreen(anchor);
             Location = anchor;
             Microsoft.Win32.SystemEvents.DisplaySettingsChanged += DisplaysChanged;
@@ -4283,7 +4290,7 @@ namespace CapriDesktop
             box.Prompt = "> sys: ";
             if (holiday != null) holidaySaid = now.Date;
             // Her recorded hello costs nothing and needs no key. It wears their filters and layers, and a voice they've chosen says it instead (john_sandevistan, 31 Oct).
-            bool recorded = holiday == null && !preferences.Silent && !preferences.HdVoice && !preferences.ServerVoice && preferences.VoiceStyle == null;
+            bool recorded = holiday == null && Brain.LanguageCode(Brain.Language) == "en" && !preferences.Silent && !preferences.HdVoice && !preferences.ServerVoice && preferences.VoiceStyle == null;
             if (recorded)
             {
                 Func<string, byte[]> free, chosen = PickVoice(false, out free);
@@ -4697,6 +4704,7 @@ namespace CapriDesktop
         // (Ashy, 2 Nov). Docked over a game, her HUD shows it.
         private void SayOwn(string shown, string line)
         {
+            line = Lines.Spoken(line);
             if (docked) { Say(line); return; }
             Remark(shown, line, InChat || Hushed || (preferences.Quiet && !preferences.ServerVoice) || FullScreen());
         }
@@ -10782,6 +10790,7 @@ namespace CapriDesktop
         // "> sys: watching" above them (Lachy, 30 Oct: testers found it too robotic).
         private void Remark(string shown, string line, bool bubbleOnly = false, byte[] prepared = null, bool ready = false)
         {
+            line = Lines.Spoken(line);
             // Out loud it waits for her to finish and for them; in her bubble only it waits just for her own voice, so a reminder
             // still shows in a call.
             bool aloud = prepared != null || !(bubbleOnly || ready);
@@ -13377,7 +13386,8 @@ namespace CapriDesktop
         private void Answer(int ticket, string said, TalkState state, bool quiet = false)
         {
             if (ticket != asking || IsDisposed) return;
-            if (ticket == newsTicket && state == TalkState.Dormant) { Begin(ticket, News.Line, TalkState.Talking, null); return; }
+            said = Lines.Spoken(said);
+            if (ticket == newsTicket && state == TalkState.Dormant) { Begin(ticket, Lines.Spoken(News.Line), TalkState.Talking, null); return; }
             said = CallLine(ticket, said);
             // Each answer owns its text and completion; talking over her cancels only its audio (ticket 35).
             int turn = ++answerTurn;
@@ -13770,6 +13780,7 @@ namespace CapriDesktop
 
         internal void Say(string text)
         {
+            text = Lines.Spoken(text);
             speech = string.IsNullOrEmpty(text) ? null : text;
             speechStart = clock.Elapsed.TotalSeconds;
             mouths = null;

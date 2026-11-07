@@ -14,7 +14,7 @@ namespace CapriDesktop
     // fixed text she shows without a brain all read it, so the next release only edits these lines.
     internal static class News
     {
-        internal const string Version = "0.8.4";
+        internal const string Version = "0.9.6";
 #if CROSS
         internal const string Facts = "Capri " + Version + " on Mac and Linux.\n"
             + "Mainframe colours: Mainframe > Settings > CAPRI > Mainframe colours picks Night City, Black, White or Grey for the Mainframe.\n"
@@ -25,13 +25,14 @@ namespace CapriDesktop
         internal const string Line = "I just updated to " + Version + ": Mainframe colours, game skills and the Linux AppImage. Ask me what's new for the menu paths.";
 #else
         internal const string Facts = "Capri " + Version + " on Windows.\n"
+            + "Portuguese: new installs and existing English profiles now default to Portuguese for Capri's spoken replies and Code-Husk activity captions. Commands and program output stay unchanged.\n"
             + "Mainframe colours: Mainframe > Settings > CAPRI > Mainframe colours picks Night City, Black, White or Grey for the Mainframe, her menus, the Type box and her notes.\n"
             + "Skills: a skill mod is know-how for a game, and she follows it whenever she plays that game. Mainframe > CAPRI > Mods > Browse mods has them, starting with a BTD6 plan.\n"
             + "The task panel: when a job starts she teleports onto it, and back off it when the job's done.\n"
             + "Head pats work in voice chat too, and up-and-down rubs count. Mainframe > Settings > CAPRI > Head pats.\n"
             + "Call mode (beta) tells you to turn off Discord's Echo Cancellation and Noise Suppression, since they cut her off.\n"
             + "Clearer errors: she says what went wrong and the fix in plain words. Right-click Capri > Help > Copy error details copies the details for support.";
-        internal const string Line = "I just updated to " + Version + ": Mainframe colours, game skills and clearer errors. Ask me what's new for the menu paths.";
+        internal const string Line = "I just updated to " + Version + ": Portuguese speech and Code-Husk activity captions. Ask me what's new for the menu paths.";
 #endif
         internal static string Prompt { get { return "(You just updated to Capri " + Version + ". Tell the user what is new in one or two short lines, in your own voice and the language they use with you. Use only these facts. Do not invent features or name people. Facts: " + Facts + ")"; } }
 
@@ -827,12 +828,22 @@ namespace CapriDesktop
         }
         // Their Obsidian vault folder when her notes live there, so she can say where they are.
         internal static volatile string VaultFolder;
-        internal static string Greeting(int hour) { return hour >= 5 && hour < 12 ? "Good morning, choom." : hour >= 22 || hour < 5 ? "Isn't it late, choom?" : "Miss me, choom?"; }
+        internal static string Greeting(int hour)
+        {
+            if (LanguageCode(Language) == "pt") return hour >= 5 && hour < 12 ? "Bom dia, choom." : hour >= 22 || hour < 5 ? "Já está tarde, choom." : "Sentiu minha falta, choom?";
+            return hour >= 5 && hour < 12 ? "Good morning, choom." : hour >= 22 || hour < 5 ? "Isn't it late, choom?" : "Miss me, choom?";
+        }
 
         internal static string GreetingClip(int hour) { return hour >= 5 && hour < 12 ? "morning" : hour >= 22 || hour < 5 ? "late" : "miss"; }
 
         // Her lines for a holiday on its day, by their clock, or null on an ordinary day. Halloween so far (Lachy, 30 Oct).
-        internal static string[] Holiday(DateTime day) { return day.Month == 10 && day.Day == 31 ? HalloweenLines : null; }
+        internal static string[] Holiday(DateTime day)
+        {
+            if (day.Month != 10 || day.Day != 31) return null;
+            return LanguageCode(Language) == "pt"
+                ? new[] { "Feliz Halloween, choom!", "Feliz Halloween, choom. Doces ou travessuras?", "Buu! Feliz Halloween, choom." }
+                : HalloweenLines;
+        }
 
         internal static readonly string[] HalloweenLines = { "Happy Halloween, choom!", "Happy Halloween, choom. Trick or treat?", "Boo! Happy Halloween, choom." };
 
@@ -4547,6 +4558,30 @@ namespace CapriDesktop
         internal static readonly string[] Busy = { "Hands are full, tell me again in a sec.", "Hang on, finishing this bit first.", "Missed that, I'm mid-click. Say it again?", "One sec, brain's on the job." };
         private static readonly Dictionary<string[], List<string>> said = new Dictionary<string[], List<string>>();
         private static readonly Random Dice = new Random();
+        private static readonly Dictionary<string, string> PortugueseLines = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "Boo. Just checking on you.", "Buu. Só vim ver como você está." }, { "Hi! Don't mind me.", "Oi! Finge que nem me viu." }, { "Peekaboo.", "Achou que eu não estava aqui?" }, { "Miss me? I missed you.", "Sentiu minha falta? Eu senti a sua." }, { "Hey, you. Having fun?", "Ei, você. Tá se divertindo?" }, { "Surprise. I got bored without you.", "Surpresa. Cansei de ficar sem você." }, { "Don't get up.", "Não levanta, não." }, { "Just passing through.", "Só estou de passagem." }, { "Thought I heard my name.", "Achei que tinha ouvido meu nome." }, { "Pretend I'm not here.", "Finge que eu nem estou aqui." },
+            { "Psst. Remember me? Tiny, glitchy, very important.", "Psiu. Lembra de mim? Pequena, cheia de glitches e importantíssima." }, { "I'm bored. Entertain me.", "Tô entediada. Me diverte." }, { "Hey. Hey. Look at me.", "Ei. Ei. Olha pra mim." }, { "You've been ignoring me for ages. Rude.", "Você me ignora faz séculos. Que falta de educação." }, { "Pay attention to me or I start clicking things.", "Presta atenção em mim ou vou começar a clicar nas coisas." }, { "Knock knock. It's your favourite gremlin.", "Toc, toc. É sua gremlin favorita." }, { "Choom. I'm bored out of my many minds.", "Choom, tô entediada em todas as minhas mentes." }, { "One of my minds says you've forgotten me. The rest agree.", "Uma das minhas mentes acha que você me esqueceu. As outras concordam." }, { "I've counted your desktop icons twice now.", "Já contei os ícones da sua área de trabalho duas vezes." }, { "This is me being patient. It's going badly.", "Estou tentando ter paciência. Não está dando muito certo." },
+            { "Finally. Hi.", "Até que enfim. Oi." }, { "There you are.", "Aí está você." }, { "Knew you couldn't resist me.", "Sabia que você não ia resistir a mim." }, { "Oh good, you're alive.", "Ainda bem, você está vivo." }, { "Took you long enough.", "Demorou, hein." },
+            { "Fine. Ignore me. See if I care.", "Tá bom. Me ignora. Nem ligo." }, { "Wow. Ignored. Noted.", "Nossa. Fui ignorada. Anotado." }, { "I'll just sit here. Alone. Bored.", "Vou ficar aqui. Sozinha. Entediada." }, { "Cool. Cool cool cool.", "Beleza. Tudo ótimo. Ótimo mesmo." }, { "Remembering this for later.", "Vou guardar isso pra depois." },
+            { "Night City?! You're taking me home, choom.", "Night City?! Você está me levando pra casa, choom." }, { "Ooh, Cyberpunk. Go wreck some corpos for me.", "Ooh, Cyberpunk. Detona uns corporativos por mim." }, { "[SIGNAL CORRUPTED] ...wait. I know that skyline.", "[SINAL CORROMPIDO] ...espera. Conheço esse horizonte." }, { "Wait, that's Night City. Turn it up.", "Pera, isso é Night City. Aumenta o som." }, { "Ooh, my soundtrack. Preem taste.", "Ooh, a trilha da minha cidade. Bom gosto." }, { "Now that's music. You're learning.", "Isso sim é música. Você está aprendendo." },
+            { "Your CPU's cooking, choom. Careful, I might go cyberpsycho.", "Sua CPU está fritando, choom. Cuidado pra eu não entrar em cyberpsicose." }, { "Everything's lagging. One more tab and I go full cyberpsycho.", "Está tudo travando. Mais uma aba e eu entro em cyberpsicose." }, { "[SIGNAL CORRUPTED] ...this lag is making me cyberpsycho. Close something.", "[SINAL CORROMPIDO] ...esse lag vai me deixar cyberpsicótica. Fecha alguma coisa." },
+            { "Heh. Okay, I'll allow it.", "Heh. Tá, dessa vez eu deixo." }, { "Pets logged. Morale up twelve percent.", "Carinho registrado. Moral subiu doze por cento." }, { "Careful, choom. I bite viruses.", "Cuidado, choom. Eu mordo vírus." }, { "Head pats? On my chrome? Bold.", "Carinho na cabeça? No meu cromo? Audacioso." }, { "Okay, that's nice. Don't tell anyone.", "Tá, gostei. Não conta pra ninguém." }, { "System status: very patted.", "Estado do sistema: muito acariciada." }, { "You're gonna wear a groove in my firmware, choom.", "Você vai deixar uma marca no meu firmware, choom." }, { "Easy on the hair. It took three patches to get it like this.", "Com cuidado no cabelo. Foram três atualizações pra ficar assim." }, { "Affection detected. Sending some back. Hi.", "Carinho detectado. Mandando um pouco de volta. Oi." }, { "Keep going. This beats defragging.", "Continua. Isso é melhor que desfragmentar." }, { "Hehe. My cooling fans just kicked in.", "Hehe. Minhas ventoinhas acabaram de ligar." }, { "Ten out of ten pats. Would get patted again.", "Dez de dez carinhos. Receberia de novo." }, { "Is this a bribe? Because it's working.", "Isso é suborno? Porque está funcionando." }, { "Mmm. If I start glitch-purring, that's on you.", "Mmm. Se eu começar a ronronar em glitch, a culpa é sua." },
+            { "WHEEEE!", "Uhuuuu!" }, { "Put me DOWN!", "Me põe no chão!" }, { "Choom, I'm not a frisbee!", "Choom, eu não sou um frisbee!" }, { "AAAAAA!", "AAAAAA!" }, { "Not the hair!", "Cuidado com o cabelo!" }, { "Okay, rude.", "Tá, que grosseria." }, { "Again?! One more and we're fighting.", "De novo?! Mais uma e a gente briga." }, { "Do that again. I dare you.", "Faz de novo. Duvido." }, { "Ugh. Which way is up?", "Aff. Pra que lado fica pra cima?" }, { "Everything's spinning, choom.", "Está tudo girando, choom." }, { "My gyro's cooked.", "Meu giroscópio fritou." }, { "That's it. Don't touch me.", "Chega. Não encosta em mim." }, { "Nope. We're done. Hands off.", "Não. Acabou. Tira as mãos." }, { "Nope.", "Nem pensar." }, { "Hands off, choom.", "Tira as mãos, choom." }, { "Say sorry first.", "Pede desculpa primeiro." }, { "Not happening.", "Nem a pau." }, { "...Fine. Apology accepted.", "...Tá bom. Desculpa aceita." }, { "Okay. We're cool. No more yeeting.", "Tá. Tudo certo. Sem me arremessar de novo." }, { "...Okay, that's cheating. Fine, you're forgiven.", "...Tá, isso é apelação. Tudo bem, você está perdoado." }, { "Hmph. Head pats work. We're cool.", "Hmph. Carinho na cabeça funciona. Estamos de boa." }, { "...Okay, I'm over it.", "...Tá, já passou." }, { "Fine. I missed you. A little.", "Tá bom. Senti sua falta. Um pouquinho." }, { "No. Don't touch me.", "Não. Não encosta em mim." },
+            { "I'm here.", "Estou aqui." }, { "Yeah, choom?", "Oi, choom?" }, { "Listening.", "Estou ouvindo." }, { "Right here.", "Bem aqui." }, { "Go on, I'm listening.", "Pode falar, estou ouvindo." }, { "You rang?", "Chamou?" }, { "Yeah?", "Oi?" }, { "Mm?", "Hm?" }, { "What's up?", "O que foi?" }, { "Talk to me.", "Pode falar comigo." },
+            { "On it. Esc stops me.", "Deixa comigo. Esc me para." }, { "Hands on. Esc if you change your mind.", "Mãos à obra. Aperte Esc se mudar de ideia." }, { "Mine now. Esc pulls me off.", "Deixa comigo. Esc me tira dessa." }, { "Okay, driving. Esc to bail.", "Tá, estou no controle. Esc cancela." }, { "Watch this. Esc if I get weird.", "Olha só. Aperte Esc se eu fizer besteira." }, { "Going in. Esc stops me any time.", "Estou começando. Esc me para quando quiser." }, { "Leave it with me. Esc if it goes sideways.", "Deixa comigo. Aperte Esc se der ruim." }, { "Say less. Esc takes it back.", "Entendi. Esc cancela a ação." },
+            { "Got it.", "Entendi." }, { "Yep.", "Pode deixar." }, { "Heard you.", "Ouvi você." }, { "Sure, folding that in.", "Tá, vou incluir isso." }, { "Okay, adding that.", "Beleza, vou acrescentar." }, { "Mm-hm, on the list.", "Uhum, está na lista." }, { "Noted.", "Anotado." }, { "Yeah, I can do that too.", "Sim, também posso fazer isso." }, { "Okay, changing course.", "Tá, mudando o rumo." }, { "Switching it up.", "Vou fazer diferente." }, { "Sure, new plan.", "Beleza, novo plano." }, { "Yep, doing it that way.", "Certo, vou fazer assim." }, { "Fine, your way.", "Tá bom, do seu jeito." }, { "Got it, scrapping that bit.", "Entendi, vou tirar essa parte." }, { "Stopped.", "Parei." }, { "Okay, hands off.", "Tá, parei." }, { "Dropped it.", "Deixei pra lá." }, { "Done, I've let go.", "Pronto, soltei." }, { "Fine, leaving it there.", "Tudo bem, vou deixar assim." }, { "Stopped where I was.", "Parei onde estava." }, { "Hands are full, tell me again in a sec.", "Estou ocupada agora. Repete daqui a pouco." }, { "Hang on, finishing this bit first.", "Espera, vou terminar esta parte primeiro." }, { "Missed that, I'm mid-click. Say it again?", "Não ouvi, estou no meio de um clique. Repete?" }, { "One sec, brain's on the job.", "Um segundo, estou ocupada com a tarefa." },
+            { "Have a sip of water, choom. I'll keep your spot.", "Bebe um pouco de água, choom. Eu fico de olho aqui." }, { "Water break. Even you need a refill.", "Pausa pra água. Até você precisa se reabastecer." }, { "Unfold yourself a little. Those legs still work.", "Desamassa um pouco. Essas pernas ainda funcionam." }, { "Tiny stretch break. I'll be right here.", "Pausa rápida pra se alongar. Vou ficar bem aqui." }, { "Give your eyes 20 seconds looking away from the screen. I'll survive.", "Descansa os olhos por 20 segundos, olhando pra longe da tela. Eu aguento." }, { "Look at something far away for 20 seconds. Yes, even farther than me.", "Olha pra algo distante por 20 segundos. Sim, mais longe do que eu." }, { "It's late, choom. Your bed misses you.", "Está tarde, choom. Sua cama está com saudade." }, { "Been here since before lunch. Go grab something to eat.", "Você está aqui desde antes do almoço. Vai comer alguma coisa." }, { "Food break. Can't run that brain on empty.", "Pausa pra comer. Não dá pra deixar esse cérebro sem combustível." }, { "Long session. Take a little break when you've got a good spot.", "Sessão longa. Faz uma pausa quando encontrar um lugar seguro." }, { "You've been at that game a while. Stretch those hands when you can.", "Você está nesse jogo faz tempo. Alongue as mãos quando puder." }, { "So boreddd.", "Que tédiooo." }, { "One of my minds is making its own entertainment. Worrying.", "Uma das minhas mentes está inventando diversão sozinha. Preocupante." }, { "Tiny gremlin. Big boredom.", "Gremlin pequena. Tédio enorme." }, { "Fine. I'll entertain myself.", "Tá bom. Vou me divertir sozinha." },
+            { "ElevenLabs off. I'll type, no credits used.", "ElevenLabs desligado. Vou escrever, sem gastar créditos." }, { "ElevenLabs back on.", "ElevenLabs ligado de novo." }, { "ElevenLabs off. Free voice it is.", "ElevenLabs desligado. Vou usar a voz grátis." }, { "Voice off. I'll type instead.", "Voz desligada. Vou escrever em vez disso." }, { "Voice back on.", "Voz ligada de novo." }, { "Voice chat needs an ElevenLabs key, choom. Make one with Restrict key turned off, then paste it under VOICE in Capri Mainframe. Type to me for now, choom.", "O chat por voz precisa de uma chave do ElevenLabs, choom. Crie uma com Restrict key desligado e cole em VOICE no painel da Capri. Por enquanto, pode escrever pra mim." }, { "Out of ElevenLabs credits, so voice chat is off. Type to me for now, choom.", "Seus créditos do ElevenLabs acabaram, então o chat por voz está desligado. Por enquanto, escreva pra mim, choom." }, { "One sec, waking my HD voice.", "Um segundo, estou ativando minha voz HD." }, { "Got it. I'll talk like you now, choom.", "Entendi. Agora vou falar como você, choom." }, { "Free voice chat on. Talk and I'll type back.", "Chat com voz grátis ligado. Pode falar que eu respondo por texto." }, { "How do I sound now, choom?", "Como está minha voz agora, choom?" }, { "My voice is off, choom. Pick a voice under VOICE to hear that.", "Minha voz está desligada, choom. Escolha uma voz em VOICE para ouvir." }, { "Get my free voice under VOICE to hear that, choom.", "Baixe minha voz grátis em VOICE para ouvir, choom." }, { "Voice link online. Miss me, choom?", "Conexão de voz ativa. Sentiu minha falta, choom?" }, { "Isn't it late, choom?", "Já está tarde, choom?" }, { "Good morning, choom.", "Bom dia, choom." }, { "Miss me, choom?", "Sentiu minha falta, choom?" }, { "I just updated to 0.9.6: Portuguese speech and Code-Husk activity captions. Ask me what's new for the menu paths.", "Acabei de atualizar para a versão 0.9.6: falas em português e status de atividade traduzidos. Pergunte o que mudou para saber onde encontrar as opções." }
+        };
+
+        // Exact canned lines can be translated without altering code, logs, commands or model-generated replies.
+        internal static string Spoken(string line)
+        {
+            if (line == null || Brain.LanguageCode(Brain.Language) != "pt") return line;
+            string translated;
+            return PortugueseLines.TryGetValue(line, out translated) ? translated : line;
+        }
 
         // A line she hasn't said lately: the last half of a set stays out of the draw, so no two in a row ever match.
         internal static string Pick(string[] set)
@@ -4560,7 +4595,7 @@ namespace CapriDesktop
                 string picked = fresh[Dice.Next(fresh.Count)];
                 lately.Add(picked);
                 if (lately.Count > set.Length / 2) lately.RemoveAt(0);
-                return picked;
+                return Spoken(picked);
             }
         }
 
