@@ -2,7 +2,7 @@
 
 Uma adaptação pessoal da Capri para Windows, reunindo a presença animada da personagem na área de trabalho com recursos de conversa, movimento, aparência e integração com ferramentas de IA. A proposta é manter as funções úteis das versões de referência e organizá-las em uma experiência só.
 
-> Este repositório é o espaço do projeto **capri1**. A versão fusionada mais recente ainda está no workspace local e não foi publicada como release aqui.
+> Este repositório é o espaço do projeto **capri1**. O código-fonte da versão fusionada está em [`capri-desktop-source-084/capri-desktop-main`](capri-desktop-source-084/capri-desktop-main/); ainda não há uma release própria publicada aqui.
 
 ## Galeria visual por repositório
 
@@ -172,12 +172,14 @@ Capri é um projeto de fã não oficial, sem vínculo ou aprovação da CD PROJE
 
 Antes de redistribuir código, sprites, vozes, mods ou instaladores, confira a licença e os créditos no repositório de origem. A licença de cada componente é independente; este README não substitui nem altera esses termos. Não use o projeto para vender conteúdo de terceiros sem autorização.
 
+A fonte Desktop incluída em [`capri-desktop-source-084/capri-desktop-main`](capri-desktop-source-084/capri-desktop-main/) mantém o `LICENSE.md` e os avisos de atribuição do projeto de origem (PolyForm Noncommercial 1.0.0). Publicar o código aqui não altera essas condições; os componentes e assets de terceiros mantêm suas próprias licenças.
+
 ## Privacidade
 
 O comportamento depende das opções ativadas. Um cérebro local pode processar as conversas no próprio computador; quando um provedor online é configurado, mensagens e dados necessários à solicitação podem ser enviados a esse provedor. Revise as opções de tela, voz, chamadas e o aviso de privacidade do serviço escolhido antes de ativá-los.
 
 ## Estado da publicação
 
-- O README está preparado para documentar o projeto neste repositório.
-- A fusão personalizada compilada permanece local; nenhum instalador, executável, arquivo temporário ou pacote de testes foi adicionado a este repositório.
+- O código-fonte da fusão está em `capri-desktop-source-084/capri-desktop-main`.
+- Nenhum instalador, executável, arquivo temporário ou build local foi adicionado ao repositório.
 - O link de download acima aponta para a release upstream pública enquanto não houver uma release própria da fusão.
