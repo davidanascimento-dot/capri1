@@ -4,6 +4,29 @@ Uma adaptação pessoal da Capri para Windows, reunindo a presença animada da p
 
 > Este repositório é o espaço do projeto **capri1**. A versão fusionada mais recente ainda está no workspace local e não foi publicada como release aqui.
 
+## Prévia visual
+
+As imagens abaixo vêm da galeria do [Capri Desktop de referência](https://github.com/lachydotmcg/capri-desktop) e mostram a personagem, suas animações e exemplos de personalização. A build fusionada pode ter diferenças de interface.
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/idle.webp" alt="Capri em animação de espera" height="180">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/talk.webp" alt="Capri falando" height="180">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/glitch.webp" alt="Capri em efeito de glitch" height="180">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/sleep.webp" alt="Capri descansando" height="180">
+</div>
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/perch.webp" alt="Capri sentada na borda de uma janela" height="170">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/perch-music.webp" alt="Capri sentada e vibrando com a música" height="170">
+</div>
+
+<p align="center"><sub>Animações, passeio e reação à música.</sub></p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/lachydotmcg/capri-desktop/main/assets/readme/mods.png" alt="Prévia de skins, cores e mods da Capri" width="820">
+  <br><sub>Exemplos de cores, skins e mods disponíveis no projeto de referência.</sub>
+</p>
+
 ## Download para Windows
 
 [![Baixar Capri para Windows](https://img.shields.io/badge/Windows-baixar%20Capri-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-Setup.exe)
