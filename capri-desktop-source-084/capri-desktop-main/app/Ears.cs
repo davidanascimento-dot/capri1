@@ -1799,13 +1799,13 @@ namespace CapriDesktop
     {
         internal const string Pack = "parakeet-tdt-0.6b-v2-int8";
         internal static string PackUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8.tar.bz2";
-        internal static string PackSha = "157c157bc51155e03e37d2466522a3a737dd9c72bb25f36eb18912964161e1ad";
-        internal static long PackSize = 482468385;
+        internal static string PackSha = "6fc4426b54aa549a0019b8a75b8dea59164e71790a37ac56a045ad57f915f714";
+        internal static long PackSize = 482440461;
         private const string Inside = "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8";
         internal const string EuropeanPack = "parakeet-tdt-0.6b-v3-int8";
         internal static string EuropeanUrl = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8.tar.bz2";
-        internal static string EuropeanSha = "5793d0fd397c5778d2cf2126994d58e9d56b1be7c04d13c7a15bb1b4eafb16bf";
-        internal static long EuropeanSize = 487170055;
+        internal static string EuropeanSha = "1495e91b59d7fc53ddca91f3431758ec99f8fa253fdb0e1e851be0f72b14b0f9";
+        internal static long EuropeanSize = 487211443;
         private const string EuropeanInside = "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8";
         // What v3 hears, as two-letter language codes.
         internal static readonly string[] European = { "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el", "hu", "it", "lv", "lt", "mt", "pl", "pt", "ro", "sk", "sl", "es", "sv", "ru", "uk" };

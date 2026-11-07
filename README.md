@@ -115,6 +115,8 @@ Seleção de imagens do [projeto Capri Room VR](https://github.com/fadievr/capri
 
 O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/0.9.6/Capri.exe)** também está disponível. Os hashes SHA-256 estão em [`SHA256SUMS.txt`](downloads/0.9.6/SHA256SUMS.txt).
 
+A validação dos pacotes de reconhecimento de fala foi atualizada para corresponder aos arquivos servidos atualmente pelo sherpa-onnx.
+
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
 
 ## O que mudou em relação às referências
