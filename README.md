@@ -2,7 +2,7 @@
 
 Uma adaptação pessoal da Capri para Windows, reunindo a presença animada da personagem na área de trabalho com recursos de conversa, movimento, aparência e integração com ferramentas de IA. A proposta é manter as funções úteis das versões de referência e organizá-las em uma experiência só.
 
-> **Capri Fan Build 0.9.5** é uma modificação independente feita por fã, baseada principalmente no Capri Desktop. Não é uma versão oficial nem é endossada pelos autores ou titulares da Capri.
+> **Capri Fan Build 0.9.6** é uma modificação independente feita por fã, baseada principalmente no Capri Desktop. Não é uma versão oficial nem é endossada pelos autores ou titulares da Capri.
 
 ## Galeria visual por repositório
 
@@ -111,9 +111,9 @@ Seleção de imagens do [projeto Capri Room VR](https://github.com/fadievr/capri
 
 ## Download para Windows
 
-[![Baixar Capri Fan Build 0.9.5 para Windows](https://img.shields.io/badge/Windows-baixar%20Capri%200.9.5-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/davidanascimento-dot/capri1/releases/download/capri-V0.9.5/Capri-Setup.exe)
+[![Baixar Capri Fan Build 0.9.6 para Windows](https://img.shields.io/badge/Windows-baixar%20Capri%200.9.6-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/0.9.6/Capri-Setup.exe)
 
-O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/releases/download/capri-V0.9.5/Capri.exe)** também está disponível na [release capri-V0.9.5](https://github.com/davidanascimento-dot/capri1/releases/tag/capri-V0.9.5), marcada como pré-lançamento no GitHub.
+O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/0.9.6/Capri.exe)** também está disponível. Os hashes SHA-256 estão em [`SHA256SUMS.txt`](downloads/0.9.6/SHA256SUMS.txt).
 
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
 
@@ -121,7 +121,7 @@ Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri
 
 | Referência | Como esta build se relaciona | Alterações nesta edição |
 | --- | --- | --- |
-| [Capri Desktop para PC](https://github.com/lachydotmcg/capri-desktop) | Base principal da aplicação Windows e de sua interface. | Identificação própria como build de fã, versão 0.9.5, ajustes de publicação e integração de API externa compatível com OpenAI. |
+| [Capri Desktop para PC](https://github.com/lachydotmcg/capri-desktop) | Base principal da aplicação Windows e de sua interface. | Identificação própria como build de fã, versão 0.9.6, falas e legendas de atividade em português e integração de API externa compatível com OpenAI. |
 | [Capri antiga / Capri Rápida](https://github.com/Capri-cmd/capri-ai) | Referência separada para sprites e comportamento clássico; alguns recursos/arquivos selecionados são adaptados pela build desktop. | Preset Groq para configurar endpoint, modelo, chave, campo de limite de tokens, nível de raciocínio e máximo de resposta no painel da API externa. |
 | [Capri Electron / Code-Husk](https://github.com/mochiiwuff/capri-desktop) | Referência de inspiração e integração; não é a base do executável Windows desta release. | Esta release continua sendo o aplicativo desktop C#; recursos não incorporados não são anunciados como parte dela. |
 | [Mods](https://github.com/lachydotmcg/capri-mods) e [Capri Room VR](https://github.com/fadievr/capri-BD-VR) | Projetos relacionados e referências de personalização/realidade mista, não versões empacotadas nesta build para PC. | A lista de recursos instalados continua limitada ao que está presente no executável e no instalador desta release. |
@@ -192,5 +192,5 @@ O comportamento depende das opções ativadas. Um cérebro local pode processar 
 ## Estado da publicação
 
 - O código-fonte da fusão está em `capri-desktop-source-084/capri-desktop-main`.
-- O instalador e o executável portátil são distribuídos como arquivos da release `capri-V0.9.5`, fora do histórico Git.
+- O instalador, o executável portátil e seus hashes SHA-256 estão em [`downloads/0.9.6`](downloads/0.9.6/).
 - O instalador e as propriedades do executável identificam a edição como uma modificação independente feita por fã.
