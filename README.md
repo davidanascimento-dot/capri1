@@ -111,9 +111,9 @@ Seleção de imagens do [projeto Capri Room VR](https://github.com/fadievr/capri
 
 ## Download para Windows
 
-[![Baixar Capri Fan Build 0.9.5 para Windows](https://img.shields.io/badge/Windows-baixar%20Capri%200.9.5-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/davidanascimento-dot/capri1/releases/latest/download/Capri-Setup.exe)
+[![Baixar Capri Fan Build 0.9.5 para Windows](https://img.shields.io/badge/Windows-baixar%20Capri%200.9.5-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/davidanascimento-dot/capri1/releases/download/capri-V0.9.5/Capri-Setup.exe)
 
-O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/releases/latest/download/Capri.exe)** também está disponível na release.
+O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/releases/download/capri-V0.9.5/Capri.exe)** também está disponível na [release capri-V0.9.5](https://github.com/davidanascimento-dot/capri1/releases/tag/capri-V0.9.5), marcada como pré-lançamento no GitHub.
 
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
 
@@ -192,5 +192,5 @@ O comportamento depende das opções ativadas. Um cérebro local pode processar 
 ## Estado da publicação
 
 - O código-fonte da fusão está em `capri-desktop-source-084/capri-desktop-main`.
-- O instalador e o executável portátil são distribuídos como arquivos da release `v0.9.5`, fora do histórico Git.
+- O instalador e o executável portátil são distribuídos como arquivos da release `capri-V0.9.5`, fora do histórico Git.
 - O instalador e as propriedades do executável identificam a edição como uma modificação independente feita por fã.
