@@ -1769,6 +1769,8 @@ namespace CapriDesktop
         private Preferences preferences;
         private readonly ClipBuffer clips = new ClipBuffer();
         private ClipToast clipToast;
+        private readonly ClassicTransit classicTransit = new ClassicTransit();
+        private bool classicTraveling;
         private int clipsChimed;
         private readonly System.Collections.Generic.List<string> clipsOpened = new System.Collections.Generic.List<string>();
         private Bitmap frame;
@@ -1939,6 +1941,13 @@ namespace CapriDesktop
         private int walkTo;
         private double walkStep;
         private double walkCarry;
+        private bool edgePeeking;
+        private string edgePeekSide;
+        private Rectangle edgePeekBounds, edgePeekArea;
+        private int edgePeekAngle;
+        private double edgePeekUntil = -1;
+        private double jealousMiniAt = -1;
+        private double classicAutoMiniReturnAt = -1;
         private Action outro;
         private double outroAt;
         private bool dropAfter;
@@ -2552,7 +2561,7 @@ namespace CapriDesktop
             {
                 preferences.NoJealous = !preferences.NoJealous;
                 jealousItem.Checked = !preferences.NoJealous;
-                if (preferences.NoJealous) ClearRivalCue();
+                if (preferences.NoJealous) { jealousMiniAt = -1; ClearRivalCue(); }
                 SavePreferences();
             });
             jealousItem.Checked = !preferences.NoJealous;
@@ -2751,6 +2760,7 @@ namespace CapriDesktop
                 if (husk != null) husk.Tick();
                 CheckHuskFront(signalNow);
                 if (!testing && signalNow >= rivalPollAt) { rivalPollAt = signalNow + 1.5; CheckRival(signalNow); }
+                if (!testing) CheckEdgePeek(signalNow);
                 long signalIdle = Native.IdleMilliseconds();
                 if (!testing) CheckForeground(signalNow);
                 if (!testing) CheckKeyAccess();
@@ -3973,6 +3983,8 @@ namespace CapriDesktop
         internal void GoMini()
         {
             if (miniMode || hidden || quitting || IsDisposed) return;
+            classicAutoMiniReturnAt = -1;
+            if (edgePeeking) LeaveEdgePeek(false);
             Point floor = new Point(anchor.X + Width / 2, anchor.Y + Height - PaddingSize);
             miniMode = true;
             frames.Stop();
@@ -3989,6 +4001,16 @@ namespace CapriDesktop
 
         private void CheckMiniPreferences(double now)
         {
+            if (jealousMiniAt >= 0 && now >= jealousMiniAt)
+            {
+                if (hidden || quitting || IsDisposed || menu.Visible || InChat || typer.Visible || box.Visible || mainframe.Visible && mainframe.WindowState != FormWindowState.Minimized || speech != null || voice.Busy || speaker.Busy || talkState != TalkState.Off || CallModeOn || FullScreen())
+                    jealousMiniAt = now + 0.75;
+                else
+                {
+                    jealousMiniAt = -1;
+                    if (!preferences.AlwaysMini) { ClearRivalCue(); GoMini(); return; }
+                }
+            }
             if (preferences.AlwaysMini && !miniMode && alwaysMiniAt >= 0 && now >= alwaysMiniAt)
             {
                 if (hidden || quitting || IsDisposed || legacyIntro != null || clip == arrive || dropAfter || falling || walking || dragging)
@@ -4000,6 +4022,26 @@ namespace CapriDesktop
                 }
             }
             else if (!preferences.AlwaysMini || miniMode) alwaysMiniAt = -1;
+
+            if (classicAutoMiniReturnAt >= 0)
+            {
+                if (!ClassicSkinActive())
+                {
+                    classicAutoMiniReturnAt = -1;
+                    if (miniMode && !preferences.AlwaysMini) ReturnFromMini(MiniFloor());
+                }
+                else if (!miniMode) classicAutoMiniReturnAt = -1;
+                else if (preferences.Wander && now >= classicAutoMiniReturnAt)
+                {
+                    if (speech != null || speaker.Busy || talkState != TalkState.Off || InChat || typer.Visible || menu.Visible || box.Visible)
+                        classicAutoMiniReturnAt = now + 1;
+                    else
+                    {
+                        classicAutoMiniReturnAt = -1;
+                        ReturnFromMini(MiniFloor());
+                    }
+                }
+            }
 
             if (now < batteryCheckAt) return;
             batteryCheckAt = now + 20;
@@ -4031,6 +4073,7 @@ namespace CapriDesktop
             {
                 rivalInFront = null;
                 rivalSince = -1;
+                jealousMiniAt = -1;
                 return;
             }
             string rival = RivalWatch.Detect(Process.GetCurrentProcess().Id);
@@ -4051,7 +4094,7 @@ namespace CapriDesktop
             if (rivalSince < 0 || now - rivalSince < 4) return;
             double last;
             if (rivalLastSpoke.TryGetValue(rival, out last) && now - last < 1200) return;
-            if (hidden || miniMode || quitting || Hushed || InChat || typer.Visible || menu.Visible || (mainframe.Visible && mainframe.WindowState != FormWindowState.Minimized)
+            if (hidden || miniMode || edgePeeking || quitting || Hushed || InChat || typer.Visible || menu.Visible || (mainframe.Visible && mainframe.WindowState != FormWindowState.Minimized)
                 || speech != null || talkState != TalkState.Off || outro != null || popOut >= 0 || docked || CallModeOn || FullScreen()) return;
             rivalLastSpoke[rival] = now;
             string line;
@@ -4071,6 +4114,90 @@ namespace CapriDesktop
             rivalCue = new RivalCue(rival, line, new Point(anchor.X + Width / 2, anchor.Y + Height / 2));
             rivalCue.ShowCue();
             SayOwn("ciúmes", line);
+            jealousMiniAt = now + 2;
+        }
+
+        private void CheckEdgePeek(double now)
+        {
+            if (!edgePeeking || now < edgePeekUntil) return;
+            if (speech != null || speaker.Busy || talkState != TalkState.Off || box.Visible)
+            {
+                edgePeekUntil = now + 2;
+                return;
+            }
+            LeaveEdgePeek(true);
+        }
+
+        private void LeaveEdgePeek(bool fall)
+        {
+            if (!edgePeeking) return;
+            edgePeeking = false;
+            edgePeekUntil = -1;
+            edgePeekAngle = 0;
+            anchor = new Point(edgePeekSide == "left" ? edgePeekBounds.Left - Width / 2 : edgePeekSide == "right" ? edgePeekBounds.Right - Width / 2 : anchor.X,
+                edgePeekSide == "top" ? edgePeekBounds.Top - Height / 2 : anchor.Y);
+            anchor = KeepOnScreen(anchor);
+            Location = anchor;
+            edgePeekSide = null;
+            if (fall)
+            {
+                flyArea = edgePeekArea;
+                Play(dangle);
+                Fall();
+            }
+            else Play(idle);
+            RenderFrame();
+        }
+
+        private bool PeekFromEdge()
+        {
+            Point hip = Hip();
+            Screen screen = Screen.FromPoint(hip);
+            Rectangle bounds = screen.Bounds, area = screen.WorkingArea;
+            System.Collections.Generic.List<string> edges = new System.Collections.Generic.List<string>();
+            if (!OnAnyScreen(new Point(bounds.Left - 4, bounds.Top + bounds.Height / 2))) edges.Add("left");
+            if (!OnAnyScreen(new Point(bounds.Right + 4, bounds.Top + bounds.Height / 2))) edges.Add("right");
+            if (!OnAnyScreen(new Point(bounds.Left + bounds.Width / 2, bounds.Top - 4))) { edges.Add("top"); edges.Add("top"); }
+            if (edges.Count == 0 || area.Width < Width || area.Height < Height) return false;
+            string side = edges[random.Next(edges.Count)];
+            int coordinate = side == "top"
+                ? random.Next(area.Left + Width * 2 / 5, Math.Max(area.Left + Width * 2 / 5 + 1, area.Right - Width * 2 / 5))
+                : random.Next(area.Top + Height * 2 / 5, Math.Max(area.Top + Height * 2 / 5 + 1, area.Bottom - Height * 2 / 5));
+            Point peekAt = side == "top" ? new Point(coordinate - Width / 2, bounds.Top - Height / 2)
+                : side == "left" ? new Point(bounds.Left - Width / 2, coordinate - Height / 2)
+                : new Point(bounds.Right - Width / 2, coordinate - Height / 2);
+            Action arrive = delegate
+            {
+                edgePeeking = true;
+                edgePeekSide = side;
+                edgePeekBounds = bounds;
+                edgePeekArea = area;
+                edgePeekAngle = side == "top" ? 180 : side == "left" ? 90 : -90;
+                edgePeekUntil = clock.Elapsed.TotalSeconds + 15 + random.NextDouble() * 20;
+                seat = null;
+                hanging = walking = falling = false;
+                dropAfter = false;
+                anchor = peekAt;
+                Play(idle);
+                frames.Start();
+                RenderFrame();
+            };
+            if (ClassicSkinActive())
+            {
+                if (ClassicTransitTo(peekAt, arrive)) return true;
+                arrive();
+                Location = anchor;
+                RenderFrame();
+                return true;
+            }
+            GlitchOut(arrive, false);
+            return true;
+        }
+
+        private static bool OnAnyScreen(Point point)
+        {
+            foreach (Screen screen in Screen.AllScreens) if (screen.Bounds.Contains(point)) return true;
+            return false;
         }
 
         private void ClearRivalCue()
@@ -4083,6 +4210,7 @@ namespace CapriDesktop
         private void ReturnFromMini(Point floor)
         {
             if (!miniMode) return;
+            classicAutoMiniReturnAt = -1;
             if (preferences.AlwaysMini)
             {
                 preferences.AlwaysMini = false;
@@ -4168,6 +4296,8 @@ namespace CapriDesktop
             if (preferences.Hologram || e.Button != MouseButtons.Left || outro != null) return;
             if (Asleep || ownRest) { WakeRest(!SleepBusy); RenderFrame(); }
             double now = clock.Elapsed.TotalSeconds;
+            jealousMiniAt = -1;
+            if (edgePeeking) LeaveEdgePeek(false);
             // Sulking, she won't be picked up: a press glitches her a short hop away, and mid-air it misses her (Zr4, F44). On her
             // task panel or mid-job, dragging works as always.
             if (Sulking && !onPanel && working == null && job == null)
@@ -4403,7 +4533,7 @@ namespace CapriDesktop
         {
             base.OnMouseUp(e);
             if (preferences.Hologram) return;
-            if (e.Button == MouseButtons.Right) { menu.Show(Cursor.Position); return; }
+            if (e.Button == MouseButtons.Right) { if (edgePeeking) LeaveEdgePeek(false); menu.Show(Cursor.Position); return; }
             if (e.Button != MouseButtons.Left || !pressed) return;
             Released(PointToScreen(e.Location), clock.Elapsed.TotalSeconds);
         }
@@ -5800,16 +5930,33 @@ namespace CapriDesktop
             return null;
         }
 
+        private bool ClassicSkinActive()
+        {
+            return string.Equals(Path.GetFileName(SkinFolder), "capri-classic-skin", StringComparison.OrdinalIgnoreCase);
+        }
+
         private void CheckWander(double now, long quiet)
         {
+            bool classic = ClassicSkinActive();
             bool settled = talkState == TalkState.Off || (talkState == TalkState.Talking && replyDone >= 0 && now - replyDone > 8);
-            if (!preferences.Wander || Hushed || ownRest || SleepBusy || GamingOn || hidden || dragging || pressed || riding || onPanel || falling || hanging || InChat || typer.Visible || menu.Visible || speech != null || !settled || quiet > 90000 || (seat != null && seat.Free) || outro != null || (clip != idle && clip != perch && clip != dance && clip != perchDance)) return;
-            double pace = WanderPaces[preferences.WanderPace];
-            if (nextWander < 0) nextWander = now + (20 + random.NextDouble() * 40) * pace;
+            if (!preferences.Wander || Hushed || ownRest || SleepBusy || GamingOn || hidden || edgePeeking || classicTraveling || dragging || pressed || riding || onPanel || falling || hanging || InChat || typer.Visible || menu.Visible || speech != null || !settled || (!classic && quiet > 90000) || (seat != null && seat.Free) || outro != null || (clip != idle && clip != perch && clip != dance && clip != perchDance)) return;
+            double pace = classic ? 1 : WanderPaces[preferences.WanderPace];
+            if (nextWander < 0) nextWander = now + (classic ? 3 + random.NextDouble() * 5 : (20 + random.NextDouble() * 40) * pace);
             if (now < nextWander) return;
-            nextWander = now + (45 + random.NextDouble() * 75) * pace;
+            nextWander = now + (classic ? 15 + random.NextDouble() * 5 : (45 + random.NextDouble() * 75) * pace);
             if (talkState != TalkState.Off) CloseTalk();
-            if (WanderArea().IsEmpty && random.NextDouble() < 0.5 && Blink()) return;
+            if (classic)
+            {
+                double choice = random.NextDouble();
+                if (choice < 0.12 && !preferences.AlwaysMini && !preferences.MiniOnLowBattery)
+                {
+                    GoMini();
+                    classicAutoMiniReturnAt = now + 50 + random.NextDouble() * 60;
+                    return;
+                }
+            }
+            if (classic && random.NextDouble() < 0.18 && PeekFromEdge()) return;
+            if (!classic && WanderArea().IsEmpty && random.NextDouble() < 0.5 && Blink()) return;
             Wander();
         }
 
@@ -7517,21 +7664,118 @@ namespace CapriDesktop
 
         private bool Wander()
         {
-            Rectangle area = WanderArea();
+            bool classic = ClassicSkinActive();
+            Rectangle area = classic ? Rectangle.Empty : WanderArea();
             if (!area.IsEmpty)
             {
                 Point beside = WanderPoint(area, preferences.Size, random.NextDouble(), random.NextDouble());
                 Ledge perch = new Ledge { Left = beside.X - 8, Right = beside.X + 8, Y = beside.Y, Floor = true, Free = true, Aside = true };
+                if (ClassicTransitTo(Seated(beside.X, perch.Y), delegate { ClassicHop(perch, beside.X); })) return true;
+                if (classic) { ClassicHop(perch, beside.X); return true; }
                 GlitchOut(delegate { Hop(perch, beside.X); }, false);
                 return true;
             }
-            System.Collections.Generic.List<Ledge> spots = Spots();
+            System.Collections.Generic.List<Ledge> spots = classic ? ClassicSpots() : Spots();
             if (spots.Count == 0) return false;
-            Ledge spot = WanderSpot(spots, preferences.Size, random.NextDouble());
-            int margin = preferences.Size / 4;
-            int x = spot.Left + margin + random.Next(Math.Max(1, spot.Right - spot.Left - 2 * margin));
+            Ledge spot;
+            int x;
+            if (classic) spot = ClassicWanderSpot(spots, out x);
+            else
+            {
+                spot = WanderSpot(spots, preferences.Size, random.NextDouble());
+                int margin = preferences.Size / 4;
+                x = spot.Left + margin + random.Next(Math.Max(1, spot.Right - spot.Left - 2 * margin));
+            }
+            if (ClassicTransitTo(Seated(x, spot.Y), delegate { ClassicHop(spot, x); })) return true;
+            if (classic) { ClassicHop(spot, x); return true; }
             GlitchOut(delegate { Hop(spot, x); }, false);
             return seat == spot;
+        }
+
+        private void ClassicHop(Ledge spot, int x)
+        {
+            lying = false;
+            hanging = false;
+            walking = false;
+            seat = null;
+            anchor = Seated(x, spot.Y);
+            Land(spot, false);
+            frames.Start();
+        }
+
+        private System.Collections.Generic.List<Ledge> ClassicSpots()
+        {
+            System.Collections.Generic.List<Ledge> spots = new System.Collections.Generic.List<Ledge>();
+            int room = Headroom();
+            foreach (Ledge ledge in Around())
+            {
+                if (ledge.Icon.IsEmpty ? ledge.Right - ledge.Left < preferences.Size / 2 : ledge.Icon.Width < 8) continue;
+                if (seat != null && ledge.Window == seat.Window && ledge.Floor == seat.Floor && ledge.Icon == seat.Icon) continue;
+                if (ledge.Y - room < Screen.FromPoint(new Point(ledge.Left, ledge.Y)).Bounds.Top) continue;
+                spots.Add(ledge);
+            }
+            return spots;
+        }
+
+        private Ledge ClassicWanderSpot(System.Collections.Generic.List<Ledge> spots, out int x)
+        {
+            System.Collections.Generic.List<Ledge> windows = new System.Collections.Generic.List<Ledge>();
+            System.Collections.Generic.List<Ledge> iconsAt = new System.Collections.Generic.List<Ledge>();
+            System.Collections.Generic.List<Ledge> floors = new System.Collections.Generic.List<Ledge>();
+            foreach (Ledge ledge in spots)
+                if (!ledge.Icon.IsEmpty) iconsAt.Add(ledge);
+                else if (ledge.Floor) floors.Add(ledge);
+                else windows.Add(ledge);
+            double weight = (windows.Count > 0 ? 0.6 : 0) + (iconsAt.Count > 0 ? 0.2 : 0) + (floors.Count > 0 ? 0.2 : 0);
+            double pick = random.NextDouble() * weight;
+            System.Collections.Generic.List<Ledge> chosen = windows.Count > 0 && pick < 0.6 ? windows : null;
+            if (chosen == null)
+            {
+                pick -= windows.Count > 0 ? 0.6 : 0;
+                if (iconsAt.Count > 0 && pick < 0.2) chosen = iconsAt;
+                else { pick -= iconsAt.Count > 0 ? 0.2 : 0; chosen = floors.Count > 0 ? floors : windows.Count > 0 ? windows : iconsAt; }
+            }
+            Ledge spot = chosen[random.Next(chosen.Count)];
+            int low, high;
+            if (!spot.Icon.IsEmpty) { low = spot.Icon.Left + 4; high = Math.Max(low + 1, spot.Icon.Right - 4); }
+            else
+            {
+                Rectangle work = Screen.FromPoint(new Point((spot.Left + spot.Right) / 2, spot.Y - 5)).WorkingArea;
+                low = Math.Max(spot.Left, work.Left) + (int)(preferences.Size * 0.3f);
+                high = Math.Min(spot.Right, work.Right) - (int)(preferences.Size * 0.45f);
+                if (high <= low) { low = spot.Left + preferences.Size / 4; high = Math.Max(low + 1, spot.Right - preferences.Size / 4); }
+            }
+            x = low + random.Next(Math.Max(1, high - low));
+            return spot;
+        }
+
+        private bool ClassicTransitTo(Point to, Action arriving)
+        {
+            if (!ClassicSkinActive() || classicTraveling || frame == null || hidden || quitting || !IsHandleCreated) return false;
+            Point from = anchor;
+            classicTraveling = true;
+            frames.Stop();
+            EndWalk();
+            if (!classicTransit.Play(new Bitmap(frame), from, to, SystemInformation.VirtualScreen, preferences.Size, delegate
+            {
+                classicTraveling = false;
+                if (IsDisposed || quitting) return;
+                if (arriving != null) arriving();
+                Location = anchor;
+                Show();
+                BringToFront();
+                RenderFrame();
+            }))
+            {
+                classicTraveling = false;
+                frames.Start();
+                return false;
+            }
+            seat = null;
+            lying = false;
+            hanging = falling = walking = false;
+            Hide();
+            return true;
         }
 
         private Rectangle WanderArea()
@@ -13631,7 +13875,7 @@ namespace CapriDesktop
                 return;
             }
             if (!preferences.Motion && !riding && seat == null && !falling && clip != glitch && clip != dangle && clip != wake && !Asleep) Play(idle);
-            if ((exploring || preferences.Motion || riding || seat != null || falling || Sulking || clip != idle || speech != null || talkState != TalkState.Off) && !hidden) frames.Start(); else frames.Stop();
+            if ((exploring || preferences.Motion || riding || seat != null || falling || edgePeeking || Sulking || clip != idle || speech != null || talkState != TalkState.Off) && !hidden) frames.Start(); else frames.Stop();
             RenderFrame();
         }
 
@@ -13714,7 +13958,7 @@ namespace CapriDesktop
         private bool BodyChanged(double now, Clip shown, int cell, int talk)
         {
             return frame == null || frame.Size != Size || shown != drawnClip || Art(shown) != drawnArt || cell != drawnCell || talk != drawnMouth || perchMix != drawnMix
-                || anchor != drawnAt || facingLeft != drawnFacing || leanAngle != drawnLean || Turn() + Sway(now) != drawnTurn || preferences.Motion != drawnMotion || preferences.Hologram != drawnHologram
+                || anchor != drawnAt || facingLeft != drawnFacing || edgePeeking || leanAngle != drawnLean || Turn() + Sway(now) != drawnTurn || preferences.Motion != drawnMotion || preferences.Hologram != drawnHologram
                 || Calm != drawnSettled || (veiled || now < veilUntil) != drawnVeil
                 || (preferences.Motion && (walking || clip == dance || clip == perchDance || drawnNotes || notes.Exists(note => now - note.Born < NoteLife)))
                 // Her breathing is slower than her art, so a step too small to see isn't worth a paint.
@@ -13875,7 +14119,7 @@ namespace CapriDesktop
                 graphics.TranslateTransform(-hipX, -hipY);
             }
             graphics.TranslateTransform(Width / 2f, Height / 2f + breathe + HuskDip(now));
-            graphics.RotateTransform(tilt + (float)leanAngle + Turn() + HuskTurn(now));
+            graphics.RotateTransform((edgePeeking ? edgePeekAngle : 0) + tilt + (float)leanAngle + Turn() + HuskTurn(now));
             if (facingLeft) graphics.ScaleTransform(-1, 1);
             Bitmap art = Art(shown), strip = tween ?? art;
             int width = art.Width / shown.Count;
@@ -14146,6 +14390,7 @@ namespace CapriDesktop
             mainframe.Close();
             tear.Close();
             shatter.Close();
+            classicTransit.Close();
             takeover.Close();
             taskPanel.Close();
             tray.Visible = false;

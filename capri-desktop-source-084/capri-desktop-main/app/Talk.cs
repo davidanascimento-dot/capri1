@@ -1772,6 +1772,146 @@ namespace CapriDesktop
         }
     }
 
+    // Capri Classic's original walk wasn't a vanish-and-pop: her sampled pixels streamed in one arc and rebuilt her at the
+    // destination. Keep that movement tied to the Classic skin while the other skins use Desktop's shatter-and-hop.
+    internal sealed class ClassicTransit : Overlay
+    {
+        private sealed class Pixel
+        {
+            internal float X1, Y1, X2, Y2, C1X, C1Y, C2X, C2Y, Delay, Duration, Size;
+            internal Color Colour;
+        }
+
+        private const double Travel = 0.9, Spread = 0.5;
+        private readonly Timer ticks = new Timer();
+        private readonly System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+        private readonly Random random = new Random();
+        private readonly List<Pixel> pixels = new List<Pixel>();
+        private Bitmap art;
+        private Rectangle area;
+        private Action arrived;
+        private double duration;
+        private float scale;
+
+        internal ClassicTransit() : base("Capri Classic movement")
+        {
+            ClickThrough = true;
+            ticks.Interval = 33;
+            ticks.Tick += delegate { Step(); };
+        }
+
+        internal bool Busy { get { return ticks.Enabled; } }
+
+        internal bool Play(Bitmap picture, Point from, Point to, Rectangle screens, int size, Action onArrived)
+        {
+            Stop();
+            if (picture == null) return false;
+            Rectangle route = Rectangle.Union(new Rectangle(from, picture.Size), new Rectangle(to, picture.Size));
+            area = Rectangle.Intersect(Shatter.Room(route), screens);
+            if (area.Width < 8 || area.Height < 8) { picture.Dispose(); return false; }
+            art = picture;
+            scale = Math.Max(0.25f, size / 240f);
+            arrived = onArrived;
+            MakePixels(from, to);
+            if (pixels.Count < 10) { Stop(); return false; }
+            duration = Spread + Travel * 1.08;
+            watch.Restart();
+            Step();
+            ticks.Start();
+            return true;
+        }
+
+        private void MakePixels(Point from, Point to)
+        {
+            pixels.Clear();
+            int step = Math.Max(4, (int)Math.Round(6.5 * scale));
+            float left = art.Width, right = 0;
+            for (int y = step / 2; y < art.Height; y += step)
+                for (int x = step / 2; x < art.Width; x += step)
+                {
+                    Color colour = art.GetPixel(x, y);
+                    if (colour.A < 120) continue;
+                    left = Math.Min(left, x);
+                    right = Math.Max(right, x);
+                    Pixel pixel = new Pixel { X1 = x, Y1 = y, X2 = x, Y2 = y, Size = Math.Max(2, step * 0.55f + (float)random.NextDouble() * step * 0.4f), Colour = Color.FromArgb(colour.R, colour.G, colour.B) };
+                    pixels.Add(pixel);
+                }
+            if (pixels.Count == 0) return;
+            float span = Math.Max(1, right - left), sourceMiddle = (left + right) / 2, targetMiddle = to.X - from.X + sourceMiddle;
+            float arch = Math.Min(320, 90 + 0.25f * (float)Math.Sqrt((to.X - from.X) * (to.X - from.X) + (to.Y - from.Y) * (to.Y - from.Y))) * scale;
+            float lift = random.Next(2) == 0 ? -1 : 1;
+            foreach (Pixel pixel in pixels)
+            {
+                float near = targetMiddle >= sourceMiddle ? (right - pixel.X1) / span : (pixel.X1 - left) / span;
+                pixel.X1 += from.X - area.Left;
+                pixel.Y1 += from.Y - area.Top;
+                pixel.X2 += to.X - area.Left;
+                pixel.Y2 += to.Y - area.Top;
+                pixel.C1X = (pixel.X1 + pixel.X2) / 2 + (float)(random.NextDouble() * 36 - 18) * scale;
+                pixel.C1Y = pixel.Y1 - arch + (float)(random.NextDouble() * 50 - 25) * scale;
+                pixel.C2X = pixel.X2 + lift * (50 + (float)(random.NextDouble() * 30 - 15)) * scale;
+                pixel.C2Y = pixel.Y2 - arch * 1.1f + (float)(random.NextDouble() * 50 - 25) * scale;
+                pixel.Delay = (float)(Spread * near * 0.85 + random.NextDouble() * Spread * 0.15);
+                pixel.Duration = (float)(Travel * (0.95 + random.NextDouble() * 0.13));
+            }
+        }
+
+        private void Step()
+        {
+            double now = watch.Elapsed.TotalSeconds;
+            if (art == null || now >= duration)
+            {
+                Action done = arrived;
+                Stop();
+                if (done != null) done();
+                return;
+            }
+            Bitmap image = new Bitmap(area.Width, area.Height, PixelFormat.Format32bppPArgb);
+            using (Graphics graphics = Graphics.FromImage(image))
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                foreach (Pixel pixel in pixels)
+                {
+                    double q = (now - pixel.Delay) / pixel.Duration;
+                    if (q <= 0) continue;
+                    q = Math.Min(1, q);
+                    double u = 0.5 - 0.5 * Math.Cos(Math.PI * q), before = 0.5 - 0.5 * Math.Cos(Math.PI * Math.Max(0, q - 0.06));
+                    PointF at = Curve(pixel, u), prior = Curve(pixel, before);
+                    float x = at.X, y = at.Y;
+                    int alpha = (int)(230 * (1 - Math.Max(0, q - 0.94) / 0.06));
+                    if (alpha <= 0) continue;
+                    using (Pen trail = new Pen(Color.FromArgb(Math.Min(130, alpha), pixel.Colour), Math.Max(1, pixel.Size * 0.45f)))
+                        graphics.DrawLine(trail, prior.X, prior.Y, x, y);
+                    using (Brush dot = new SolidBrush(Color.FromArgb(alpha, pixel.Colour)))
+                        graphics.FillRectangle(dot, x - pixel.Size / 2, y - pixel.Size / 2, pixel.Size, pixel.Size);
+                }
+            }
+            Present(image, area.Location);
+        }
+
+        private static PointF Curve(Pixel pixel, double u)
+        {
+            double v = 1 - u;
+            return new PointF((float)(v * v * v * pixel.X1 + 3 * v * v * u * pixel.C1X + 3 * v * u * u * pixel.C2X + u * u * u * pixel.X2),
+                (float)(v * v * v * pixel.Y1 + 3 * v * v * u * pixel.C1Y + 3 * v * u * u * pixel.C2Y + u * u * u * pixel.Y2));
+        }
+
+        internal void Stop()
+        {
+            ticks.Stop();
+            if (Visible) Hide();
+            if (art != null) { art.Dispose(); art = null; }
+            pixels.Clear();
+            arrived = null;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { Stop(); ticks.Dispose(); }
+            base.Dispose(disposing);
+        }
+    }
+
     internal sealed class Takeover : Overlay
     {
         internal const double FaceAt = 0.12;

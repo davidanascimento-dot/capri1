@@ -262,7 +262,16 @@ namespace CapriDesktop
         {
             Clip.ReloadAll();
             drawnClip = null;
-            if (IsHandleCreated && !IsDisposed) RenderFrame();
+            if (IsHandleCreated && !IsDisposed)
+            {
+                if (!ClassicSkinActive())
+                {
+                    if (classicAutoMiniReturnAt >= 0 && miniMode && !preferences.AlwaysMini) ReturnFromMini(MiniFloor());
+                    else classicAutoMiniReturnAt = -1;
+                }
+                if (preferences.Wander) nextWander = clock.Elapsed.TotalSeconds + 3;
+                RenderFrame();
+            }
         }
 
         private void CheckSkins(List<string> checks, string output)
