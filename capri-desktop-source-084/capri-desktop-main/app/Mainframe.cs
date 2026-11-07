@@ -585,10 +585,11 @@ namespace CapriDesktop
             support.Heart = true;
             support.AccessibleName = "Support Capri: opens Lachy's Ko-fi in your browser";
             // Her version sits where Mods was, beside Support, now Mods is up by Settings.
-            build = Lower(Caption("v" + version, 196, 183 + v, small, Faint));
+            build = Lower(Caption("v" + version + " FAN", 196, 183 + v, small, Faint));
             build.AutoSize = false;
             build.TextAlign = ContentAlignment.MiddleRight;
             build.Bounds = new Rectangle(196, 183 + v, 66, 18);
+            build.AccessibleName = "Unofficial fan-modified build " + version + "; see the project README for references and changes";
             showHide = Lower(Make("Ocultar Capri", 28, 206 + v, 104, 28, delegate { capri.ToggleHidden(); }));
             Lower(Make("Trazer para cá", 140, 206 + v, 104, 28, delegate { capri.BringHere(); }));
             perch = Lower(Make("Seguir cursor", 252, 206 + v, 104, 28, delegate { capri.TogglePerch(); }));

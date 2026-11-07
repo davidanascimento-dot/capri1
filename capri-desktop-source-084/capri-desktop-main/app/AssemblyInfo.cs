@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Capri")]
-[assembly: AssemblyDescription("An unofficial, silent desktop companion")]
-[assembly: AssemblyCompany("Capri fan project")]
-[assembly: AssemblyProduct("Capri")]
+[assembly: AssemblyTitle("Capri Fan Build")]
+[assembly: AssemblyDescription("Unofficial fan-modified Capri Desktop build 0.9.5")]
+[assembly: AssemblyCompany("Independent Capri fan project")]
+[assembly: AssemblyProduct("Capri Fan Build")]
 [assembly: AssemblyCopyright("Copyright 2026 Lachy")]
-[assembly: AssemblyVersion("0.8.4")]
-[assembly: AssemblyFileVersion("0.8.4")]
+[assembly: AssemblyVersion("0.9.5")]
+[assembly: AssemblyFileVersion("0.9.5")]
 [assembly: ComVisible(false)]

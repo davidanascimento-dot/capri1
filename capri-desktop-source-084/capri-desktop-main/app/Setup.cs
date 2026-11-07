@@ -493,7 +493,7 @@ namespace CapriSetup
         internal SetupWindow(bool uninstall)
         {
             removing = uninstall;
-            Text = removing ? "Remove Capri" : "Install Capri";
+            Text = removing ? "Remove Capri Fan Build" : "Install Capri Fan Build 0.9.5";
             FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             MinimizeBox = true;
@@ -516,7 +516,7 @@ namespace CapriSetup
             chip.BackColor = Color.Transparent;
             using (Stream image = Assembly.GetExecutingAssembly().GetManifestResourceStream("Capri.Chip.png")) if (image != null) using (Bitmap loaded = new Bitmap(image)) chip.Image = new Bitmap(loaded);
             Controls.Add(chip);
-            LabelAt(removing ? "Remove the app and its shortcuts for this Windows user.\nQuit Capri from the tray before continuing." : "Right-click for her menu.", 34, 198, 610, 50, Neon.Type(11f), Neon.Faint);
+            LabelAt(removing ? "Remove the app and its shortcuts for this Windows user.\nQuit Capri from the tray before continuing." : "Fan-modified build 0.9.5, based on Capri Desktop.\nReferences and changes from the originals: see this project's README.", 34, 198, 610, 50, Neon.Type(11f), Neon.Faint);
             section = LabelAt("OPTIONS", 34, 254, 400, 20, Neon.Type(10f, true), Neon.White);
             section.Visible = !removing;
             desktop = new Tick();

@@ -2,7 +2,7 @@
 
 Uma adaptação pessoal da Capri para Windows, reunindo a presença animada da personagem na área de trabalho com recursos de conversa, movimento, aparência e integração com ferramentas de IA. A proposta é manter as funções úteis das versões de referência e organizá-las em uma experiência só.
 
-> Este repositório é o espaço do projeto **capri1**. O código-fonte da versão fusionada está em [`capri-desktop-source-084/capri-desktop-main`](capri-desktop-source-084/capri-desktop-main/); ainda não há uma release própria publicada aqui.
+> **Capri Fan Build 0.9.5** é uma modificação independente feita por fã, baseada principalmente no Capri Desktop. Não é uma versão oficial nem é endossada pelos autores ou titulares da Capri.
 
 ## Galeria visual por repositório
 
@@ -111,11 +111,22 @@ Seleção de imagens do [projeto Capri Room VR](https://github.com/fadievr/capri
 
 ## Download para Windows
 
-[![Baixar Capri para Windows](https://img.shields.io/badge/Windows-baixar%20Capri-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-Setup.exe)
+[![Baixar Capri Fan Build 0.9.5 para Windows](https://img.shields.io/badge/Windows-baixar%20Capri%200.9.5-ff2a6d?style=for-the-badge&logo=windows)](https://github.com/davidanascimento-dot/capri1/releases/latest/download/Capri-Setup.exe)
 
-O botão baixa o instalador da **release pública mais recente do Capri Desktop upstream**. Ele não é um pacote da fusão personalizada deste repositório. A build personalizada ainda não tem release pública; quando ela for publicada, este link poderá apontar para o instalador próprio.
+O botão baixa o instalador desta modificação de fã. O executável portátil **[Capri.exe](https://github.com/davidanascimento-dot/capri1/releases/latest/download/Capri.exe)** também está disponível na release.
 
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
+
+## O que mudou em relação às referências
+
+| Referência | Como esta build se relaciona | Alterações nesta edição |
+| --- | --- | --- |
+| [Capri Desktop para PC](https://github.com/lachydotmcg/capri-desktop) | Base principal da aplicação Windows e de sua interface. | Identificação própria como build de fã, versão 0.9.5, ajustes de publicação e integração de API externa compatível com OpenAI. |
+| [Capri antiga / Capri Rápida](https://github.com/Capri-cmd/capri-ai) | Referência separada para sprites e comportamento clássico; alguns recursos/arquivos selecionados são adaptados pela build desktop. | Preset Groq para configurar endpoint, modelo, chave, campo de limite de tokens, nível de raciocínio e máximo de resposta no painel da API externa. |
+| [Capri Electron / Code-Husk](https://github.com/mochiiwuff/capri-desktop) | Referência de inspiração e integração; não é a base do executável Windows desta release. | Esta release continua sendo o aplicativo desktop C#; recursos não incorporados não são anunciados como parte dela. |
+| [Mods](https://github.com/lachydotmcg/capri-mods) e [Capri Room VR](https://github.com/fadievr/capri-BD-VR) | Projetos relacionados e referências de personalização/realidade mista, não versões empacotadas nesta build para PC. | A lista de recursos instalados continua limitada ao que está presente no executável e no instalador desta release. |
+
+As referências acima não indicam que todo o código ou os assets desses projetos foram copiados. Consulte os créditos e licenças de cada origem antes de redistribuir ou reutilizar materiais.
 
 ## O que a Capri reúne
 
@@ -181,5 +192,5 @@ O comportamento depende das opções ativadas. Um cérebro local pode processar 
 ## Estado da publicação
 
 - O código-fonte da fusão está em `capri-desktop-source-084/capri-desktop-main`.
-- Nenhum instalador, executável, arquivo temporário ou build local foi adicionado ao repositório.
-- O link de download acima aponta para a release upstream pública enquanto não houver uma release própria da fusão.
+- O instalador e o executável portátil são distribuídos como arquivos da release `v0.9.5`, fora do histórico Git.
+- O instalador e as propriedades do executável identificam a edição como uma modificação independente feita por fã.
