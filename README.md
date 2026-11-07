@@ -65,19 +65,24 @@ Algumas integrações dependem de configuração e compatibilidade do Windows, d
 4. Use **Passear pela tela** para ligar ou pausar o passeio; no modo mini, o mesmo controle fica no menu de contexto dela.
 5. Abra **Ajustes**, **Aparência** e **Tamanho** para personalizar os recursos disponíveis.
 
-## Referências do projeto
+## Repositórios Capri consultados
 
-Os repositórios abaixo foram consultados como referências de código, interface, recursos e organização. Eles são projetos independentes; os créditos e termos de cada origem continuam valendo.
+Estes são os projetos Capri identificados nas fontes locais e consultados durante a adaptação. Eles têm autores, versões e licenças próprias; as referências não significam que todo o código ou conteúdo foi incorporado.
 
-| Projeto | Referência |
+| Projeto | Para que serve como referência |
 | --- | --- |
-| Este projeto | [davidanascimento-dot/capri1](https://github.com/davidanascimento-dot/capri1) |
-| Capri Desktop — interface e companhia para Windows | [lachydotmcg/capri-desktop](https://github.com/lachydotmcg/capri-desktop) |
-| Mods e skins para Capri | [lachydotmcg/capri-mods](https://github.com/lachydotmcg/capri-mods) |
-| Capri para desktop com foco em Claude Code/Codex | [mochiiwuff/capri-desktop](https://github.com/mochiiwuff/capri-desktop) |
-| Capri AI — implementação Python e recursos clássicos | [Capri-cmd/capri-ai](https://github.com/Capri-cmd/capri-ai) |
+| **Esta Capri** — [davidanascimento-dot/capri1](https://github.com/davidanascimento-dot/capri1) | README e apresentação desta adaptação. |
+| **Capri antiga / Capri Rápida** — [Capri-cmd/capri-ai](https://github.com/Capri-cmd/capri-ai) | Código Python local da versão clássica; referência para a introdução, sprites, passeio, modo mini, menu e comportamento na área de trabalho. O endereço antigo `Capri-AI` redireciona para este repositório. |
+| **Capri Desktop para PC** — [lachydotmcg/capri-desktop](https://github.com/lachydotmcg/capri-desktop) | Versão Desktop em C# usada como base de funcionalidades e interface para Windows. |
+| **Mods da Capri** — [lachydotmcg/capri-mods](https://github.com/lachydotmcg/capri-mods) | Catálogo de mods, skins e exemplos de personalização. |
+| **Capri Desktop / Code-Husk** — [mochiiwuff/capri-desktop](https://github.com/mochiiwuff/capri-desktop) | Projeto Electron consultado para ideias de integração com assistentes de programação e presença da personagem durante tarefas. |
+| **Capri Room VR** — [fadievr/capri-BD-VR](https://github.com/fadievr/capri-BD-VR) | Versão de realidade mista para Quest; projeto relacionado, não parte da versão de PC. |
 
-As referências servem para identificar a origem de ideias e componentes. Esta página não afirma que os projetos listados sejam mantidos por este repositório ou que todo o conteúdo deles tenha sido incorporado.
+### Ferramenta auxiliar
+
+[morluto/rea](https://github.com/morluto/rea) é uma ferramenta de engenharia reversa usada como apoio para inspecionar binários. Não é um projeto Capri nem uma dependência do aplicativo.
+
+Também existe uma versão Android local no workspace, com recursos próprios para celular. Ela ainda não tem um repositório remoto identificado, por isso não há um link GitHub para incluir nesta lista.
 
 ## Créditos, licença e uso
 
