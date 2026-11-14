@@ -119,6 +119,12 @@ Na 0.9.8, a skin Capri Classic usa o passeio em fluxo de pixels da versão antig
 
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
 
+## Download para Android
+
+[![Baixar Capri Mobile para Android](https://img.shields.io/badge/Android-baixar%20Capri%20Mobile-3ddc84?style=for-the-badge&logo=android)](https://github.com/davidanascimento-dot/capri1/tree/main/downloads/mobile_capri)
+
+Acesse a pasta **downloads/mobile_capri** para encontrar os arquivos disponibilizados da versão mobile. Abra o arquivo APK correspondente para baixar e instalar no seu dispositivo Android. Confira as informações e instruções incluídas na pasta antes da instalação.
+
 ## O que mudou em relação às referências
 
 | Referência | Como esta build se relaciona | Alterações nesta edição |
@@ -177,7 +183,7 @@ Estes são os projetos Capri identificados nas fontes locais e consultados duran
 
 [morluto/rea](https://github.com/morluto/rea) é uma ferramenta de engenharia reversa usada como apoio para inspecionar binários. Não é um projeto Capri nem uma dependência do aplicativo.
 
-Também existe uma versão Android local no workspace, com recursos próprios para celular. Ela ainda não tem um repositório remoto identificado, por isso não há um link GitHub para incluir nesta lista.
+A versão Android da Capri também está disponível na pasta de [downloads para mobile](https://github.com/davidanascimento-dot/capri1/tree/main/downloads/mobile_capri), com arquivos próprios para instalação em dispositivos Android.
 
 ## Créditos, licença e uso
 
