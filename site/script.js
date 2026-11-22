@@ -514,3 +514,17 @@
   applyProfileUI();
   loadComments();
 })();
+
+
+// Saudação por horário
+(() => {
+  const el = document.getElementById('hero-greeting');
+  if (!el) return;
+  const h = new Date().getHours();
+  let msg = 'Boa noite, choom!';
+  if (h >= 5 && h < 12) msg = 'Bom dia, choom!';
+  else if (h >= 12 && h < 18) msg = 'Boa tarde, choom!';
+  el.textContent = msg;
+  const img = document.getElementById('hero-greeting-img');
+  if (img) img.alt = 'Capri falando ' + msg;
+})();
