@@ -36,6 +36,7 @@
         <a href="index.html#recursos">Recursos</a>
         <a href="index.html#galeria">Galeria</a>
         <a href="tutoriais.html" class="active-link">Tutoriais</a>
+        <a href="#feedback">Feedback</a>
         <a href="index.html#download">Download</a>
         <a class="btn btn-sm btn-ghost" href="https://github.com/davidanascimento-dot/capri1" target="_blank" rel="noopener noreferrer">GitHub</a>
       </nav>
@@ -98,6 +99,62 @@
         </div>
       </div>
     </section>
+    <section class="section" id="feedback">
+      <div class="container">
+        <p class="eyebrow center">Comunidade</p>
+        <h2 class="section-title">Feedback <span class="accent">e dúvidas</span></h2>
+        <p class="section-sub">Tem alguma dúvida sobre a Capri? Deixe seu comentário aqui.</p>
+
+        <div class="feedback-shell">
+          <div class="feedback-profile" id="feedback-profile">
+            <h3>Seu perfil</h3>
+            <p class="feedback-hint">Na primeira vez, escolha um nome e uma foto, ou entre como visitante.</p>
+            <div class="feedback-profile-row">
+              <label class="feedback-avatar-pick" for="feedback-avatar-input">
+                <img id="feedback-avatar-preview" src="assets/icon_capri.webp" alt="Sua foto" class="feedback-avatar-preview">
+                <span>Escolher foto</span>
+              </label>
+              <input id="feedback-avatar-input" type="file" accept="image/*" hidden>
+              <div class="feedback-profile-fields">
+                <label class="feedback-label" for="feedback-name">Nome</label>
+                <input id="feedback-name" class="feedback-input" type="text" maxlength="40" placeholder="Seu nome">
+                <div class="feedback-profile-actions">
+                  <button id="feedback-save-profile" class="btn btn-primary btn-sm" type="button">Salvar perfil</button>
+                  <button id="feedback-visitor" class="btn btn-ghost btn-sm" type="button">Entrar como visitante</button>
+                </div>
+              </div>
+            </div>
+            <p id="feedback-profile-status" class="feedback-status"></p>
+          </div>
+
+          <div class="feedback-compose">
+            <div class="feedback-compose-head">
+              <div class="feedback-current-user">
+                <img id="feedback-current-avatar" src="assets/icon_capri.webp" alt="Avatar" class="feedback-current-avatar">
+                <div>
+                  <strong id="feedback-current-name">Visitante</strong>
+                  <p>Envie sua dúvida sobre o sistema Capri</p>
+                </div>
+              </div>
+              <button id="feedback-edit-profile" class="btn btn-ghost btn-sm" type="button">Trocar perfil</button>
+            </div>
+            <textarea id="feedback-message" class="feedback-input feedback-textarea" rows="4" maxlength="500" placeholder="Escreva sua dúvida ou comentário..."></textarea>
+            <div class="feedback-compose-actions">
+              <span id="feedback-count">0/500</span>
+              <button id="feedback-send" class="btn btn-primary btn-sm" type="button">Enviar</button>
+            </div>
+            <p id="feedback-send-status" class="feedback-status"></p>
+          </div>
+
+          <div class="feedback-list-wrap">
+            <h3>Dúvidas da comunidade</h3>
+            <div id="feedback-list" class="feedback-list">
+              <p class="feedback-empty">Carregando comentários...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -114,6 +171,7 @@
   </footer>
 
   <script async src="https://www.tiktok.com/embed.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

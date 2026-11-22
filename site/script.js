@@ -297,3 +297,220 @@
     }, { once: true });
   });
 })();
+
+
+// Feedback / dúvidas (Supabase)
+(() => {
+  const root = document.getElementById('feedback');
+  if (!root) return;
+
+  const SUPABASE_URL = 'https://uxuagcqifqkunibazuor.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_fQUVsFFRbE-ZjqASiBjTiw_xlncw-r6';
+  const TABLE = 'feedback';
+  const PROFILE_KEY = 'capri_feedback_profile_v1';
+  const DEFAULT_AVATAR = 'assets/icon_capri.webp';
+
+  const el = {
+    profile: document.getElementById('feedback-profile'),
+    avatarInput: document.getElementById('feedback-avatar-input'),
+    avatarPreview: document.getElementById('feedback-avatar-preview'),
+    name: document.getElementById('feedback-name'),
+    save: document.getElementById('feedback-save-profile'),
+    visitor: document.getElementById('feedback-visitor'),
+    profileStatus: document.getElementById('feedback-profile-status'),
+    compose: document.querySelector('.feedback-compose'),
+    currentAvatar: document.getElementById('feedback-current-avatar'),
+    currentName: document.getElementById('feedback-current-name'),
+    editProfile: document.getElementById('feedback-edit-profile'),
+    message: document.getElementById('feedback-message'),
+    count: document.getElementById('feedback-count'),
+    send: document.getElementById('feedback-send'),
+    sendStatus: document.getElementById('feedback-send-status'),
+    list: document.getElementById('feedback-list'),
+  };
+
+  const sb = window.supabase && window.supabase.createClient
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+  let profile = loadProfile();
+  let avatarDraft = profile?.avatar || DEFAULT_AVATAR;
+
+  function loadProfile() {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (!raw) return null;
+      const p = JSON.parse(raw);
+      if (!p || typeof p.name !== 'string') return null;
+      return { name: p.name, avatar: p.avatar || DEFAULT_AVATAR, visitor: !!p.visitor };
+    } catch { return null; }
+  }
+  function saveProfile(p) {
+    profile = p;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  }
+  function setStatus(node, msg, type) {
+    if (!node) return;
+    node.textContent = msg || '';
+    node.className = 'feedback-status' + (type ? ' ' + type : '');
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtTime(iso) {
+    try {
+      return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    } catch { return ''; }
+  }
+
+  function applyProfileUI() {
+    const has = !!profile;
+    if (el.profile) el.profile.style.display = has ? 'none' : 'block';
+    if (el.compose) el.compose.classList.toggle('locked', !has);
+    if (el.currentName) el.currentName.textContent = has ? profile.name : 'Visitante';
+    if (el.currentAvatar) el.currentAvatar.src = has ? (profile.avatar || DEFAULT_AVATAR) : DEFAULT_AVATAR;
+    if (el.name && !has) el.name.value = '';
+    if (el.avatarPreview) el.avatarPreview.src = has ? (profile.avatar || DEFAULT_AVATAR) : DEFAULT_AVATAR;
+  }
+
+  function readAvatarFile(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) return resolve(null);
+      if (!file.type.startsWith('image/')) return reject(new Error('Escolha uma imagem válida.'));
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Imagem inválida.'));
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const size = 128;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const ratio = Math.max(size / img.width, size / img.height);
+          const w = img.width * ratio, h = img.height * ratio;
+          ctx.fillStyle = '#111';
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadComments() {
+    if (!el.list) return;
+    if (!sb) {
+      el.list.innerHTML = '<p class="feedback-empty">Supabase não carregou. Recarregue a página.</p>';
+      return;
+    }
+    const { data, error } = await sb.from(TABLE).select('id,name,avatar,message,created_at').order('created_at', { ascending: false }).limit(50);
+    if (error) {
+      console.warn('Feedback load error', error);
+      el.list.innerHTML = '<p class="feedback-empty">Não foi possível carregar os comentários agora. Verifique se a tabela de feedback foi criada no Supabase.</p>';
+      return;
+    }
+    if (!data || !data.length) {
+      el.list.innerHTML = '<p class="feedback-empty">Nenhuma dúvida ainda. Seja o primeiro a comentar!</p>';
+      return;
+    }
+    el.list.innerHTML = data.map(item => {
+      const name = escapeHtml(item.name || 'Visitante');
+      const msg = escapeHtml(item.message || '');
+      const avatar = escapeHtml(item.avatar || DEFAULT_AVATAR);
+      const time = fmtTime(item.created_at);
+      return `<article class="feedback-item">
+        <img class="feedback-item-avatar" src="${avatar}" alt="Avatar de ${name}" loading="lazy">
+        <div class="feedback-item-body">
+          <div class="feedback-item-meta">
+            <span class="feedback-item-name">${name}</span>
+            <span class="feedback-item-time">${time}</span>
+          </div>
+          <p class="feedback-item-msg">${msg}</p>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  async function sendComment() {
+    if (!profile) { setStatus(el.sendStatus, 'Crie seu perfil ou entre como visitante primeiro.', 'error'); return; }
+    if (!sb) { setStatus(el.sendStatus, 'Supabase não carregou.', 'error'); return; }
+    const message = (el.message?.value || '').trim();
+    if (!message) { setStatus(el.sendStatus, 'Escreva uma dúvida ou comentário.', 'error'); return; }
+    el.send.disabled = true;
+    setStatus(el.sendStatus, 'Enviando...', '');
+    const payload = {
+      name: profile.name.slice(0, 40),
+      avatar: profile.avatar || DEFAULT_AVATAR,
+      message: message.slice(0, 500),
+    };
+    const { error } = await sb.from(TABLE).insert(payload);
+    el.send.disabled = false;
+    if (error) {
+      console.warn('Feedback send error', error);
+      setStatus(el.sendStatus, 'Não foi possível enviar. Confira se a tabela de feedback existe no Supabase.', 'error');
+      return;
+    }
+    el.message.value = '';
+    if (el.count) el.count.textContent = '0/500';
+    setStatus(el.sendStatus, 'Comentário enviado!', 'ok');
+    loadComments();
+  }
+
+  if (el.avatarInput) {
+    el.avatarInput.addEventListener('change', async () => {
+      const file = el.avatarInput.files && el.avatarInput.files[0];
+      if (!file) return;
+      try {
+        avatarDraft = await readAvatarFile(file);
+        if (el.avatarPreview) el.avatarPreview.src = avatarDraft;
+        setStatus(el.profileStatus, 'Foto carregada.', 'ok');
+      } catch (e) {
+        setStatus(el.profileStatus, e.message || 'Erro ao carregar foto.', 'error');
+      }
+    });
+  }
+
+  if (el.save) {
+    el.save.addEventListener('click', () => {
+      const name = (el.name?.value || '').trim();
+      if (!name) { setStatus(el.profileStatus, 'Digite seu nome ou entre como visitante.', 'error'); return; }
+      saveProfile({ name: name.slice(0, 40), avatar: avatarDraft || DEFAULT_AVATAR, visitor: false });
+      setStatus(el.profileStatus, 'Perfil salvo!', 'ok');
+      applyProfileUI();
+    });
+  }
+
+  if (el.visitor) {
+    el.visitor.addEventListener('click', () => {
+      saveProfile({ name: 'Visitante', avatar: DEFAULT_AVATAR, visitor: true });
+      setStatus(el.profileStatus, '', '');
+      applyProfileUI();
+    });
+  }
+
+  if (el.editProfile) {
+    el.editProfile.addEventListener('click', () => {
+      avatarDraft = profile?.avatar || DEFAULT_AVATAR;
+      if (el.profile) el.profile.style.display = 'block';
+      if (el.name) el.name.value = profile?.visitor ? '' : (profile?.name || '');
+      if (el.avatarPreview) el.avatarPreview.src = avatarDraft;
+      if (el.compose) el.compose.classList.add('locked');
+      setStatus(el.profileStatus, 'Edite seu perfil e salve.', '');
+    });
+  }
+
+  if (el.message && el.count) {
+    el.message.addEventListener('input', () => {
+      const len = el.message.value.length;
+      el.count.textContent = len + '/500';
+    });
+  }
+
+  if (el.send) el.send.addEventListener('click', sendComment);
+
+  applyProfileUI();
+  loadComments();
+})();
