@@ -87,7 +87,7 @@ O mosaico reúne as prévias de todos os mods disponíveis no [repositório de m
 <details>
 <summary><b>Capri para Android — telas do projeto móvel local</b></summary>
 
-Capturas da versão Android que está no workspace local. Ela tem interface e limites próprios para celular; o código Android ainda não está publicado neste repositório.
+Capturas da versão Android da Capri Mobile. Ela tem interface e recursos próprios para celular. O APK Capri V2.2 está disponível para download direto neste repositório.
 
 <p align="center">
   <img src="assets/repositories/capri-android/android-chat.png" alt="Conversa com a Capri no Android" height="360">
@@ -118,6 +118,18 @@ O botão baixa o pacote da 0.9.9 em ZIP. **Extraia o ZIP primeiro**: o instalado
 Na 0.9.9, o instalador foi traduzido por completo para português e deixou de ser apagado pelo antivírus. A Capri agora observa como você joga, tenta repetir o que viu olhando para a tela e muda de estratégia quando uma tentativa falha, em vez de repetir o mesmo erro. Também entraram o painel de sistema, as ideias, os mods do Maroraga e os novos sprites de conversa e expressões.
 
 Veja também as [releases do Capri Desktop](https://github.com/lachydotmcg/capri-desktop/releases) e o [código-fonte upstream](https://github.com/lachydotmcg/capri-desktop).
+
+## Download para Android
+
+[![Baixar Capri V2.2 para Android](https://img.shields.io/badge/Android-Baixar%20Capri%20V2.2-3DDC84?style=for-the-badge&logo=android)](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/mobile_capri/Capri-V2.2.apk)
+
+**Versão:** Capri V2.2
+
+Baixe o APK diretamente pelo botão acima ou pelo link abaixo:
+
+[**Baixar Capri-V2.2.apk**](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/mobile_capri/Capri-V2.2.apk)
+
+Depois de baixar, abra o arquivo no dispositivo Android e siga as instruções de instalação exibidas pelo sistema.
 
 ## O que mudou em relação às referências
 
@@ -177,7 +189,7 @@ Estes são os projetos Capri identificados nas fontes locais e consultados duran
 
 [morluto/rea](https://github.com/morluto/rea) é uma ferramenta de engenharia reversa usada como apoio para inspecionar binários. Não é um projeto Capri nem uma dependência do aplicativo.
 
-Também existe uma versão Android local no workspace, com recursos próprios para celular. Ela ainda não tem um repositório remoto identificado, por isso não há um link GitHub para incluir nesta lista.
+A versão Android da Capri está disponível como [Capri V2.2 — download direto do APK](https://github.com/davidanascimento-dot/capri1/raw/refs/heads/main/downloads/mobile_capri/Capri-V2.2.apk), na pasta `downloads/mobile_capri`.
 
 ## Créditos, licença e uso
 
@@ -196,3 +208,4 @@ O comportamento depende das opções ativadas. Um cérebro local pode processar 
 - O código-fonte da fusão está em `capri-desktop-source-084/capri-desktop-main`.
 - O instalador, o executável portátil e seus hashes SHA-256 estão em [`downloads/0.9.9`](downloads/0.9.9/).
 - O instalador e as propriedades do executável identificam a edição como uma modificação independente feita por fã.
+- O APK Capri V2.2 para Android está publicado em `downloads/mobile_capri/Capri-V2.2.apk`.
