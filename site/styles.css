@@ -911,3 +911,36 @@ img { max-width: 100%; height: auto; }
   color: var(--pink);
   text-shadow: 0 0 8px var(--pink);
 }
+
+
+/* Tutoriais TikTok previews */
+.tutorial-category-wide {
+  grid-column: 1 / -1;
+}
+.tiktok-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.tiktok-video-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+}
+.tiktok-video-card .tiktok-embed {
+  margin: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.tutorial-item-inline {
+  max-width: 320px;
+}
+@media (max-width: 1200px) {
+  .tiktok-videos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .tiktok-videos-grid { grid-template-columns: 1fr; }
+  .tutorial-item-inline { max-width: 100%; }
+}
