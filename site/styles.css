@@ -38,7 +38,7 @@ body {
   inset: 0;
   background:
     linear-gradient(180deg, rgba(5,5,8,0.6) 0%, rgba(5,5,8,0.85) 100%),
-    var(--bg-img) var(--bg-pos, center 20%) / cover no-repeat;
+    var(--bg-img) var(--bg-pos, center 20%) / var(--bg-size, cover) no-repeat;
   opacity: 0;
   transform: scale(1.08) translateY(10px);
   filter: blur(8px) contrast(1.2) saturate(1.3);
