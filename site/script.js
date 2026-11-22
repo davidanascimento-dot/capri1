@@ -211,3 +211,39 @@
   if (btn) btn.addEventListener('click', start, { once: true });
   else setTimeout(start, 150);
 })();
+
+
+// Contador Discord
+(() => {
+  const nameEl = document.getElementById('discord-community-name');
+  const membersEl = document.getElementById('discord-member-count');
+  const onlineEl = document.getElementById('discord-online-count');
+  const iconEl = document.getElementById('discord-community-icon');
+  if (!membersEl || !onlineEl) return;
+
+  async function fetchDiscord() {
+    const endpoints = [
+      '/api/discord',
+      'https://discord.com/api/v9/invites/zHmfDrqxmz?with_counts=true'
+    ];
+    for (const url of endpoints) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const members = data.members ?? data.approximate_member_count ?? data.profile?.member_count;
+        const online = data.online ?? data.approximate_presence_count ?? data.profile?.online_count;
+        const name = data.name ?? data.guild?.name;
+        const icon = data.icon ?? (data.guild?.id && data.guild?.icon ? `https://cdn.discordapp.com/icons/${data.guild.id}/${data.guild.icon}.png?size=128` : null);
+        if (typeof members === 'number') membersEl.textContent = members.toLocaleString('pt-BR');
+        if (typeof online === 'number') onlineEl.textContent = online.toLocaleString('pt-BR');
+        if (name && nameEl) nameEl.textContent = name;
+        if (icon && iconEl) iconEl.src = icon;
+        return;
+      } catch (_) {}
+    }
+  }
+
+  fetchDiscord();
+  setInterval(fetchDiscord, 60000);
+})();
