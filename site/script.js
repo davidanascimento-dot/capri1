@@ -59,78 +59,91 @@
   const descEl = document.getElementById('detail-desc');
   if (!cards.length || !img || !nameEl || !roleEl || !descEl) return;
 
+  const fandomEl = document.getElementById('detail-fandom');
   const data = {
     david: {
       name: "David Martinez",
       role: "Protagonista / Mercenário",
       desc: "Jovem que se junta aos mercenários após uma tragédia familiar.",
-      img: "assets/David-Martinez.webp"
+      img: "assets/David-Martinez.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/David_Martinez"
     },
     maine: {
       name: "Maine",
       role: "Líder / Ex-soldado",
       desc: "Líder veterano e ex-soldado.",
-      img: "assets/Maine.webp"
+      img: "assets/Maine.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Maine"
     },
     lucy: {
       name: "Lucy (Lucyna Kushinada)",
       role: "Netrunner",
       desc: "Netrunner misteriosa e interesse amoroso de David.",
-      img: "assets/Lucy.webp"
+      img: "assets/Lucy.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Lucyna_Kushinada"
     },
     rebecca: {
       name: "Rebecca",
       role: "Solo",
       desc: "Solo agressiva e rápida no gatilho.",
-      img: "assets/Rebecca.webp"
+      img: "assets/Rebecca.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Rebecca"
     },
     pilar: {
       name: "Pilar",
       role: "Técnico",
       desc: "Irmão de Rebecca, técnico cômico e grosseiro.",
-      img: "assets/Pilar.webp"
+      img: "assets/Pilar.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Pilar"
     },
     kiwi: {
       name: "Kiwi",
       role: "Netrunner",
       desc: "Netrunner enigmática e sarcástica.",
-      img: "assets/Kiwi.webp"
+      img: "assets/Kiwi.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Kiwi"
     },
     dorio: {
       name: "Dorio",
       role: "Veterana / Braço direito",
       desc: "Braço direito de Maine e veterana da equipe.",
-      img: "assets/Dorio.webp"
+      img: "assets/Dorio.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Dorio_Gunnarsd%C3%B3ttir"
     },
     falco: {
       name: "Falco",
       role: "Condutor nômade",
       desc: "Condutor nômade da equipe.",
-      img: "assets/Falco.webp"
+      img: "assets/Falco.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Falco"
     },
     faraday: {
       name: "Faraday",
       role: "Fixer corporativo",
       desc: "Fixer corporativo que atua como antagonista principal.",
-      img: "assets/Faraday_Infobox_CPEDGE.webp"
+      img: "assets/Faraday_Infobox_CPEDGE.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Faraday"
     },
     doc: {
       name: "Doc (Ripperdoc)",
       role: "Ripperdoc",
       desc: "Cirurgião do mercado negro que fornece implantes ilegais.",
-      img: "assets/Doc_Infobox_CPEDGE.webp"
+      img: "assets/Doc_Infobox_CPEDGE.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Doc"
     },
     gloria: {
       name: "Gloria Martinez",
       role: "Paramédica do Trauma Team",
       desc: "Mãe de David e paramédica do Trauma Team.",
-      img: "assets/Gloria_Infobox_CPEDGE.webp"
+      img: "assets/Gloria_Infobox_CPEDGE.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Gloria_Martinez"
     },
     'adam-smasher': {
       name: "Adam Smasher",
       role: "Ciborgue corporativo",
       desc: "Ciborgue corporativo e antagonista final.",
-      img: "assets/Adam_Smasher_Infobox_CPEDGE.webp"
+      img: "assets/Adam_Smasher_Infobox_CPEDGE.webp",
+      fandom: "https://cyberpunk.fandom.com/wiki/Adam_Smasher"
     },
   };
 
@@ -144,6 +157,10 @@
     nameEl.textContent = d.name;
     roleEl.textContent = d.role;
     descEl.textContent = d.desc;
+    if (fandomEl) {
+      fandomEl.href = d.fandom || '#';
+      fandomEl.style.display = d.fandom ? 'inline-flex' : 'none';
+    }
     cards.forEach(c => c.classList.toggle('active', c.dataset.char === key));
   }
 
