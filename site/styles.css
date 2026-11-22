@@ -904,3 +904,10 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 1020px) {
   .tutorials-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Nav ativo */
+.nav-links a.active-link {
+  color: var(--pink);
+  text-shadow: 0 0 8px var(--pink);
+}
