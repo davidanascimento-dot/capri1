@@ -803,13 +803,13 @@ img { max-width: 100%; height: auto; }
 .hero-video-wrap .tiktok-embed {
   margin: 0 !important;
   width: 100% !important;
-  max-width: 100% !important;
+  max-width: 360px !important;
   min-width: 0 !important;
 }
 @media (max-width: 720px) {
   .hero-video-wrap { padding: 8px; }
+  .hero-video-wrap .tiktok-embed { max-width: 320px !important; }
 }
-
 
 /* Link Fandom */
 .detail-fandom {
