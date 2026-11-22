@@ -273,3 +273,27 @@
   fetchDiscord();
   setInterval(fetchDiscord, 60000);
 })();
+
+
+// TikTok previews: carregar ao clicar
+(() => {
+  const previews = Array.from(document.querySelectorAll('.tiktok-preview[data-video-id][data-video-url]'));
+  if (!previews.length) return;
+  previews.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.videoId;
+      const url = btn.dataset.videoUrl;
+      const card = btn.closest('.tiktok-video-card');
+      if (!card || !id || !url) return;
+      card.innerHTML = `<blockquote class="tiktok-embed" cite="${url}" data-video-id="${id}" style="max-width:605px;min-width:325px;"><section><a target="_blank" href="${url}">Ver no TikTok</a></section></blockquote>`;
+      if (window.tiktokEmbed && window.tiktokEmbed.lib && typeof window.tiktokEmbed.lib.render === 'function') {
+        window.tiktokEmbed.lib.render(card);
+      } else {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.tiktok.com/embed.js';
+        document.body.appendChild(s);
+      }
+    }, { once: true });
+  });
+})();
