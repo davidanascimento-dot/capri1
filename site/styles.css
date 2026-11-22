@@ -1052,3 +1052,18 @@ img { max-width: 100%; height: auto; }
   .creator-avatar-wrap { width: 132px; height: 132px; }
   .creator-sub { margin-left: auto; margin-right: auto; }
 }
+
+
+/* Acessibilidade */
+:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
