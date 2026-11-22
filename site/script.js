@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   const slides = Array.from(document.querySelectorAll('.bg-slide[data-bg]'));
   if (!slides.length) return;
 
@@ -73,7 +73,7 @@
       role: "Líder / Ex-soldado",
       desc: "Líder veterano e ex-soldado.",
       img: "assets/Maine.webp",
-      fandom: "https://cyberpunk.fandom.com/wiki/Maine"
+      fandom: "https://cyberpunk.fandom.com/wiki/Maine_(Edgerunners)"
     },
     lucy: {
       name: "Lucy (Lucyna Kushinada)",
