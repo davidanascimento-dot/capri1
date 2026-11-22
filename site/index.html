@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Baixe a Capri Fan Build 0.9.9 para Windows - sua companheira de desktop com visual Cyberpunk, conversa, movimento e muito mais.">
+  <title>Capri Fan Build 0.9.9 — Download</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Entrada em tela cheia -->
+  <div class="capri-intro" id="capri-intro" aria-hidden="true">
+    <img id="capri-intro-img" src="assets/capri/legacy-intro/1.png" alt="" class="capri-intro-img">
+    <button class="capri-intro-start" id="capri-intro-start" type="button">Clique para entrar</button>
+    <audio id="capri-intro-audio" preload="auto" src="assets/capri/hello-morning.wav"></audio>
+  </div>
+
+  <!-- Fundo animado com troca de imagens -->
+  <div class="bg-stack" aria-hidden="true">
+    <div class="bg-slide active" data-bg="topo" style="--bg-img:url('assets/capri-b61c77f8.webp')"></div>
+    <div class="bg-slide" data-bg="hero2" style="--bg-img:url('assets/original.webp')"></div>
+    <div class="bg-slide" data-bg="recursos" style="--bg-img:url('assets/Falco.webp')"></div>
+    <div class="bg-slide" data-bg="galeria" style="--bg-img:url('assets/Faraday_Infobox_CPEDGE.webp')"></div>
+    <div class="bg-slide" data-bg="galeria2" style="--bg-img:url('assets/Doc_Infobox_CPEDGE.webp')"></div>
+    <div class="bg-slide" data-bg="instalacao" style="--bg-img:url('assets/Gloria_Infobox_CPEDGE.webp')"></div>
+    <div class="bg-slide" data-bg="social" style="--bg-img:url('assets/Adam_Smasher_Infobox_CPEDGE.webp')"></div>
+    <div class="bg-slide" data-bg="footer" style="--bg-img:url('assets/fBLNQdQjOaBlrbK3c1lM80c05Mj-1024x576.webp')"></div>
+  </div>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-a"></div>
+  <div class="bg-glow bg-glow-b"></div>
+
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#topo" aria-label="Capri Fan Build">
+        <span class="brand-mark">C</span>
+        <span class="brand-text">CAPRI <em>FAN BUILD</em></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#recursos">Recursos</a>
+        <a href="#galeria">Galeria</a>
+        <a href="#download">Download</a>
+        <a class="btn btn-sm btn-ghost" href="https://github.com/davidanascimento-dot/capri1" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="topo">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Windows • Versão 0.9.9 • Fan Build</p>
+          <h1>Sua companheira de desktop, <span class="accent">mais viva</span> do que nunca.</h1>
+          <p class="lead">
+            A Capri fica na sua área de trabalho, conversa, reage, passeia pela tela e aprende com você.
+            Esta versão traz instalador em português, correções contra bloqueio do antivírus e melhorias no jeito de jogar junto.
+          </p>
+          <div class="hero-actions" id="download">
+            <a class="btn btn-primary" href="downloads/Capri-Setup.zip" download>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Baixar pacote completo (.zip)
+            </a>
+            <a class="btn btn-ghost" href="downloads/Capri-Setup.exe" download>Baixar instalador (.exe)</a>
+          </div>
+          <div class="hero-subactions">
+            <a class="sub-link" href="downloads/Capri.exe" download>Baixar só o Capri.exe</a>
+            <span class="dot">•</span>
+            <a class="sub-link" href="downloads/SHA256SUMS.txt" download>SHA256SUMS</a>
+            <span class="dot">•</span>
+            <a class="sub-link" href="https://github.com/davidanascimento-dot/capri1" target="_blank" rel="noopener noreferrer">Ver código no GitHub</a>
+          </div>
+          <div class="notice">
+            <strong>Importante:</strong> extraia o ZIP antes de instalar. O instalador e o <code>Capri.exe</code> precisam ficar na mesma pasta.
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><span class="stat-value">0.9.9</span><span class="stat-label">Versão atual</span></div>
+            <div class="stat"><span class="stat-value">PT-BR</span><span class="stat-label">Instalador traduzido</span></div>
+            <div class="stat"><span class="stat-value">Windows</span><span class="stat-label">Plataforma</span></div>
+          </div>
+        </div>
+
+        <div class="hero-visual" data-bg-trigger="hero2">
+          <div class="visual-card">
+            <div class="visual-frame visual-frame-clean">
+              <div class="hero-capri-bubble">Bom dia, choom!</div>
+              <img src="assets/capri/talk.webp" alt="Capri falando Bom dia, choom" class="visual-main visual-main-clean">
+            </div>
+            <div class="visual-strip">
+              <img src="assets/Falco.webp" alt="Capri referência visual">
+              <img src="assets/Adam_Smasher_Infobox_CPEDGE.webp" alt="Adam Smasher">
+              <img src="assets/original.webp" alt="Arte Capri">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECURSOS -->
+    <section class="section" id="recursos">
+      <div class="container">
+                <p class="eyebrow center">O que vem na 0.9.9</p>
+                <div class="section-title-row">
+          <h2 class="section-title">Feita para ficar na sua tela — <span class="accent">e reagir a você</span></h2>
+          <div class="section-capri-wrap">
+            <div class="section-capri-bubble">Tô sempre de olho em você, choom!</div>
+            <img src="assets/capri/perch.webp" alt="Capri sentada" class="section-capri-img">
+          </div>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">01</div>
+            <h3>Instalador em português</h3>
+            <p>O instalador foi traduzido por completo e ficou mais simples de usar, do começo ao fim.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">02</div>
+            <h3>Menos bloqueio do antivírus</h3>
+            <p>O pacote foi reorganizado para evitar o falso bloqueio que apagava o instalador na hora de abrir.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">03</div>
+            <h3>Joga junto de verdade</h3>
+            <p>Ela observa como você joga, tenta repetir olhando para a tela e muda de estratégia quando erra.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">04</div>
+            <h3>Presença na área de trabalho</h3>
+            <p>Conversa, reage, passeia pela tela e acompanha você com animações e expressões próprias.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERIA INTERATIVA (NOVA) -->
+    <section class="section section-dark" id="galeria">
+      <div class="container">
+        <p class="eyebrow center">Visual</p>
+                <div class="section-title-row">
+          <h2 class="section-title">Clima <span class="accent">Cyberpunk</span>, alma Capri</h2>
+          <div class="section-capri-wrap">
+            <div class="section-capri-bubble">Zzz... só 5 minutinhos, choom...</div>
+            <img src="assets/capri/sleep.webp" alt="Capri dormindo" class="section-capri-img">
+          </div>
+        </div>
+        
+                        <div class="gallery-interactive" data-bg-trigger="galeria2">
+          
+          <!-- Lista de Miniaturas (lateral) -->
+          <div class="char-list">
+            <div class="char-card active" data-char="david">
+              <img src="assets/David-Martinez.webp" alt="David Martinez">
+              <span>David Martinez</span>
+            </div>
+            <div class="char-card" data-char="maine">
+              <img src="assets/Maine.webp" alt="Maine">
+              <span>Maine</span>
+            </div>
+            <div class="char-card" data-char="lucy">
+              <img src="assets/Lucy.webp" alt="Lucy (Lucyna Kushinada)">
+              <span>Lucy</span>
+            </div>
+            <div class="char-card" data-char="rebecca">
+              <img src="assets/Rebecca.webp" alt="Rebecca">
+              <span>Rebecca</span>
+            </div>
+            <div class="char-card" data-char="pilar">
+              <img src="assets/Pilar.webp" alt="Pilar">
+              <span>Pilar</span>
+            </div>
+            <div class="char-card" data-char="kiwi">
+              <img src="assets/Kiwi.webp" alt="Kiwi">
+              <span>Kiwi</span>
+            </div>
+            <div class="char-card" data-char="dorio">
+              <img src="assets/Dorio.webp" alt="Dorio">
+              <span>Dorio</span>
+            </div>
+            <div class="char-card" data-char="falco">
+              <img src="assets/Falco.webp" alt="Falco">
+              <span>Falco</span>
+            </div>
+            <div class="char-card" data-char="faraday">
+              <img src="assets/Faraday_Infobox_CPEDGE.webp" alt="Faraday">
+              <span>Faraday</span>
+            </div>
+            <div class="char-card" data-char="doc">
+              <img src="assets/Doc_Infobox_CPEDGE.webp" alt="Doc (Ripperdoc)">
+              <span>Doc</span>
+            </div>
+            <div class="char-card" data-char="gloria">
+              <img src="assets/Gloria_Infobox_CPEDGE.webp" alt="Gloria Martinez">
+              <span>Gloria Martinez</span>
+            </div>
+            <div class="char-card" data-char="adam-smasher">
+              <img src="assets/Adam_Smasher_Infobox_CPEDGE.webp" alt="Adam Smasher">
+              <span>Adam Smasher</span>
+            </div>
+          </div>
+
+          <!-- Painel de Detalhes -->
+          <div class="char-details">
+            <div class="detail-content">
+              
+              <!-- Imagem Grande -->
+              <div class="detail-img-wrapper">
+                <img id="detail-img" src="assets/David-Martinez.webp" alt="David Martinez">
+              </div>
+
+              <!-- Bloco de Texto -->
+              <div class="detail-text">
+                <h3 id="detail-name">David Martinez</h3>
+                <span class="role" id="detail-role">Protagonista / Mercenário</span>
+                <div class="placeholder-text" id="detail-desc">Jovem que se junta aos mercenários após uma tragédia familiar.</div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTALAÇÃO -->
+    <section class="section" id="instalacao">
+      <div class="container install-grid">
+        <div>
+                    <p class="eyebrow">Como instalar</p>
+          <div class="section-capri-top">
+            <div class="section-capri-wrap">
+              <div class="section-capri-bubble">Finalmente um usuário que sabe o que quer da vida!</div>
+              <img src="assets/capri/perch.webp" alt="Capri sentada" class="section-capri-img section-capri-img-top">
+            </div>
+          </div>
+          <h2 class="section-title left">Baixou, extraiu, <span class="accent">abriu</span>.</h2>
+          <ol class="steps">
+            <li><span class="step-num">1</span><div><strong>Baixe o pacote completo</strong><p>O ZIP já vem com o instalador e o Capri.exe juntos.</p></div></li>
+            <li><span class="step-num">2</span><div><strong>Extraia a pasta</strong><p>Não rode direto de dentro do ZIP. Extraia primeiro.</p></div></li>
+            <li><span class="step-num">3</span><div><strong>Abra o instalador</strong><p>Execute o <code>Capri-Setup.exe</code> e siga os passos em português.</p></div></li>
+          </ol>
+        </div>
+        <div class="download-card">
+          <p class="download-card-label">Download direto</p>
+          <h3>Capri Fan Build 0.9.9</h3>
+          <p class="download-card-desc">Escolha o formato que preferir. Para a maioria das pessoas, o pacote completo é o melhor.</p>
+          <a class="btn btn-primary btn-block" href="downloads/Capri-Setup.zip" download>Pacote completo (.zip)</a>
+          <a class="btn btn-ghost btn-block" href="downloads/Capri-Setup.exe" download>Instalador (.exe)</a>
+                    <a class="btn btn-ghost btn-block" href="downloads/Capri.exe" download>Portátil (Capri.exe)</a>
+          <a class="btn btn-ghost btn-block" href="downloads/Capri-V2_13_1-cyberpunk.apk" download>Android - Cyberpunk (.apk)</a>
+          <p class="download-meta">Windows • Android • Gratuito • Fan Build independente</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- REDES SOCIAIS -->
+    <section class="section section-dark" id="social" data-bg-trigger="social">
+      <div class="container social-section">
+        <p class="eyebrow center">Acompanhe</p>
+        <h2 class="section-title">Redes e <span class="accent">comunidade</span></h2>
+        <p class="section-sub">Fique por dentro das atualizações, novidades e próximos lançamentos.</p>
+        <div class="social-links">
+          <!-- TROQUE OS LINKS ABAIXO PELAS SUAS REDES SOCIAIS -->
+          <a class="social-btn" href="https://github.com/davidanascimento-dot/capri1" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"/></svg>
+            <span>GitHub</span>
+          </a>
+          <a class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814ZM9.545 15.568V8.432L15.818 12l-6.273 3.568Z"/></svg>
+            <span>YouTube</span>
+          </a>
+          <a class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03ZM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
+            <span>Discord</span>
+          </a>
+          <a class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <span>X / Twitter</span>
+          </a>
+        </div>
+        <p class="social-hint">Edite os links das redes sociais no arquivo <code>index.html</code> (procure por “TROQUE OS LINKS”).</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" data-bg-trigger="footer">
+    <div class="container footer-inner">
+      <div>
+        <div class="brand footer-brand"><span class="brand-mark">C</span><span class="brand-text">CAPRI <em>FAN BUILD</em></span></div>
+        <p class="footer-note">Modificação independente feita por fã. Não é oficial nem endossada pelos autores originais da Capri.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/davidanascimento-dot/capri1" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="downloads/SHA256SUMS.txt" download>SHA256</a>
+        <a href="#topo">Voltar ao topo</a>
+      </div>
+    </div>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
