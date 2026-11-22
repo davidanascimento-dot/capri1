@@ -395,7 +395,12 @@ namespace CapriDesktop
             DoubleBuffered = true;
             ClientSize = new Size(Wide, Tall + SetupHeight + KeyRow);
             Font small = Look.Mono(8.5f, FontStyle.Regular, GraphicsUnit.Point);
-            Caption("PAINEL DA CAPRI", 24, 15, Display(16f), Rose);
+            Label title = Caption("PAINEL DA CAPRI", 24, 15, Display(16f), Rose);
+            // A wider fallback font ends the title in an ellipsis before it reaches the Settings key.
+            title.AutoSize = false;
+            title.AutoEllipsis = true;
+            title.TextAlign = ContentAlignment.MiddleLeft;
+            title.Bounds = new Rectangle(24, 15, 122, 28);
             minimize = Make("", 300, 20, 26, 22, delegate { WindowState = FormWindowState.Minimized; });
             minimize.Glyph = 1;
             minimize.AccessibleName = "Minimize";
@@ -460,8 +465,10 @@ namespace CapriDesktop
             ToolStripMenuItem routerKey = Choice("OpenRouter · free models only", false, delegate { capri.OpenRouterKeyPage(); });
             routerKey.AccessibleName = "OpenRouter";
             freeKeyMenu.Items.Add(routerKey);
-            freeKey = Make("Chave grátis", 266, 209, 90, 22, delegate { ShowFreeKeys(); });
+            freeKey = Make("Chave grátis", 260, 209, 96, 22, delegate { ShowFreeKeys(); });
             freeKey.Chevron = true;
+            // A wider fallback font cuts the label short instead of spilling out of the key.
+            freeKey.Ellipsis = true;
             freeKey.AccessibleName = "Free key: NVIDIA, Google AI Studio (Gemini) or OpenRouter";
             textEntry = Input(28, 262, 244);
             textEntry.Box.UseSystemPasswordChar = true;
@@ -588,7 +595,8 @@ namespace CapriDesktop
             build = Lower(Caption("v" + version + " FAN", 196, 183 + v, small, Faint));
             build.AutoSize = false;
             build.TextAlign = ContentAlignment.MiddleRight;
-            build.Bounds = new Rectangle(196, 183 + v, 66, 18);
+            // Right-aligned inside a wide box so the version never wraps on a wider fallback font.
+            build.Bounds = new Rectangle(100, 183 + v, 162, 18);
             build.AccessibleName = "Unofficial fan-modified build " + version + "; see the project README for references and changes";
             showHide = Lower(Make("Ocultar Capri", 28, 206 + v, 104, 28, delegate { capri.ToggleHidden(); }));
             Lower(Make("Trazer para cá", 140, 206 + v, 104, 28, delegate { capri.BringHere(); }));
@@ -2994,7 +3002,9 @@ namespace CapriDesktop
         private static string CheckText(Graphics graphics, Control control, Point origin, List<KeyValuePair<string, Rectangle>> text, bool shown)
         {
             Point at = new Point(origin.X + control.Left, origin.Y + control.Top);
-            string name = control.GetType().Name + " at " + at.X + "," + at.Y;
+            string shownText = control.Text ?? "";
+            if (shownText.Length > 40) shownText = shownText.Substring(0, 40);
+            string name = control.GetType().Name + (shownText.Length == 0 ? "" : " \"" + shownText + "\"") + " at " + at.X + "," + at.Y;
             List<KeyValuePair<string, Rectangle>> visible = shown ? text : null;
             TextFormatFlags flags = TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding;
             Rectangle area = control.ClientRectangle;

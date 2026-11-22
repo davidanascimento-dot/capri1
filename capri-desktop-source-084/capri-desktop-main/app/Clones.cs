@@ -913,6 +913,7 @@ namespace CapriDesktop
         // and the note near her tells anyone who's never met them how to stop it.
         internal bool Upset(int roll)
         {
+            if (!testing && !hidden && !miniMode && working == null && !InChat && cloneWindow == null) BeSad();
             if (!preferences.UpsetChaos || working != null || hidden || cloneWindow != null || InChat || Computer.Streaming || Computer.GameOpen() != null) return false;
             upsets++;
             if (roll >= upsets) return false;

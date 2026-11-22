@@ -65,6 +65,7 @@ namespace CapriDesktop
             wanderItem = new ToolStripMenuItem("Passear pela tela", null, delegate { this.toggleWander(); });
             wanderItem.Checked = this.wanderEnabled();
             menu.Items.Add(wanderItem);
+            menu.Items.Add(new ToolStripMenuItem("Sistema", null, delegate { SysPanel.Popup(this); }));
             menu.Items.Add(new ToolStripMenuItem("Voltar ao tamanho normal", null, delegate { GoFull(); }));
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Sair da Capri", null, delegate { Application.Exit(); }));

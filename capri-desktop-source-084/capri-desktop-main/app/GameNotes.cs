@@ -79,6 +79,48 @@ namespace CapriDesktop
             }
         }
 
+        // What the user taught her about what the game is for. It's separate from controls: the point of the game changes
+        // how she plays it, while controls only say which keys do what.
+        internal static string Purpose(string game)
+        {
+            string path = Place(Name(game));
+            if (path == null) return "";
+            lock (writing)
+            {
+                path = Path.ChangeExtension(path, "purpose.md");
+                return File.Exists(path) ? File.ReadAllText(path).Trim() : "";
+            }
+        }
+
+        internal static string SavePurpose(string game, string text)
+        {
+            string path = Place(Name(game));
+            if (path == null) return "That didn't work: no game is open to learn about.";
+            string clean = Regex.Replace(text ?? "", @"\s+", " ").Trim();
+            if (clean.Length == 0) return "That didn't work: there's nothing to learn in that.";
+            lock (writing)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Folder);
+                    File.WriteAllText(Path.ChangeExtension(path, "purpose.md"), clean + Environment.NewLine);
+                }
+                catch (IOException error) { return Hands.Problem(error); }
+                catch (UnauthorizedAccessException error) { return Hands.Problem(error); }
+            }
+            return "Learned what " + Name(game) + " is for.";
+        }
+
+        // The kind of game she worked out from its name, in the words a good player would bring to it. Empty for a game
+        // she's never seen a pattern for.
+        internal static string KindOf(string game)
+        {
+            if (string.IsNullOrEmpty(game)) return "";
+            for (int i = 0; i < Kinds.GetLength(0); i++)
+                if (Regex.IsMatch(game, Kinds[i, 0], RegexOptions.IgnoreCase)) return Kinds[i, 1];
+            return "";
+        }
+
         internal static string Do(ToolArguments args)
         {
             string game = Name(string.IsNullOrWhiteSpace(args.Name) ? Hands.GameOpen() : args.Name);
@@ -90,11 +132,23 @@ namespace CapriDesktop
                     if (args.Action == "read")
                     {
                         string controls = Controls(game);
-                        return controls.Length == 0 ? "No controls saved for " + game + "." : "Your controls for " + game + ":\n" + controls;
+                        string purpose = Purpose(game);
+                        if (controls.Length == 0 && purpose.Length == 0) return "No controls or purpose saved for " + game + ".";
+                        StringBuilder read = new StringBuilder("What you have for " + game + ":");
+                        if (purpose.Length > 0) read.Append("\nWhat it's for: " + purpose);
+                        if (controls.Length > 0) read.Append("\nControls and instructions:\n" + controls);
+                        return read.ToString();
                     }
-                    if (string.IsNullOrWhiteSpace(args.Text)) return "What controls should I keep for " + game + "?";
+                    if (string.IsNullOrWhiteSpace(args.Text) && string.IsNullOrWhiteSpace(args.Purpose)) return "What should I keep for " + game + "?";
+                    if (args.Action == "purpose" || (!string.IsNullOrWhiteSpace(args.Purpose) && string.IsNullOrWhiteSpace(args.Text))) return SavePurpose(game, args.Purpose ?? args.Text);
+                    if (args.Action == "teach")
+                    {
+                        string taught = ((args.Purpose ?? "") + " " + (args.Text ?? "")).Trim();
+                        bool isPurpose = Regex.IsMatch(taught, @"\b(goal|purpose|objective|point|win|winning|aim|about)\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(taught, @"\b(keys?|buttons?|click|press|hold|tap|wasd|mouse|controller|gamepad|jump|crouch|sprint|shift|ctrl|space(?:bar)?|esc|tab|enter|scroll)\b", RegexOptions.IgnoreCase);
+                        if (isPurpose) return SavePurpose(game, taught);
+                    }
                     WrittenNote note = OpenControls(game);
-                    string text = args.Text.Trim();
+                    string text = (args.Text ?? "").Trim();
                     if (("\n" + note.Text.Replace("\r\n", "\n").Trim() + "\n").IndexOf("\n" + text.Replace("\r\n", "\n") + "\n", StringComparison.OrdinalIgnoreCase) >= 0) return "Those controls are already saved for " + game + ".";
                     string problem = note.Save(note.Text.TrimEnd() + "\n\n" + text + "\n");
                     return problem ?? "Saved controls for " + game + ".";
@@ -106,20 +160,32 @@ namespace CapriDesktop
 
         internal static ToolArguments Request(string text)
         {
-            Match save = Regex.Match(text ?? "", @"^(?:remember|save|set) (?:the )?(?:controls|instructions) for (.+?)(?:\s*:\s*| are\s+)(.+)$", RegexOptions.IgnoreCase);
+            string said = text ?? "";
+            // "Teach you Minecraft: ..." and "the goal of Minecraft is ..." are lessons about a game, even before it's open.
+            Match taught = Regex.Match(said, @"^(?:teach|show) (?:you|capri)(?: (?:how to play|about))? (?:that )?(?:in |for )?(.+?)(?:\s*:\s*|\s+that\s+)(.+)$", RegexOptions.IgnoreCase);
+            if (taught.Success && Name(taught.Groups[1].Value).Length > 0) return new ToolArguments { Name = taught.Groups[1].Value.Trim(), Text = taught.Groups[2].Value.Trim(), Action = "teach" };
+            Match purpose = Regex.Match(said, @"^(?:the )?(?:goal|purpose|objective|point) (?:of|in|for) (.+?) (?:is|:)\s*(.+)$", RegexOptions.IgnoreCase);
+            if (purpose.Success && Name(purpose.Groups[1].Value).Length > 0) return new ToolArguments { Name = purpose.Groups[1].Value.Trim(), Purpose = purpose.Groups[2].Value.Trim(), Action = "purpose" };
+            Match about = Regex.Match(said, @"^(?:in|for) (.+?),?\s*(?:the )?(?:goal|purpose|objective|point) is\s*(.+)$", RegexOptions.IgnoreCase);
+            if (about.Success && Name(about.Groups[1].Value).Length > 0) return new ToolArguments { Name = about.Groups[1].Value.Trim(), Purpose = about.Groups[2].Value.Trim(), Action = "purpose" };
+            Match whenever = Regex.Match(said, @"^(?:in|for) (.+?),\s*(?:when|if) (.+?)[,;]\s*(?:do|use|press|click|try)\s+(.+)$", RegexOptions.IgnoreCase);
+            if (whenever.Success && Name(whenever.Groups[1].Value).Length > 0) return new ToolArguments { Name = whenever.Groups[1].Value.Trim(), Text = "When " + whenever.Groups[2].Value.Trim() + ", " + whenever.Groups[3].Value.Trim(), Action = "teach" };
+            Match save = Regex.Match(said, @"^(?:remember|save|set|learn|teach) (?:the )?(?:controls|instructions) for (.+?)(?:\s*:\s*| are\s+)(.+)$", RegexOptions.IgnoreCase);
             if (!save.Success)
             {
-                save = Regex.Match(text ?? "", @"^(?:in|for) (.+?),\s*remember (?:that )?(.+)$", RegexOptions.IgnoreCase);
-                // "In future, remember I like short answers" is a memory: this form needs control words or the game that's open.
+                save = Regex.Match(said, @"^(?:in|for) (.+?),\s*remember (?:that )?(.+)$", RegexOptions.IgnoreCase);
+                // "In future, remember I like short answers" is a memory: this form needs control words, a goal, or the game that's open.
                 // Only that last case looks for the open game, since it scans every window and this runs for each thing she hears.
-                if (save.Success && !Regex.IsMatch(save.Groups[2].Value, @"\b(?:keys?|buttons?|click|press|hold|tap|wasd|mouse|controller|gamepad|joystick|sticks?|triggers?|bumpers?|jump|crouch|sprint|shift|ctrl|alt|space(?:bar)?|esc|escape|tab|enter|arrows?|scroll|f\d{1,2})\b", RegexOptions.IgnoreCase))
+                if (save.Success && !Regex.IsMatch(save.Groups[2].Value, @"\b(?:keys?|buttons?|click|press|hold|tap|wasd|mouse|controller|gamepad|joystick|sticks?|triggers?|bumpers?|jump|crouch|sprint|shift|ctrl|alt|space(?:bar)?|esc|escape|tab|enter|arrows?|scroll|f\d{1,2})\b|\b(?:goal|purpose|objective|point|win|winning)\b", RegexOptions.IgnoreCase))
                 {
                     string open = Hands.GameOpen();
                     if (string.IsNullOrEmpty(open) || open.IndexOf(save.Groups[1].Value.Trim(), StringComparison.OrdinalIgnoreCase) < 0) save = Match.Empty;
                 }
             }
             if (save.Success && Name(save.Groups[1].Value).Length > 0) return new ToolArguments { Name = save.Groups[1].Value.Trim(), Text = save.Groups[2].Value.Trim(), Action = "save" };
-            Match read = Regex.Match(text ?? "", @"^(?:show|read|list)(?: me)? (?:the |my )?(?:controls|instructions) for (.+)$", RegexOptions.IgnoreCase);
+            Match learning = Regex.Match(said, @"^(?:learn|remember) (?:that )?(?:in|for) (.+?)[:,]\s*(.+)$", RegexOptions.IgnoreCase);
+            if (learning.Success && Name(learning.Groups[1].Value).Length > 0) return new ToolArguments { Name = learning.Groups[1].Value.Trim(), Text = learning.Groups[2].Value.Trim(), Action = "teach" };
+            Match read = Regex.Match(said, @"^(?:show|read|list)(?: me)? (?:the |my )?(?:controls|instructions|goal|purpose|objective) (?:for|of) (.+)$", RegexOptions.IgnoreCase);
             return read.Success ? new ToolArguments { Name = read.Groups[1].Value.Trim(), Action = "read" } : null;
         }
 
@@ -162,16 +228,19 @@ namespace CapriDesktop
         {
             if (string.IsNullOrEmpty(game)) return "";
             StringBuilder brief = new StringBuilder("\nThe game open now is " + game + ".");
-            for (int i = 0; i < Kinds.GetLength(0); i++)
-                if (Regex.IsMatch(game, Kinds[i, 0], RegexOptions.IgnoreCase))
-                {
-                    brief.Append(" " + Kinds[i, 1]);
-                    break;
-                }
+            string kind = KindOf(game);
+            if (kind.Length > 0) brief.Append(" " + kind);
             Func<string, string> skills = Skills;
             if (skills != null) brief.Append(skills(game));
             string keys = GameKeys.Summary(game);
             if (keys != null) brief.Append("\nIts keys on this PC: " + keys + ".");
+            try
+            {
+                string purpose = Purpose(game);
+                if (purpose.Length > 0) brief.Append("\nWhat the user taught you this game is for: " + purpose);
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
             string notes = Read(game);
             if (notes.Length > MostTold)
             {

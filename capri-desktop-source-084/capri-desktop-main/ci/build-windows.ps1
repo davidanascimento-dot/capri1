@@ -22,17 +22,35 @@ $resources = @(('/resource:' + $icon + ',Capri.Chip.ico'), ('/resource:' + (Join
 $resources += ('/resource:' + (Join-Path $root 'assets\cursor.png') + ',Capri.Cursor.png')
 $resources += ('/resource:' + (Join-Path $root 'assets\vbcable\VBCABLE_Driver_Pack45.zip') + ',Capri.VBCABLE.zip')
 $resources += ('/resource:' + (Join-Path $root 'assets\mods\capri-classic.capri-skin') + ',Capri.Mods.capri-classic.capri-skin')
+$resources += ('/resource:' + (Join-Path $root 'assets\mods\maroraga.capri-mod') + ',Capri.Mods.maroraga.capri-mod')
+$resources += ('/resource:' + (Join-Path $root 'assets\mods\anel_maroraga_ball.png') + ',Capri.Mods.anel_maroraga_ball.png')
 $legacyMini = Join-Path (Split-Path -Parent (Split-Path -Parent $root)) 'capri-source\assets\desk\mini'
 $resources += Get-ChildItem -LiteralPath $legacyMini -Filter *.png -File | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Mini.' + $_.Name }
 $resources += Get-ChildItem -LiteralPath (Join-Path $root 'assets\sprites') -Filter *.png | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Sprite.' + $_.Name }
 $resources += Get-ChildItem -LiteralPath (Join-Path $root 'assets\legacy-intro') -Filter *.png | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Intro.' + $_.BaseName + '.png' }
 $resources += Get-ChildItem -LiteralPath (Join-Path $root 'assets\cutins') -Filter *.png -File | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Cutin.' + $_.Name }
 $resources += Get-ChildItem -LiteralPath (Join-Path $root 'assets\voice') -Filter *.wav | ForEach-Object { '/resource:' + $_.FullName + ',Capri.Voice.' + $_.Name }
-$sources = @('Capri', 'MiniAvatar', 'LegacyIntro', 'RivalWatch', 'RivalCue', 'Asides', 'Bolts', 'Commentary', 'Lookout', 'Brain', 'Talk', 'Mainframe', 'MainframeMods', 'MainframeModsWindow', 'Mods', 'ModDirectory', 'CodeMods', 'SoundsLike', 'SkinMods', 'SkillMods', 'ArtColors', 'MainframeTips', 'TipChecks', 'MediumChecks', 'FreeKeyChecks', 'Neon', 'Notice', 'Engine', 'Ledges', 'Voice', 'Ears', 'MicMix', 'CableSetup', 'Dictation', 'HearingStatus', 'Agent', 'Hands', 'GameHud', 'Computer', 'Arrange', 'Mixer', 'Usage', 'Network', 'Play', 'VoicePack', 'Startup', 'Presence', 'Player', 'Ocr', 'GameEars', 'GameNotes', 'GameKeys', 'Frames', 'Reminders', 'GameSense', 'GameWatch', 'SelfKnow', 'Care', 'Clips', 'ClipSettings', 'ClipChecks', 'Minis', 'Chess', 'ChessBoard', 'Files', 'FileFinder', 'Websites', 'Ink', 'Clones', 'ChaosScreen', 'Icons', 'FollowUps', 'WatchAlong', 'CallMode', 'Husk', 'CallEars', 'CallPanel', 'Reactions', 'ToolChecks', 'ErrorChecks', 'SmokeRun', 'AssemblyInfo') | ForEach-Object { Join-Path $root ('app\' + $_ + '.cs') }
+$sources = @('Capri', 'MiniAvatar', 'LegacyIntro', 'RivalWatch', 'RivalCue', 'Asides', 'Bolts', 'Commentary', 'Lookout', 'Brain', 'Talk', 'Mainframe', 'MainframeMods', 'MainframeModsWindow', 'Mods', 'ModDirectory', 'CodeMods', 'SoundsLike', 'SkinMods', 'SkillMods', 'ArtColors', 'MainframeTips', 'TipChecks', 'MediumChecks', 'FreeKeyChecks', 'Neon', 'Notice', 'Engine', 'Ledges', 'Voice', 'Ears', 'MicMix', 'CableSetup', 'Dictation', 'HearingStatus', 'Agent', 'Hands', 'GameHud', 'Computer', 'Arrange', 'Mixer', 'Usage', 'Network', 'Play', 'VoicePack', 'Startup', 'Presence', 'Player', 'Ocr', 'GameEars', 'GameNotes', 'GameCoach', 'GameCopy', 'Maroraga', 'SystemIntel', 'SysPanel', 'GameKeys', 'Frames', 'Reminders', 'GameSense', 'GameWatch', 'SelfKnow', 'Care', 'Clips', 'ClipSettings', 'ClipChecks', 'Minis', 'Chess', 'ChessBoard', 'Files', 'FileFinder', 'Websites', 'Ink', 'Clones', 'ChaosScreen', 'Icons', 'FollowUps', 'WatchAlong', 'CallMode', 'Husk', 'CallEars', 'CallPanel', 'Reactions', 'ToolChecks', 'ErrorChecks', 'SmokeRun', 'AssemblyInfo') | ForEach-Object { Join-Path $root ('app\' + $_ + '.cs') }
 & $compiler ($shared + $references + $resources + @('/unsafe+', ('/out:' + $app)) + $sources)
 if ($LASTEXITCODE -ne 0) { throw 'Capri compilation failed.' }
-& $compiler ($shared + @(('/out:' + $setup), '/reference:Microsoft.CSharp.dll', '/reference:System.IO.Compression.dll', '/reference:System.IO.Compression.FileSystem.dll', ('/resource:' + $app + ',Capri.App.exe'), ('/resource:' + $icon + ',Capri.Chip.ico'), ('/resource:' + (Join-Path $root 'assets\chip.png') + ',Capri.Chip.png'), (Join-Path $root 'app\Setup.cs'), (Join-Path $root 'app\Neon.cs'), (Join-Path $root 'app\Notice.cs'), (Join-Path $root 'app\VoicePack.cs'), (Join-Path $root 'app\Startup.cs'), (Join-Path $root 'app\AssemblyInfo.cs')))
+& $compiler ($shared + @(('/out:' + $setup), '/reference:Microsoft.CSharp.dll', '/reference:System.IO.Compression.dll', '/reference:System.IO.Compression.FileSystem.dll', ('/resource:' + $icon + ',Capri.Chip.ico'), ('/resource:' + (Join-Path $root 'assets\chip.png') + ',Capri.Chip.png'), (Join-Path $root 'app\Setup.cs'), (Join-Path $root 'app\Neon.cs'), (Join-Path $root 'app\Notice.cs'), (Join-Path $root 'app\VoicePack.cs'), (Join-Path $root 'app\Startup.cs'), (Join-Path $root 'app\AssemblyInfo.cs')))
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
+# O instalador e o aplicativo andam juntos. Assim o antivírus não vê o instalador como um "dropper" que carrega outro executável.
+$packageZip = Join-Path $out 'Capri-Setup.zip'
+if (Test-Path -LiteralPath $packageZip) { Remove-Item -LiteralPath $packageZip -Force }
+Compress-Archive -LiteralPath $app, $setup -DestinationPath $packageZip -CompressionLevel Optimal
+# Os dois arquivos, com os nomes que a atualização automática procura, e a soma de verificação de cada um.
+$sums = Join-Path $out 'SHA256SUMS.txt'
+$lines = New-Object System.Collections.Generic.List[string]
+$version = (Get-Item -LiteralPath $app).VersionInfo.FileVersion
+$names = @((Split-Path -Leaf $app), (Split-Path -Leaf $setup))
+if (-not [string]::IsNullOrWhiteSpace($version)) { $names += ('Capri-Setup-' + $version + '.exe') }
+foreach ($name in $names) {
+    $file = if ($name -eq (Split-Path -Leaf $app)) { $app } else { $setup }
+    $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+    $lines.Add($hash + '  ' + $name)
+}
+[IO.File]::WriteAllText($sums, ($lines -join "`n") + "`n", (New-Object System.Text.UTF8Encoding($false)))
 if (-not [string]::IsNullOrWhiteSpace($PythonApiProfilePath)) {
     $profile = Get-Content -LiteralPath $PythonApiProfilePath -Raw | ConvertFrom-Json
     if ([string]::IsNullOrWhiteSpace($profile.base_url) -or [string]::IsNullOrWhiteSpace($profile.model) -or [string]::IsNullOrWhiteSpace($profile.api_key_dpapi)) { throw 'The Python API profile must have a base_url, model, and DPAPI-protected api_key_dpapi.' }

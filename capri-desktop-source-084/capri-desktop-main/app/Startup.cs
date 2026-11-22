@@ -31,12 +31,12 @@ namespace CapriDesktop
                 else if (args[i] == "--package" && package == null && i + 1 < args.Length)
                 {
                     package = args[++i];
-                    if (Array.IndexOf(Managers, package) < 0) throw new ArgumentException("Capri doesn't know the package manager " + package + ". Use winget, scoop, chocolatey or pacman.");
+                    if (Array.IndexOf(Managers, package) < 0) throw new ArgumentException("A Capri não conhece o gerenciador de pacotes " + package + ". Use winget, scoop, chocolatey ou pacman.");
                 }
-                else throw new ArgumentException("That silent setup command is invalid.");
+                else throw new ArgumentException("Esse comando de instalação silenciosa é inválido.");
             }
-            if (!silent) throw new ArgumentException("--package goes with --silent.");
-            if (remove && package != null) throw new ArgumentException("--package only goes with a silent install.");
+            if (!silent) throw new ArgumentException("--package só funciona junto com --silent.");
+            if (remove && package != null) throw new ArgumentException("--package só funciona em uma instalação silenciosa.");
             return remove ? 2 : 1;
         }
 
@@ -100,7 +100,7 @@ namespace CapriDesktop
             try { File.GetAttributes(file); }
             catch (FileNotFoundException) { return; }
             catch (DirectoryNotFoundException) { return; }
-            throw new IOException("The uninstaller is still open. Close it and try removing Capri again.");
+            throw new IOException("O desinstalador ainda está aberto. Feche ele e tente remover a Capri de novo.");
         }
 
         internal static void Patiently(Action remove)

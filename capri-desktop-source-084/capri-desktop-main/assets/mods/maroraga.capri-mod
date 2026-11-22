@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "id": "maroraga",
+  "name": "Maroraga",
+  "version": "0.3.1",
+  "author": "Capri",
+  "description": "Official Capri test mod. She wears the golden anel: one full spin per request, plus a victory spin when she gets it done or learns from a mistake.",
+  "maroraga": {
+    "stage": "test",
+    "watch": true,
+    "remember": true,
+    "notes": "Anel 3D feito com as esferas do próprio desenho enviado: elas dão a volta no eixo do anel, com os aros dourados entre elas. Uma volta por pedido, com giro extra quando acerta ou aprende. O que aprende fica em maroraga.json."
+  }
+}

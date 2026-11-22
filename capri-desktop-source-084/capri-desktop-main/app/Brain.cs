@@ -14,7 +14,7 @@ namespace CapriDesktop
     // fixed text she shows without a brain all read it, so the next release only edits these lines.
     internal static class News
     {
-        internal const string Version = "0.9.8";
+        internal const string Version = "0.9.9";
 #if CROSS
         internal const string Facts = "Capri " + Version + " on Mac and Linux.\n"
             + "Mainframe colours: Mainframe > Settings > CAPRI > Mainframe colours picks Night City, Black, White or Grey for the Mainframe.\n"
@@ -25,6 +25,10 @@ namespace CapriDesktop
         internal const string Line = "I just updated to " + Version + ": Mainframe colours, game skills and the Linux AppImage. Ask me what's new for the menu paths.";
 #else
         internal const string Facts = "Capri " + Version + " on Windows.\n"
+            + "Persistent preferences: she can remember favourites from English or Portuguese, including a favourite joke, and use saved notes in later chats.\n"
+            + "Soundtrack: the mini-player has previous, play/pause, next and seek controls.\n"
+            + "Desktop icons: Capri can tidy, hide or restore icons from her desktop-icon controls.\n"
+            + "Mini-games: chess is available from Capri's mini-games.\n"
             + "Portuguese: new installs and existing English profiles now default to Portuguese for Capri's spoken replies and Code-Husk activity captions. Commands and program output stay unchanged.\n"
             + "Old Capri moves: with Wander on, she sometimes peeks sideways from a screen edge or hangs upside down from the top edge. When she gets jealous of another AI, she says her line and then goes mini.\n"
             + "Mainframe colours: Mainframe > Settings > CAPRI > Mainframe colours picks Night City, Black, White or Grey for the Mainframe, her menus, the Type box and her notes.\n"
@@ -33,7 +37,7 @@ namespace CapriDesktop
             + "Head pats work in voice chat too, and up-and-down rubs count. Mainframe > Settings > CAPRI > Head pats.\n"
             + "Call mode (beta) tells you to turn off Discord's Echo Cancellation and Noise Suppression, since they cut her off.\n"
             + "Clearer errors: she says what went wrong and the fix in plain words. Right-click Capri > Help > Copy error details copies the details for support.";
-        internal const string Line = "I just updated to " + Version + ": old Capri edge peeks and jealous mini mode. Ask me what's new for the menu paths.";
+        internal const string Line = "I just updated to " + Version + ": I can now remember your favourite things, including a favourite joke you tell me in Portuguese. Ask me what's new for the menu paths.";
 #endif
         internal static string Prompt { get { return "(You just updated to Capri " + Version + ". Tell the user what is new in one or two short lines, in your own voice and the language they use with you. Use only these facts. Do not invent features or name people. Facts: " + Facts + ")"; } }
 
@@ -3508,7 +3512,8 @@ namespace CapriDesktop
             return "\nThe earlier messages are from your last chat with them, " + when + " ago. Pick up from there only if it fits, and don't recap it.";
         }
 
-        private static readonly Regex Favourite = new Regex(@"^my (?:fav(?:ou?rite)?|fave) (game|song|band|artist|singer|rapper|food|movie|film|show|anime|manga|colou?r|youtuber|streamer|character|book|sport|team|subject|animal|drink|snack|season|weapon|pokemon|car|app) (?:is|has to be|would be|rn is) (.{2,40})$", RegexOptions.IgnoreCase);
+        private static readonly Regex Favourite = new Regex(@"^my (?:fav(?:ou?rite)?|fave) (?<kind>game|song|joke|band|artist|singer|rapper|food|movie|film|show|anime|manga|colou?r|youtuber|streamer|character|book|sport|team|subject|animal|drink|snack|season|weapon|pokemon|car|app) (?:is|has to be|would be|rn is) (?<value>.{2,80})$", RegexOptions.IgnoreCase);
+        private static readonly Regex FavouritePortuguese = new Regex(@"^(?:a )?(?:minha|minhas|meu|meus) (?<kind>m[uú]sica|piada|jogo|banda|artista|cantor|comida|filme|s[eé]rie|programa|anime|mang[aá]|cor|personagem|livro|esporte|time|mat[eé]ria|animal|bebida|lanche|esta[cç][aã]o|arma|pokemon|carro|aplicativo)(?: favorita| favorito| favoritas| favoritos)? (?:(?:[eé]|s[aã]o)\s*[:—-]?\s*|[:—-]\s*)(?<value>.{2,80})$", RegexOptions.IgnoreCase);
         private static readonly Regex Doing = new Regex(@"^i(?:'m| am) (making|building|coding|developing|working on|writing|learning|studying|practi[cs]ing|saving up for|training for|getting into) (.{3,50})$", RegexOptions.IgnoreCase);
         private static readonly Regex Project = new Regex(@"\b(game|app|mod|map|website|site|bot|video|channel|song|album|book|story|comic|animation|model|server|program|engine|plugin|script|level|world|movie|film|podcast|track|beat|portfolio|obby|tycoon|simulator|project)s?\b", RegexOptions.IgnoreCase);
         private static readonly Regex Into = new Regex(@"^i (?:really |absolutely |lowkey |kinda |kind of )?(?:love|main|collect) (.{3,40})$", RegexOptions.IgnoreCase);
@@ -3521,14 +3526,37 @@ namespace CapriDesktop
             text = Regex.Replace(text, @"^((hey|yo|ok|okay|so|well|btw|also|honestly|fun fact|guess what)[\s,:]+)*(capri[\s,]+)?", "", RegexOptions.IgnoreCase);
             text = Regex.Split(text, @"[,;.!?]|\s(?:and|but|because|cause|cuz|so|though)\s", RegexOptions.IgnoreCase)[0].Trim();
             Match found = Favourite.Match(text);
-            if (found.Success && !Vague.IsMatch(found.Groups[2].Value))
+            bool portugueseFavourite = false;
+            if (!found.Success) { found = FavouritePortuguese.Match(text); portugueseFavourite = found.Success; }
+            if (found.Success && !Vague.IsMatch(found.Groups["value"].Value))
             {
-                string kind = found.Groups[1].Value.ToLowerInvariant();
+                string kind = found.Groups["kind"].Value.ToLowerInvariant();
+                if (portugueseFavourite)
+                {
+                    if (kind.StartsWith("música", StringComparison.Ordinal)) kind = "song";
+                    else if (kind == "piada") kind = "joke";
+                    else if (kind == "jogo") kind = "game";
+                    else if (kind == "banda" || kind == "cantor" || kind == "artista") kind = "artist";
+                    else if (kind == "comida" || kind == "bebida" || kind == "lanche") kind = "food";
+                    else if (kind == "filme") kind = "movie";
+                    else if (kind == "série" || kind == "programa") kind = "show";
+                    else if (kind == "mangá") kind = "manga";
+                    else if (kind == "cor") kind = "colour";
+                    else if (kind == "esporte") kind = "sport";
+                    else if (kind == "time") kind = "team";
+                    else if (kind == "matéria") kind = "subject";
+                    else if (kind == "animal") kind = "animal";
+                    else if (kind == "estação") kind = "season";
+                    else if (kind == "arma") kind = "weapon";
+                    else if (kind == "carro") kind = "car";
+                    else if (kind == "aplicativo") kind = "app";
+                }
+                string value = found.Groups["value"].Value;
                 lock (noting)
                 {
                     string head = "Their favourite " + kind + " is";
-                    if (Notes().IndexOf(head + " " + found.Groups[2].Value, StringComparison.OrdinalIgnoreCase) < 0) Unnote(head);
-                    return Saved(Note(head + " " + found.Groups[2].Value));
+                    if (Notes().IndexOf(head + " " + value, StringComparison.OrdinalIgnoreCase) < 0) Unnote(head);
+                    return Saved(Note(head + " " + value));
                 }
             }
             found = Doing.Match(text);

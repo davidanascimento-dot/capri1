@@ -18,6 +18,7 @@ namespace CapriSetup
     internal static class Program
     {
         internal static string InstallPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Capri"); } }
+        internal static string Build { get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(3); } }
         internal const string RegistryPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Capri.Desktop";
         internal static readonly string[] Packs = { "brain", "voice", "ears", "wake" };
 
@@ -37,7 +38,7 @@ namespace CapriSetup
                     string unsaved = Install(false);
                     // She's installed by now, so the marker says who carries her even when her shortcut couldn't be saved.
                     SetupFiles.Mark(InstallPath, package ?? "manual");
-                    if (unsaved != null) throw new IOException("Capri is installed, but her shortcut could not be saved: " + unsaved);
+                    if (unsaved != null) throw new IOException("A Capri foi instalada, mas não foi possível salvar o atalho dela: " + unsaved);
                     return 0;
                 }
             }
@@ -61,7 +62,7 @@ namespace CapriSetup
             {
                 int parent;
                 long started;
-                if (args.Length != 3 || !int.TryParse(args[1], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out parent) || parent <= 0 || !long.TryParse(args[2], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out started) || started <= 0) throw new IOException("The update command is invalid.");
+                if (args.Length != 3 || !int.TryParse(args[1], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out parent) || parent <= 0 || !long.TryParse(args[2], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out started) || started <= 0) throw new IOException("O comando de atualização é inválido.");
                 Process process = null;
                 try { process = Process.GetProcessById(parent); } catch (ArgumentException) { }
                 if (process != null)
@@ -69,22 +70,33 @@ namespace CapriSetup
                     {
                         bool same = false;
                         try { same = process.StartTime.ToUniversalTime().Ticks == started; } catch (InvalidOperationException) { }
-                        if (same && !process.WaitForExit(60000)) throw new IOException("Capri is still closing. Try the update again.");
+                        if (same && !process.WaitForExit(60000)) throw new IOException("A Capri ainda está fechando. Tente atualizar de novo.");
                     }
                 Install(false);
                 using (Process launched = Process.Start(new ProcessStartInfo(Path.Combine(InstallPath, "Capri.exe")) { UseShellExecute = true, WorkingDirectory = InstallPath }))
-                    if (launched == null) throw new IOException("Capri updated but couldn't restart. Open her from the Start menu.");
+                    if (launched == null) throw new IOException("A Capri foi atualizada, mas não conseguiu reiniciar. Abra ela pelo menu Iniciar.");
                 return 0;
             }
-            catch (Exception error) { Notice.Tell(null, error.Message, "Capri couldn't update", true); return 1; }
+            catch (Exception error) { Notice.Tell(null, error.Message, "A Capri não conseguiu atualizar", true); return 1; }
         }
 
         internal static byte[] Payload()
         {
+            // O aplicativo vai ao lado do instalador, e não dentro dele. Um instalador que carrega e solta um
+            // executável parece um "dropper" para os antivírus e pode ser apagado antes mesmo de abrir.
+            string folder = Path.GetDirectoryName(Application.ExecutablePath);
+            string[] tries = { Path.Combine(folder, "Capri.exe"), Path.Combine(Environment.CurrentDirectory, "Capri.exe") };
+            foreach (string beside in tries)
+            {
+                if (!File.Exists(beside)) continue;
+                try { return File.ReadAllBytes(beside); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
             using (Stream source = Assembly.GetExecutingAssembly().GetManifestResourceStream("Capri.App.exe"))
             using (MemoryStream memory = new MemoryStream())
             {
-                if (source == null) throw new InvalidDataException("The Capri application payload is missing.");
+                if (source == null) throw new InvalidDataException("O aplicativo da Capri não foi encontrado. Coloque o Capri.exe na mesma pasta do instalador.");
                 source.CopyTo(memory);
                 return memory.ToArray();
             }
@@ -97,28 +109,28 @@ namespace CapriSetup
                 output = Path.GetFullPath(output);
                 Directory.CreateDirectory(output);
                 byte[] bytes = Payload();
-                if (bytes.Length < 1024 || bytes[0] != 77 || bytes[1] != 90) throw new InvalidDataException("Application payload is not a Windows executable.");
+                if (bytes.Length < 1024 || bytes[0] != 77 || bytes[1] != 90) throw new InvalidDataException("O aplicativo da Capri não é um executável do Windows.");
                 File.WriteAllBytes(Path.Combine(output, "Capri.exe"), bytes);
                 using (SHA256 sha = SHA256.Create()) File.WriteAllText(Path.Combine(output, "payload.sha256"), BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant());
-                if (!Ours(Path.Combine(output, "Capri.exe"))) throw new InvalidDataException("The installer doesn't recognise its own Capri.exe.");
-                if (Ours(Application.ExecutablePath) || Ours(Path.Combine(Environment.SystemDirectory, "notepad.exe")) || Ours(Path.Combine(output, "missing.exe"))) throw new InvalidDataException("The installer takes other programs for Capri.");
+                if (!Ours(Path.Combine(output, "Capri.exe"))) throw new InvalidDataException("O instalador não reconhece o próprio Capri.exe.");
+                if (Ours(Application.ExecutablePath) || Ours(Path.Combine(Environment.SystemDirectory, "notepad.exe")) || Ours(Path.Combine(output, "missing.exe"))) throw new InvalidDataException("O instalador está confundindo outros programas com a Capri.");
                 string home = Path.Combine(output, "Capri");
-                if (!Inside(Path.Combine(home, "Capri.exe"), home) || !Inside(Path.Combine(home, "brain", "llama-server.exe"), home + "\\") || Inside(Path.Combine(output, "Capri2", "Capri.exe"), home) || Inside(Path.Combine(Environment.SystemDirectory, "notepad.exe"), home) || Inside(home, home)) throw new InvalidDataException("The uninstaller would close the wrong programs.");
+                if (!Inside(Path.Combine(home, "Capri.exe"), home) || !Inside(Path.Combine(home, "brain", "llama-server.exe"), home + "\\") || Inside(Path.Combine(output, "Capri2", "Capri.exe"), home) || Inside(Path.Combine(Environment.SystemDirectory, "notepad.exe"), home) || Inside(home, home)) throw new InvalidDataException("O desinstalador fecharia os programas errados.");
                 string link = Path.Combine(output, "Capri.lnk");
                 File.WriteAllText(link, "an old shortcut");
                 File.SetAttributes(link, FileAttributes.ReadOnly);
                 string unsaved = Shortcut(link, Path.Combine(output, "Capri.exe"));
-                if (unsaved != null || !string.Equals(LinkTarget(link), Path.Combine(output, "Capri.exe"), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("The installer can't save her shortcut. " + unsaved);
+                if (unsaved != null || !string.Equals(LinkTarget(link), Path.Combine(output, "Capri.exe"), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("O instalador não consegue salvar o atalho dela. " + unsaved);
                 File.Delete(link);
-                if (Shortcut(Path.Combine(output, "missing", "Capri.lnk"), Path.Combine(output, "Capri.exe")) == null) throw new InvalidDataException("A shortcut Windows can't save counts as saved.");
+                if (Shortcut(Path.Combine(output, "missing", "Capri.lnk"), Path.Combine(output, "Capri.exe")) == null) throw new InvalidDataException("Um atalho que o Windows não consegue salvar foi contado como salvo.");
                 using (SetupWindow preview = new SetupWindow(false))
                 {
                     preview.Show();
                     Application.DoEvents();
                     Snap(preview, Path.Combine(output, "installer.png"));
-                    preview.Speaking(127L << 20, VoicePack.Size, Megabytes(127L << 20) + " of " + Megabytes(VoicePack.Size));
+                    preview.Speaking(127L << 20, VoicePack.Size, Megabytes(127L << 20) + " de " + Megabytes(VoicePack.Size));
                     Application.DoEvents();
-                    if (!preview.Saying("Installing the local speech model", "This may take some time")) throw new InvalidDataException("The installer doesn't say it's installing the local speech model.");
+                    if (!preview.Saying("Instalando o modelo de voz local", "Isso pode demorar um pouco")) throw new InvalidDataException("O instalador não avisa que está instalando o modelo de voz local.");
                     Snap(preview, Path.Combine(output, "installer-speech.png"));
                     preview.Close();
                 }
@@ -130,19 +142,19 @@ namespace CapriSetup
                     farewell.Close();
                 }
                 // Her notices, which stand in for Windows' grey boxes, fit their message under their title with OK below it.
-                using (Notice told = new Notice("Capri has been removed.\n\nYour position and size settings were kept in " + InstallPath + ".", "Capri", false))
-                using (Notice failed = new Notice("There's a Capri.exe in " + InstallPath + " that isn't this Capri. Move it out of that folder, then install again.", "Capri couldn't install", true))
+                using (Notice told = new Notice("A Capri foi removida.\n\nSuas configurações de posição e tamanho foram mantidas em " + InstallPath + ".", "Capri", false))
+                using (Notice failed = new Notice("Existe um Capri.exe em " + InstallPath + " que não é esta Capri. Tire ele dessa pasta e instale de novo.", "A Capri não conseguiu instalar", true))
                 {
                     told.Show();
                     failed.Show();
                     Application.DoEvents();
-                    if (!told.Fits || !failed.Fits || !told.Said.StartsWith("CAPRI\nCapri has been removed.", StringComparison.Ordinal) || !failed.Said.StartsWith("CAPRI COULDN'T INSTALL\n", StringComparison.Ordinal)) throw new InvalidDataException("A notice doesn't fit or show its message: " + told.Said + " / " + failed.Said);
+                    if (!told.Fits || !failed.Fits || !told.Said.StartsWith("CAPRI\nA Capri foi removida.", StringComparison.Ordinal) || !failed.Said.StartsWith("A CAPRI NÃO CONSEGUIU INSTALAR\n", StringComparison.Ordinal)) throw new InvalidDataException("Um aviso não coube ou não mostrou a mensagem: " + told.Said + " / " + failed.Said);
                     Snap(told, Path.Combine(output, "notice.png"));
                     Snap(failed, Path.Combine(output, "notice-error.png"));
                     told.Close();
                     failed.Close();
                 }
-                if (Array.IndexOf(Packs, "brain") < 0 || Array.IndexOf(Packs, "voice") < 0 || Array.IndexOf(Packs, "ears") < 0 || Array.IndexOf(Packs, "wake") < 0) throw new InvalidDataException("The uninstaller would leave one of her packs behind.");
+                if (Array.IndexOf(Packs, "brain") < 0 || Array.IndexOf(Packs, "voice") < 0 || Array.IndexOf(Packs, "ears") < 0 || Array.IndexOf(Packs, "wake") < 0) throw new InvalidDataException("O desinstalador deixaria um dos pacotes dela para trás.");
                 File.WriteAllText(Path.Combine(output, "packaging-test.txt"), "PASS embedded executable extracted\nPASS PE signature\nPASS SHA-256 computed\nPASS an unmarked Capri.exe is recognised as Capri, other programs aren't\nPASS installer and uninstaller windows rendered\nPASS her notices show their title, message and OK in her look, sized to fit the message\nPASS the installer says it's installing the local speech model, that it may take some time, and that an API key gives a better, faster voice\nPASS the uninstaller closes Capri and anything running from her folder, like her brain, and nothing else\nPASS her shortcut is saved through Windows' own shell link, even over an old read-only one, and points at Capri.exe\nPASS a shortcut Windows won't save comes back as its reason instead of stopping the install\nPASS the uninstaller removes her brain, voice, ears and wake packs\nLIMIT installation and uninstallation were not performed\n");
                 return 0;
             }
@@ -156,13 +168,13 @@ namespace CapriSetup
             string destination = InstallPath;
             string marker = Path.Combine(destination, ".capri-install");
             string existing = Path.Combine(destination, "Capri.exe");
-            if (Directory.Exists(destination) && !File.Exists(marker) && File.Exists(existing) && !Ours(existing)) throw new IOException("There's a Capri.exe in " + destination + " that isn't this Capri. Move it out of that folder, then install again.");
+            if (Directory.Exists(destination) && !File.Exists(marker) && File.Exists(existing) && !Ours(existing)) throw new IOException("Existe um Capri.exe em " + destination + " que não é esta Capri. Tire ele dessa pasta e instale de novo.");
             // Her input helper lives a moment after she closes, so a copy on its way out gets a few seconds.
             foreach (Process process in Process.GetProcessesByName("Capri"))
             {
                 using (process)
                 {
-                    try { if (string.Equals(process.MainModule.FileName, Path.Combine(destination, "Capri.exe"), StringComparison.OrdinalIgnoreCase) && !process.WaitForExit(3000)) throw new IOException("Quit Capri from her tray menu, then install again."); }
+                    try { if (string.Equals(process.MainModule.FileName, Path.Combine(destination, "Capri.exe"), StringComparison.OrdinalIgnoreCase) && !process.WaitForExit(3000)) throw new IOException("Feche a Capri pelo menu da bandeja e instale de novo."); }
                     catch (System.ComponentModel.Win32Exception) { }
                 }
             }
@@ -188,7 +200,7 @@ namespace CapriSetup
             {
                 key.SetValue("DisplayName", "Capri");
                 key.SetValue("DisplayVersion", version);
-                key.SetValue("Publisher", "Capri fan project");
+                key.SetValue("Publisher", "Projeto de fãs da Capri");
                 key.SetValue("InstallLocation", destination);
                 key.SetValue("DisplayIcon", Path.Combine(destination, "Capri.exe"));
                 key.SetValue("UninstallString", "\"" + Path.Combine(destination, "Uninstall.exe") + "\" --uninstall");
@@ -231,7 +243,7 @@ namespace CapriSetup
                 data = Path.GetFullPath(data);
                 Directory.CreateDirectory(data);
                 FetchVoice(data, delegate { }, delegate { return false; });
-                if (!VoicePack.Complete(VoicePack.Folder(data))) throw new IOException("The local speech model is missing files after installing.");
+                if (!VoicePack.Complete(VoicePack.Folder(data))) throw new IOException("Faltam arquivos no modelo de voz local depois da instalação.");
                 File.WriteAllText(Path.Combine(data, "voice-test.txt"), "PASS the local speech model downloaded, matched its SHA-256 and unpacked where Capri looks for it\n");
                 return 0;
             }
@@ -250,7 +262,7 @@ namespace CapriSetup
             Directory.CreateDirectory(root);
             long needed = VoicePack.Size * 3 + (64L << 20);
             string drive = Path.GetPathRoot(root);
-            if (new DriveInfo(drive).AvailableFreeSpace < needed) throw new IOException("The local speech model needs " + Megabytes(needed) + " free on " + drive.TrimEnd('\\') + ".");
+            if (new DriveInfo(drive).AvailableFreeSpace < needed) throw new IOException("O modelo de voz local precisa de " + Megabytes(needed) + " livres em " + drive.TrimEnd('\\') + ".");
             string zip = folder + ".zip";
             string part = zip + ".part";
             ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;
@@ -281,7 +293,7 @@ namespace CapriSetup
                                 if (stopped()) throw new OperationCanceledException();
                                 file.Write(buffer, 0, read);
                                 have += read;
-                                if (have - shown >= (1L << 20)) { shown = have; progress("Downloading", have, VoicePack.Size); }
+                                if (have - shown >= (1L << 20)) { shown = have; progress("Baixando", have, VoicePack.Size); }
                             }
                         }
                     }
@@ -291,22 +303,22 @@ namespace CapriSetup
                 if (have < VoicePack.Size)
                 {
                     stalls = have > before ? 0 : stalls + 1;
-                    if (stalls >= 4) throw new IOException("The download keeps stopping. Check your connection.");
+                    if (stalls >= 4) throw new IOException("O download não para de parar. Verifique sua conexão.");
                     Thread.Sleep(1500 * stalls);
                 }
             }
-            progress("Checking", VoicePack.Size, VoicePack.Size);
+            progress("Verificando", VoicePack.Size, VoicePack.Size);
             string sum;
             using (SHA256 sha = SHA256.Create())
             using (FileStream file = File.OpenRead(part)) sum = BitConverter.ToString(sha.ComputeHash(file)).Replace("-", "").ToLowerInvariant();
-            if (have != VoicePack.Size || sum != VoicePack.Sha) { File.Delete(part); throw new IOException("The download came down damaged. Try again from Capri Mainframe."); }
+            if (have != VoicePack.Size || sum != VoicePack.Sha) { File.Delete(part); throw new IOException("O download veio corrompido. Tente de novo pelo Capri Mainframe."); }
             if (File.Exists(zip)) File.Delete(zip);
             File.Move(part, zip);
-            progress("Unpacking", VoicePack.Size, VoicePack.Size);
+            progress("Descompactando", VoicePack.Size, VoicePack.Size);
             string staging = folder + ".new";
             if (Directory.Exists(staging)) Directory.Delete(staging, true);
             ZipFile.ExtractToDirectory(zip, staging);
-            if (!VoicePack.Complete(staging)) throw new IOException("The download is missing files.");
+            if (!VoicePack.Complete(staging)) throw new IOException("Faltam arquivos no download.");
             if (Directory.Exists(folder)) Directory.Delete(folder, true);
             Directory.Move(staging, folder);
             File.Delete(zip);
@@ -317,7 +329,7 @@ namespace CapriSetup
             try
             {
                 FileVersionInfo info = FileVersionInfo.GetVersionInfo(path);
-                return info.ProductName == "Capri" && string.Equals(info.OriginalFilename, "Capri.exe", StringComparison.OrdinalIgnoreCase);
+                return (info.ProductName == "Capri" || info.ProductName == "Capri Fan Build") && string.Equals(info.OriginalFilename, "Capri.exe", StringComparison.OrdinalIgnoreCase);
             }
             catch (FileNotFoundException) { return false; }
         }
@@ -334,7 +346,7 @@ namespace CapriSetup
                 {
                     link.SetPath(target);
                     link.SetWorkingDirectory(Path.GetDirectoryName(target));
-                    link.SetDescription("Capri desktop companion");
+                    link.SetDescription("Companheira de desktop Capri");
                     link.SetIconLocation(target, 0);
                     ((System.Runtime.InteropServices.ComTypes.IPersistFile)link).Save(path, true);
                 }
@@ -396,7 +408,7 @@ namespace CapriSetup
             {
                 string destination = Path.GetFullPath(InstallPath);
                 string expected = Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Capri"));
-                if (!string.Equals(destination, expected, StringComparison.OrdinalIgnoreCase) || !File.Exists(Path.Combine(destination, ".capri-install"))) throw new IOException("The Capri install marker could not be verified.");
+                if (!string.Equals(destination, expected, StringComparison.OrdinalIgnoreCase) || !File.Exists(Path.Combine(destination, ".capri-install"))) throw new IOException("Não foi possível verificar a marca de instalação da Capri.");
                 CloseEverything(destination);
                 string uninstaller = Path.Combine(destination, "Uninstall.exe");
                 SetupFiles.Retire(uninstaller, string.Equals(Path.GetFullPath(Application.ExecutablePath), uninstaller, StringComparison.OrdinalIgnoreCase));
@@ -420,10 +432,10 @@ namespace CapriSetup
                 }
                 Registry.CurrentUser.DeleteSubKeyTree(RegistryPath, false);
                 File.Delete(Path.Combine(destination, ".capri-install"));
-                if (!silent) Notice.Tell(null, "Capri has been removed.\n\nYour position and size settings were kept in " + destination + ".", "Capri", false);
+                if (!silent) Notice.Tell(null, "A Capri foi removida.\n\nSuas configurações de posição e tamanho foram mantidas em " + destination + ".", "Capri", false);
                 return 0;
             }
-            catch (Exception error) { if (silent) Console.Error.WriteLine(error.Message); else Notice.Tell(null, error.Message, "Capri could not be removed", true); return 1; }
+            catch (Exception error) { if (silent) Console.Error.WriteLine(error.Message); else Notice.Tell(null, error.Message, "Não foi possível remover a Capri", true); return 1; }
         }
 
         // Capri and anything running from her folder, like her brain's engine, hold its files, so they're closed first.
@@ -493,7 +505,7 @@ namespace CapriSetup
         internal SetupWindow(bool uninstall)
         {
             removing = uninstall;
-            Text = removing ? "Remove Capri Fan Build" : "Install Capri Fan Build 0.9.5";
+            Text = removing ? "Remover a Capri Fan Build" : "Instalar a Capri Fan Build " + Program.Build;
             FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             MinimizeBox = true;
@@ -506,37 +518,37 @@ namespace CapriSetup
             DoubleBuffered = true;
             Font = Neon.Type(10.5f);
             using (Stream source = Assembly.GetExecutingAssembly().GetManifestResourceStream("Capri.Chip.ico")) if (source != null) Icon = new Icon(source);
-            LabelAt(removing ? "REMOVE CAPRI" : "INSTALL CAPRI", 24, 14, 420, 32, Neon.Display(15f), Neon.Rose);
+            LabelAt(removing ? "REMOVER A CAPRI" : "INSTALAR A CAPRI", 24, 14, 420, 32, Neon.Display(15f), Neon.Rose);
             Glyph(1, 680 - 86, delegate { WindowState = FormWindowState.Minimized; });
             Glyph(2, 680 - 54, delegate { Close(); });
-            LabelAt(removing ? "See you around." : "Unofficial\nDesktop Mate!", 32, 64, 420, 124, Neon.Display(30f), Neon.White);
+            LabelAt(removing ? "Até mais." : "Companheira\nde Desktop!", 32, 64, 420, 124, Neon.Display(30f), Neon.White);
             chip = new PictureBox();
             chip.Bounds = Box(462, 74, 180, 112);
             chip.SizeMode = PictureBoxSizeMode.Zoom;
             chip.BackColor = Color.Transparent;
             using (Stream image = Assembly.GetExecutingAssembly().GetManifestResourceStream("Capri.Chip.png")) if (image != null) using (Bitmap loaded = new Bitmap(image)) chip.Image = new Bitmap(loaded);
             Controls.Add(chip);
-            LabelAt(removing ? "Remove the app and its shortcuts for this Windows user.\nQuit Capri from the tray before continuing." : "Fan-modified build 0.9.5, based on Capri Desktop.\nReferences and changes from the originals: see this project's README.", 34, 198, 610, 50, Neon.Type(11f), Neon.Faint);
-            section = LabelAt("OPTIONS", 34, 254, 400, 20, Neon.Type(10f, true), Neon.White);
+            LabelAt(removing ? "Remove o aplicativo e os atalhos dele para este usuário do Windows.\nFeche a Capri pela bandeja antes de continuar." : "Versão " + Program.Build + " não oficial, modificada por fãs, baseada na Capri Desktop.\nReferências e mudanças em relação ao original: veja o README deste projeto.", 34, 198, 610, 50, Neon.Type(11f), Neon.Faint);
+            section = LabelAt("OPÇÕES", 34, 254, 400, 20, Neon.Type(10f, true), Neon.White);
             section.Visible = !removing;
             desktop = new Tick();
-            desktop.Text = "Add a desktop shortcut";
+            desktop.Text = "Criar um atalho na área de trabalho";
             desktop.Bounds = Box(34, 284, 340, 26);
             desktop.Visible = !removing;
             launch = new Tick();
-            launch.Text = "Open Capri when finished";
+            launch.Text = "Abrir a Capri ao terminar";
             launch.Checked = true;
             launch.Bounds = Box(34, 314, 340, 26);
             launch.Visible = !removing;
             Controls.Add(desktop);
             Controls.Add(launch);
-            status = LabelAt(removing ? "Your saved position and size will be kept." : "", 34, 352, 604, 22, Neon.Type(9.5f), Neon.Faint);
+            status = LabelAt(removing ? "Sua posição e tamanho salvos serão mantidos." : "", 34, 352, 604, 22, Neon.Type(9.5f), Neon.Faint);
             stage = LabelAt("", 34, 282, 604, 28, Neon.Type(13f, true), Neon.White);
             stage.Visible = false;
             note = LabelAt("", 34, 314, 604, 22, Neon.Type(10f), Neon.Faint);
             note.Visible = false;
             primary = new Plate();
-            primary.Text = removing ? "Remove Capri" : "Install Capri";
+            primary.Text = removing ? "Remover a Capri" : "Instalar a Capri";
             primary.Accent = removing ? Neon.Hot : Neon.Cyan;
             primary.Solid = true;
             primary.Font = Neon.Type(11.5f, true);
@@ -544,7 +556,7 @@ namespace CapriSetup
             primary.Click += Perform;
             Controls.Add(primary);
             cancel = new Plate();
-            cancel.Text = "Cancel";
+            cancel.Text = "Cancelar";
             cancel.Font = Neon.Type(11f, true);
             cancel.Bounds = Box(318, 400, 116, 42);
             cancel.Click += delegate
@@ -553,7 +565,7 @@ namespace CapriSetup
                 // Skipping the speech model still leaves Capri installed; she can fetch it later from her Mainframe.
                 stopping = true;
                 cancel.Enabled = false;
-                status.Text = "Skipping it…";
+                status.Text = "Pulando…";
             };
             Controls.Add(cancel);
             AcceptButton = primary;
@@ -593,7 +605,7 @@ namespace CapriSetup
             Plate mark = new Plate();
             mark.Glyph = glyph;
             mark.TabStop = false;
-            mark.AccessibleName = glyph == 1 ? "Minimize" : "Close";
+            mark.AccessibleName = glyph == 1 ? "Minimizar" : "Fechar";
             mark.Bounds = Box(x, 14, 30, 26);
             mark.Click += click;
             Controls.Add(mark);
@@ -646,12 +658,12 @@ namespace CapriSetup
             try
             {
                 if (removing) { Program.BeginUninstall(); Close(); return; }
-                status.Text = "Making a little room for Capri…";
+                status.Text = "Abrindo um espacinho para a Capri…";
                 noShortcut = Program.Install(desktop.Checked);
                 try { SetupFiles.Mark(Program.InstallPath, "manual"); }
-                catch (Exception error) { Notice.Tell(this, "Capri is installed, but the package marker couldn't be cleared. Delete " + SetupFiles.Marker + " in " + Program.InstallPath + " to let her update herself. " + error.Message, "Capri", true); }
+                catch (Exception error) { Notice.Tell(this, "A Capri está instalada, mas não foi possível limpar a marca do pacote. Apague " + SetupFiles.Marker + " em " + Program.InstallPath + " para ela poder se atualizar. " + error.Message, "Capri", true); }
             }
-            catch (Exception error) { status.Text = "Capri could not finish. Your files are still here."; primary.Enabled = true; Notice.Tell(this, error.Message, "Capri couldn't install", true); return; }
+            catch (Exception error) { status.Text = "A Capri não conseguiu terminar. Seus arquivos continuam aqui."; primary.Enabled = true; Notice.Tell(this, error.Message, "A Capri não conseguiu instalar", true); return; }
             if (Environment.Is64BitOperatingSystem && !VoicePack.Complete(VoicePack.Folder(Program.InstallPath))) FetchVoice();
             else Finish();
         }
@@ -662,7 +674,7 @@ namespace CapriSetup
             string app = Path.Combine(Program.InstallPath, "Capri.exe");
             if (noShortcut != null)
             {
-                Notice.Tell(this, "Capri is installed, but Windows wouldn't let the installer save her shortcut:\n" + noShortcut + "\n\nShe's in " + Program.InstallPath + ". Right-click Capri.exe there and pick Pin to Start.", "Capri", false);
+                Notice.Tell(this, "A Capri está instalada, mas o Windows não deixou o instalador salvar o atalho dela:\n" + noShortcut + "\n\nEla está em " + Program.InstallPath + ". Clique com o botão direito no Capri.exe dessa pasta e escolha Fixar em Iniciar.", "Capri", false);
                 try { using (Process.Start("explorer.exe", "/select,\"" + app + "\"")) { } }
                 catch (System.ComponentModel.Win32Exception) { }
             }
@@ -673,7 +685,7 @@ namespace CapriSetup
         // Her local speech model comes with the install, and the window says so plainly while it downloads.
         private void FetchVoice()
         {
-            Speaking(0, VoicePack.Size, "Starting the download…");
+            Speaking(0, VoicePack.Size, "Iniciando o download…");
             Thread worker = new Thread(delegate()
             {
                 string failed = null;
@@ -681,7 +693,7 @@ namespace CapriSetup
                 {
                     Program.FetchVoice(Program.InstallPath, delegate(string what, long have, long size)
                     {
-                        string detail = what == "Downloading" ? Program.Megabytes(have) + " of " + Program.Megabytes(size) : what == "Checking" ? "Checking the download…" : "Unpacking…";
+                        string detail = what == "Baixando" ? Program.Megabytes(have) + " de " + Program.Megabytes(size) : what == "Verificando" ? "Verificando o download…" : "Descompactando…";
                         Post(delegate { Speaking(have, size, detail); });
                     }, delegate { return stopping; });
                 }
@@ -703,13 +715,13 @@ namespace CapriSetup
             fetching = true;
             desktop.Visible = false;
             launch.Visible = false;
-            section.Text = "SPEECH MODEL";
-            stage.Text = "Installing the local speech model";
-            note.Text = "This may take some time. For a better sounding, faster voice, get an API key.";
+            section.Text = "MODELO DE VOZ";
+            stage.Text = "Instalando o modelo de voz local";
+            note.Text = "Isso pode demorar um pouco. Para uma voz melhor e mais rápida, use uma chave de API.";
             stage.Visible = true;
             note.Visible = true;
-            if (!stopping) cancel.Text = "Skip";
-            primary.Text = "Installing…";
+            if (!stopping) cancel.Text = "Pular";
+            primary.Text = "Instalando…";
             primary.Enabled = false;
             got = have;
             total = size;
@@ -717,17 +729,17 @@ namespace CapriSetup
             Invalidate();
         }
 
-        internal bool Saying(string heading, string warning) { return stage.Visible && note.Visible && stage.Text == heading && note.Text.StartsWith(warning, StringComparison.Ordinal) && note.Text.IndexOf("API key", StringComparison.Ordinal) >= 0; }
+        internal bool Saying(string heading, string warning) { return stage.Visible && note.Visible && stage.Text == heading && note.Text.StartsWith(warning, StringComparison.Ordinal) && note.Text.IndexOf("chave de API", StringComparison.Ordinal) >= 0; }
 
         private void Fetched(string failed)
         {
             fetching = false;
             if (string.IsNullOrEmpty(failed)) { Finish(); return; }
-            stage.Text = "Couldn't install the local speech model";
-            note.Text = "Capri is installed. Get it later in Capri Mainframe, or add an API key.";
+            stage.Text = "Não consegui instalar o modelo de voz local";
+            note.Text = "A Capri está instalada. Baixe o modelo depois no Capri Mainframe ou use uma chave de API.";
             status.Text = failed;
             cancel.Visible = false;
-            primary.Text = "Finish";
+            primary.Text = "Concluir";
             primary.Click -= Perform;
             primary.Click += delegate { Finish(); };
             primary.Enabled = true;

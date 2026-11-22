@@ -22,9 +22,21 @@ namespace CapriDesktop
         [DataMember(Name = "sounds_like")] public bool SoundsLike;
         [DataMember(Name = "hearing_log")] public bool HearingLog;
         [DataMember(Name = "colors")] public ModColors Colors;
+        [DataMember(Name = "maroraga")] public ModMaroraga Maroraga;
         internal bool Intro;
         internal string[] Games;
         internal string Know;
+    }
+
+    // The official Maroraga test mod. While it's on she gets the golden anel: she watches what they do, and every request
+    // turns the wheel once so she understands the job in four movements before she acts.
+    [DataContract]
+    internal sealed class ModMaroraga
+    {
+        [DataMember(Name = "stage")] public string Stage;
+        [DataMember(Name = "notes")] public string Notes;
+        [DataMember(Name = "watch")] public bool? Watch;
+        [DataMember(Name = "remember")] public bool? Remember;
     }
 
     [DataContract]
@@ -78,6 +90,7 @@ namespace CapriDesktop
         private volatile string note = "";
         private volatile SoundsLike sounds;
         private volatile bool logging;
+        private volatile Mod maroraga;
 
         internal Mods(string data)
         {
@@ -93,6 +106,32 @@ namespace CapriDesktop
             Hands.AlsoCalled = delegate { return note; };
             Load();
             SeedClassicSkin();
+            SeedMaroraga();
+        }
+
+        // The official Maroraga test mod ships inside the build and is put in her mods folder on first run. It's on
+        // unless they've turned it off, so its behaviour can be tried as soon as it's written.
+        private void SeedMaroraga()
+        {
+            if (All.Exists(mod => mod.File.Id == "maroraga")) return;
+            string file = Path.Combine(folder, "maroraga" + Extension);
+            if (File.Exists(file)) return;
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            using (Stream source = assembly.GetManifestResourceStream("Capri.Mods.maroraga.capri-mod"))
+            {
+                if (source == null) return;
+                try
+                {
+                    Directory.CreateDirectory(folder);
+                    using (FileStream target = new FileStream(file, FileMode.CreateNew, FileAccess.Write)) source.CopyTo(target);
+                    Load();
+                }
+                catch (Exception error)
+                {
+                    if (!(error is IOException || error is UnauthorizedAccessException || error is ModException)) throw;
+                    Brain.Log("mods", -1, "Couldn't add the official Maroraga mod: " + error.Message);
+                }
+            }
         }
 
         private void SeedClassicSkin()
@@ -131,6 +170,9 @@ namespace CapriDesktop
         internal string Folder { get { return folder; } }
         internal List<Mod> All { get; private set; }
         internal List<string> Problems { get; private set; }
+        // What the official Maroraga mod asks her to do. Null while it's off or not installed.
+        internal bool MaroragaOn { get { return maroraga != null; } }
+        internal ModMaroraga Maroraga { get { Mod mod = maroraga; return mod == null ? null : mod.File.Maroraga; } }
 
         internal string[] WakeNames
         {
@@ -269,7 +311,7 @@ namespace CapriDesktop
             CheckDetails(read);
             read.WakeNames = read.WakeNames ?? new string[0];
             read.HeardAs = read.HeardAs ?? new string[0];
-            if (read.WakeNames.Length == 0 && read.HeardAs.Length == 0 && !read.SoundsLike && !read.HearingLog && read.Colors == null) throw new ModException("That mod doesn't change anything. It needs wake_names, heard_as, sounds_like, hearing_log or colors.");
+            if (read.WakeNames.Length == 0 && read.HeardAs.Length == 0 && !read.SoundsLike && !read.HearingLog && read.Colors == null && read.Maroraga == null) throw new ModException("That mod doesn't change anything. It needs wake_names, heard_as, sounds_like, hearing_log, colors or maroraga.");
             if (read.Colors != null) CheckColours(read.Colors);
             if (read.WakeNames.Length > MostNames) throw new ModException("A mod can add up to " + MostNames + " names.");
             if (read.HeardAs.Length > MostSpellings) throw new ModException("A mod can add up to " + MostSpellings + " spellings.");
@@ -309,6 +351,11 @@ namespace CapriDesktop
             if (read.Version != null && read.Version.Length > 20) throw new ModException("A mod's version can be up to 20 characters.");
             if (read.Author != null && read.Author.Length > 40) throw new ModException("A mod's author can be up to 40 characters.");
             if (read.Description != null && read.Description.Length > 200) throw new ModException("A mod's description can be up to 200 characters.");
+            if (read.Maroraga != null)
+            {
+                if (read.Maroraga.Stage != null && read.Maroraga.Stage.Length > 40) throw new ModException("Maroraga's stage can be up to 40 characters.");
+                if (read.Maroraga.Notes != null && read.Maroraga.Notes.Length > 300) throw new ModException("Maroraga's notes can be up to 300 characters.");
+            }
         }
 
         internal static string Pattern(string[] names)
@@ -338,6 +385,7 @@ namespace CapriDesktop
             if (!wantLog) DeleteLog();
             ApplySkin();
             skills = All.FindAll(mod => mod.Skill && mod.On).ToArray();
+            maroraga = All.Find(mod => mod.On && mod.File.Maroraga != null);
             note = names.Length == 0 ? "" : "\nThey can also call you " + Listed(names) + ". Those are nicknames for you, so answer to them like your own name.";
         }
 

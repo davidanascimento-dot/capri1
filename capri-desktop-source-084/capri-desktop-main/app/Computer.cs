@@ -193,6 +193,7 @@ namespace CapriDesktop
 
         internal const string Playing =
             "\nThis job plays a game, and you're a real gamer who has played everything. Work out which game this is and use what you already know about it: its goal, its controls, how it's meant to be played, and what a good player would do next. Play like that person, not like someone following steps." +
+            "\nYou play to a plan in three acts: a beginning, a middle and an end. Read the plan you're given, and understand what the game is really for rather than any instruction taken word for word. When the screen shows you something that changes that, call plan to rewrite the part that's wrong, or to move to the next act; it's your plan, not a script, and the screen always wins." +
             "\nEach turn, look closely at the screen: where you are, what's around you, what's a threat, what you're trying to do right now. Then act. Send several moves in one turn when they belong together, like look, then walk, then mouse_hold, because the game doesn't wait while you think. Then check what changed." +
             "\nTo face something in a 3D game, call look with its x and y. Ordinary mouse moves don't turn a game's camera, and a click only hits what's at the crosshair in the middle of the view. Use walk to move, mouse_hold to mine, shoot, aim or use things, and key presses for the rest. In menus, inventories and maps the mouse is a normal pointer, so click as usual." +
             "\nMost PC games use wasd to move, space to jump, shift to run, ctrl or c to crouch, e or f to use things, r to reload, tab for scores or inventory, m for the map and esc to pause. If you lose track of how far up or down you're looking, call look with level yes. If you die or fail, respawn or retry and carry on, and work out what got you. If a click doesn't do what you wanted, try the other mouse button, then holding it. Story choices and dialogue options in their game are theirs: leave them alone unless they asked you to play the story. Games hitch: if one seems frozen or ignores you, wait 20 seconds and look again before you think it's stuck. Getting lost or stuck is normal, so turn around, go back, jump, or try another way, and keep playing until what they asked for is done or they say stop." +
@@ -216,6 +217,8 @@ namespace CapriDesktop
               "{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\",\"description\":\"The line she says\"}},\"required\":[\"text\"]}" },
             { "learn", "Save one short thing you worked out about this game for every time you play it after this, like a key, what killed you, what worked or where something is. You're told these before you play it again.",
               "{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\",\"description\":\"One short line\"}},\"required\":[\"text\"]}" },
+            { "plan", "Rewrite your plan for this game when you understand it better or the game surprises you: what it is really for, what this run must do, and how it begins, plays out and ends. Your plan is yours to change, not a script, and the screen always wins. Set phase to the act you are in now.",
+              "{\"type\":\"object\",\"properties\":{\"goal\":{\"type\":\"string\",\"description\":\"What this run must do\"},\"purpose\":{\"type\":\"string\",\"description\":\"What the game is really for, in your own words\"},\"beginning\":{\"type\":\"string\",\"description\":\"How you should start\"},\"middle\":{\"type\":\"string\",\"description\":\"The core loop, and what to do when a move fails\"},\"end\":{\"type\":\"string\",\"description\":\"How you will know the goal is done\"},\"phase\":{\"type\":\"string\",\"description\":\"Which act you are in now\",\"enum\":[\"beginning\",\"middle\",\"end\"]}}}" },
             { "mouse_hold", "Hold a mouse button in a game for as long as something takes, like holding left click to mine a block or fire, or right click to aim, block or use. When you're breaking something, always set stop to yes, so it lets go by itself the moment what's under the crosshair changes and you don't start on the next block.",
               "{\"type\":\"object\",\"properties\":{\"button\":{\"type\":\"string\",\"description\":\"Which button. Default left\",\"enum\":[\"left\",\"right\"]},\"seconds\":{\"type\":\"string\",\"description\":\"Longest to hold it. Default 1\"},\"keys\":{\"type\":\"string\",\"description\":\"Keys to hold with it, joined with +, if any\"},\"stop\":{\"type\":\"string\",\"description\":\"Let go when what's under the crosshair changes\",\"enum\":[\"yes\",\"no\"]}}}" }
         };
@@ -284,9 +287,9 @@ namespace CapriDesktop
         internal static string Tools { get { return Rendering()[0]; } }
         internal static string ClaudeTools { get { return Rendering()[1]; } }
         // Her own hold_and_press rides beside Claude's computer tools, so she can hold w while she presses space.
-        internal static readonly string Toolset = "[{\"type\":\"computer_toolset_20260801\"}," + Render("open_app") + "," + Render("open_website") + "," + Render("find_file") + "," + Render("draw") + "," + Render("hold_and_press") + "," + Render("look") + "," + Render("walk") + "," + Render("mouse_hold") + "," + Render("say") + "," + Render("learn") + "]";
+        internal static readonly string Toolset = "[{\"type\":\"computer_toolset_20260801\"}," + Render("open_app") + "," + Render("open_website") + "," + Render("find_file") + "," + Render("draw") + "," + Render("hold_and_press") + "," + Render("look") + "," + Render("walk") + "," + Render("mouse_hold") + "," + Render("say") + "," + Render("learn") + "," + Render("plan") + "]";
         internal static string Listing { get { return Rendering()[2]; } }
-        private static readonly Regex StepText = new Regex(@"\b(click|type|press|hold_and_press|scroll|open_app|open_website|find_file|draw|wait_for|wait|note|look|walk|mouse_hold|say|learn|ask|done)\s*(\{(?:[^{}""]|""(?:\\.|[^""\\])*"")*\})", RegexOptions.Singleline);
+        private static readonly Regex StepText = new Regex(@"\b(click|type|press|hold_and_press|scroll|open_app|open_website|find_file|draw|wait_for|wait|note|look|walk|mouse_hold|say|learn|plan|ask|done)\s*(\{(?:[^{}""]|""(?:\\.|[^""\\])*"")*\})", RegexOptions.Singleline);
         private static readonly Regex BareClick = new Regex(@"^\W*click\W*(\d{1,3})\W*$", RegexOptions.IgnoreCase);
         private static readonly Regex Risky = new Regex(@"\b(send|post|publish|tweet|reply|comment|buy|purchase|pay|checkout|check out|place order|order now|book now|book it|complete booking|reserve|reserve now|subscribe|donate|delete|remove|uninstall|install|format|transfer|confirm|sign out|log out|unfriend|block|report)\b", RegexOptions.IgnoreCase);
         private static readonly Regex Told = new Regex(@"\b(send|message|text|dm|tell|say|write|type|put|paste|share|answer|respond|ask|let|post|publish|tweet|reply|comment|delete|remove|erase|trash|uninstall|install|format|confirm|sign\s+out|log\s+out|unfriend|block|report)\b", RegexOptions.IgnoreCase);
@@ -690,6 +693,7 @@ namespace CapriDesktop
             if (tool == "press") return "press " + (args.Keys ?? "");
             if (tool == "hold_and_press") return "hold " + (args.Hold ?? "") + (string.IsNullOrWhiteSpace(args.Press) ? "" : " and press " + args.Press);
             if (tool == "learn") return "learn " + Voice.Quote(args.Text ?? "");
+            if (tool == "plan") return "plan";
             if (tool == "look") return "look";
             if (tool == "walk") return "walk " + (args.Keys ?? "w") + " " + (args.Seconds ?? "2") + " s";
             if (tool == "mouse_hold") return "hold " + (args.Button ?? "left") + " click " + (args.Seconds ?? "1") + " s";
@@ -739,6 +743,7 @@ namespace CapriDesktop
             if (tool == "press") return "Pressing " + (args.Keys ?? "") + ".";
             if (tool == "hold_and_press") return "Holding " + (args.Hold ?? "keys") + (string.IsNullOrWhiteSpace(args.Press) ? "" : " and pressing " + args.Press) + ".";
             if (tool == "learn") return "Noting that for next time.";
+            if (tool == "plan") return "Updating my plan.";
             if (tool == "look") return "Looking around.";
             if (tool == "walk") return "Moving.";
             if (tool == "mouse_hold") return "Holding " + (args.Button ?? "left") + " click.";
@@ -765,6 +770,7 @@ namespace CapriDesktop
             if (tool == "press") return "Pressed " + (args.Keys ?? "");
             if (tool == "hold_and_press") return "Held " + (args.Hold ?? "keys") + (string.IsNullOrWhiteSpace(args.Press) ? "" : " and pressed " + args.Press);
             if (tool == "learn") return "Noted that for next time";
+            if (tool == "plan") return "Updated my plan";
             if (tool == "look") return "Looked around";
             if (tool == "walk") return "Moved";
             if (tool == "mouse_hold") return "Held " + (args.Button ?? "left") + " click";
@@ -2394,6 +2400,8 @@ namespace CapriDesktop
         // The game this job plays once one's open, the moves it made there, and a small call that thinks over how it went.
         internal Func<string, string, string> Aside;
         private string game;
+        // What she's worked out about this game: its plan in three acts and the little net that learns from every move.
+        private GameCoach coach;
         private string carried;
         private string lastMoves;
         private readonly List<string> played = new List<string>();
@@ -2530,11 +2538,37 @@ namespace CapriDesktop
             return game;
         }
 
-        // A game job gets her game lines, what kind of game this is and what she's learned about it before.
-        private string Briefed() { return Playing ? Computer.PlayingNow + (Consults ? Computer.Consulting : "") + GameNotes.Brief(Game()) : ""; }
+        // Her game coach starts the first time a game job needs it, and only once per job. It keeps the plan she's playing to
+        // and learns what works here from what each move did.
+        private GameCoach Coach()
+        {
+            if (coach == null && Playing)
+            {
+                string about = Game();
+                if (about != null) coach = GameCoach.Start(about, Words);
+            }
+            return coach;
+        }
+
+        // Every move in a game teaches the coach something, except a secret she typed and the plan itself. A mistake is kept
+        // so the next turn changes something instead of doing the same thing again.
+        private void Observed(string tool, ToolArguments args, string result, bool failed)
+        {
+            GameCoach brain = Coach();
+            if (brain != null) brain.Observe(tool, args, result, failed, clock.Elapsed.TotalSeconds);
+        }
+
+        // A game job gets her game lines, what kind of game this is, what she's learned about it before, and the plan she's
+        // playing to.
+        private string Briefed()
+        {
+            if (!Playing) return "";
+            GameCoach brain = Coach();
+            return Computer.PlayingNow + (Consults ? Computer.Consulting : "") + GameNotes.Brief(Game()) + (brain == null ? "" : brain.Brief());
+        }
 
         // Her hands' prompt for a turn. A stream gets its note on every brain, so she talks to chat whichever one she's on (Lachy, 1 Nov).
-        internal string Prompted(string hands) { return Computer.Allowing(hands) + (Computer.Streaming ? Computer.StreamNote : "") + Briefed(); }
+        internal string Prompted(string hands) { return Computer.Allowing(hands) + (Computer.Streaming ? Computer.StreamNote : "") + Briefed() + Maroraga.Brief(); }
 
         // A game job that ran a while thinks over how it went, off to the side, and keeps what it found out for next time.
         private void Reflect(string outcome, string said)
@@ -2542,6 +2576,15 @@ namespace CapriDesktop
             Func<string, string, string> aside = Aside;
             string about = Game();
             if (aside == null || about == null || played.Count < Computer.WorthThinking || outcome == "waiting" || outcome == "asked") return;
+            // The coach's reflection is the fuller one: it keeps the mistakes she made, rewrites her plan in three acts and
+            // saves the notes she'd want next run. Its prompt still carries every move, so nothing is lost.
+            GameCoach brain = Coach();
+            if (brain != null)
+            {
+                string[] moves = played.ToArray();
+                System.Threading.ThreadPool.QueueUserWorkItem(delegate { brain.Reflect(outcome, said, moves, aside); });
+                return;
+            }
             string asked = GameNotes.Reflection(Words, outcome, said, played.ToArray());
             System.Threading.ThreadPool.QueueUserWorkItem(delegate
             {
@@ -3272,6 +3315,14 @@ namespace CapriDesktop
                 if (Computer.Streaming && spoken == "Said." && !string.IsNullOrWhiteSpace(args.Text)) Mark(new JobStep { Tool = name, Label = "Said " + Voice.Quote(args.Text.Trim()) });
                 return spoken;
             }
+            if (name == "plan")
+            {
+                GameCoach planning = Coach();
+                string changed = planning == null ? "There's no game to plan right now." : planning.SetPlan(args);
+                Steps.Add("plan: " + changed);
+                Mark(new JobStep { Tool = name, Label = "Updated my plan", Finished = true });
+                return changed;
+            }
             Computer.KeysOk = approved.Contains("keys");
             bool secret = name == "type" && Computer.SecretFocus();
             if (secret) Computer.Keep(args.Text);
@@ -3291,7 +3342,10 @@ namespace CapriDesktop
             else if (member && args.Coordinate != null) misses = 0;
             if (secret) result = Hush(result, args.Text);
             if (Playing && !secret) played.Add(name + " " + Computer.Traced(args) + ": " + result);
-            bool failed = Computer.Failed(result) || Computer.Interrupted;
+            bool failed = Computer.Failed(result) || Computer.Interrupted || (Playing && GameCoach.Failed(name, result));
+            if (Playing && !secret) Observed(name, masked, result, failed);
+            Maroraga.Saw(name, masked, result, failed);
+            if (name == "learn" && !failed) Maroraga.Taught(args.Text);
             string done = member ? Computer.Moving(name, masked, target, true) : Computer.Did(name, masked, null);
             if (doing != null)
             {
@@ -3348,6 +3402,14 @@ namespace CapriDesktop
                 if (spoken == "Said.") Steps.Add("Said " + Voice.Quote(args.Text ?? ""));
                 return spoken;
             }
+            if (tool == "plan")
+            {
+                GameCoach planning = Coach();
+                string changed = planning == null ? "There's no game to plan right now." : planning.SetPlan(args);
+                Steps.Add("plan: " + changed);
+                Mark(new JobStep { Tool = tool, Label = "Updated my plan", Finished = true });
+                return changed;
+            }
             Computer.KeysOk = approved.Contains("keys");
             if (tool == "type") args.Text = Filled(Computer.Unechoed(args.Text, Task.IndexOf(Computer.Exact, StringComparison.Ordinal) >= 0 ? Words : null));
             // The window in front changed after she looked, so she looks again instead of acting on old buttons. Only Esc stops her.
@@ -3401,7 +3463,10 @@ namespace CapriDesktop
             }
             if (secret) { result = Hush(result, args.Text); if (shown != null) shown = Hush(shown, args.Text); }
             Steps.Add(Computer.Describe(tool, masked, sight) + ": " + result);
-            bool failed = Computer.Failed(result) || Computer.Interrupted;
+            bool failed = Computer.Failed(result) || Computer.Interrupted || (Playing && GameCoach.Failed(tool, result));
+            if (Playing && !secret) Observed(tool, masked, result, failed);
+            Maroraga.Saw(tool, masked, result, failed);
+            if (tool == "learn" && !failed) Maroraga.Taught(args.Text);
             Mark(new JobStep { Tool = tool, Label = failed ? Clean(shown ?? Hands.Shown(result), "That didn't work.").TrimEnd('.') : Computer.Did(tool, masked, sight), Finished = true, Failed = failed });
             return result;
         }

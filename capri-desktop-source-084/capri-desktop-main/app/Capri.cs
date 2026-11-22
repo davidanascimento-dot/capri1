@@ -1224,6 +1224,21 @@ namespace CapriDesktop
             return plain ?? first;
         }
 
+        // O aplicativo que anda ao lado do instalador. Lançamentos antigos não têm esse arquivo, e aí o instalador
+        // deles traz o aplicativo dentro de si, como antes.
+        internal static ReleaseAsset App(Release release)
+        {
+            if (release == null || release.Assets == null) return null;
+            foreach (ReleaseAsset asset in release.Assets)
+            {
+                if (asset == null || asset.Name == null || !string.Equals(asset.Name, "Capri.exe", StringComparison.OrdinalIgnoreCase)) continue;
+                if (asset.Url == null || asset.Size <= 0 || asset.Size > 512L * 1024 * 1024) continue;
+                if (asset.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) continue;
+                return asset;
+            }
+            return null;
+        }
+
         internal UpdateFile Download(Release release)
         {
             Version version;
@@ -1232,6 +1247,8 @@ namespace CapriDesktop
             if (asset == null) throw new BrainException("This release has no Capri installer.");
             if (asset.Size <= 0 || asset.Size > 512L * 1024 * 1024) throw new BrainException("The update size is invalid.");
             Address(asset.Url);
+            ReleaseAsset beside = App(release);
+            if (beside != null) Address(beside.Url);
             ReleaseAsset sums = null;
             foreach (ReleaseAsset entry in release.Assets)
                 if (entry != null && string.Equals(entry.Name, "SHA256SUMS.txt", StringComparison.OrdinalIgnoreCase))
@@ -1240,31 +1257,61 @@ namespace CapriDesktop
                     sums = entry;
                 }
             string hash = null;
+            string besideHash = null;
             if (sums != null)
             {
                 using (MemoryStream memory = new MemoryStream())
                 {
                     Copy(sums.Url, memory, 1024 * 1024, -1);
                     memory.Position = 0;
-                    using (StreamReader reader = new StreamReader(memory)) hash = Checksum(reader.ReadToEnd(), asset.Name);
+                    using (StreamReader reader = new StreamReader(memory))
+                    {
+                        string text = reader.ReadToEnd();
+                        hash = Checksum(text, asset.Name);
+                        if (beside != null) besideHash = Checksum(text, beside.Name);
+                    }
                 }
             }
             UpdateFile update = new UpdateFile { Version = version.Revision == 0 ? version.ToString(3) : version.ToString(4), Hash = hash, Size = asset.Size };
             update.Path = Path.Combine(folder, "Capri-Setup-" + update.Version + "-" + asset.Id + ".exe");
             Directory.CreateDirectory(folder);
-            string partial = update.Path + ".partial";
-            if (File.Exists(partial)) File.Delete(partial);
             if (File.Exists(update.Path))
             {
                 Verify(update.Path, update, true);
-                return update;
+            }
+            else
+            {
+                string partial = update.Path + ".partial";
+                if (File.Exists(partial)) File.Delete(partial);
+                try
+                {
+                    using (FileStream target = new FileStream(partial, FileMode.CreateNew, FileAccess.Write, FileShare.None)) Copy(asset.Url, target, asset.Size, asset.Size);
+                    Verify(partial, update);
+                    File.Move(partial, update.Path);
+                }
+                finally { if (File.Exists(partial)) File.Delete(partial); }
+            }
+            if (beside != null) DownloadBeside(beside, besideHash, update.Version);
+            return update;
+        }
+
+        // O Capri.exe da atualização fica na mesma pasta do instalador baixado, com o nome que ele procura.
+        private void DownloadBeside(ReleaseAsset asset, string hash, string version)
+        {
+            UpdateFile app = new UpdateFile { Version = version, Hash = hash, Size = asset.Size, Path = Path.Combine(folder, "Capri.exe") };
+            string partial = app.Path + ".partial";
+            if (File.Exists(partial)) File.Delete(partial);
+            if (File.Exists(app.Path))
+            {
+                try { Verify(app.Path, app, true); return; }
+                catch (BrainException) { }
             }
             try
             {
                 using (FileStream target = new FileStream(partial, FileMode.CreateNew, FileAccess.Write, FileShare.None)) Copy(asset.Url, target, asset.Size, asset.Size);
-                Verify(partial, update);
-                File.Move(partial, update.Path);
-                return update;
+                Verify(partial, app);
+                if (File.Exists(app.Path)) File.Delete(app.Path);
+                File.Move(partial, app.Path);
             }
             finally { if (File.Exists(partial)) File.Delete(partial); }
         }
@@ -1653,6 +1700,15 @@ namespace CapriDesktop
         private readonly Clip dangle = new Clip("dangle", 24, 10, 1.11f);
         private readonly Clip sleep = new Clip("sleep", 16, 6, 1.11f);
         private readonly Clip wake = new Clip("wake", 13, 15, 1.11f);
+        // Her newer close-ups: the eye square she looks through, her talking frames, and her happy and sad faces.
+        // Her standing and walking art stays the bright original; these only replace her while one of those moments is on.
+        private readonly Clip newTalk = new Clip("newtalk", 6, 7, 1.2f);
+        private readonly Clip happy = new Clip("newhappy", 24, 8, 1.0f);
+        private readonly Clip eyes = new Clip("neweyes", 20, 7, 1.0f);
+        private readonly Clip sad = new Clip("newsad", 1, 1, 1.0f);
+        // When the eye square next comes out by herself, how long it stays, and how long a sad close-up lasts.
+        private double nextEyes = -1, eyesStart = -1, eyesUntil = -1, sadUntil = -1;
+        private const double EyeGapMin = 45, EyeGapSpread = 75, EyeFor = 3, EyeGlanceFor = 3, SadFor = 3;
         // her artist's perch: 60 frames at 30 fps. Its cells are cut to her outline, so they sit 26 px left of her
         // square's middle and start 36 px down it, in 384 px art, which leaves room for her longer dangling legs. Facing left,
         // every perch clip shows her artist's flipped set (the _flipped strips) on the same cells, loaded while she sits.
@@ -2363,6 +2419,7 @@ namespace CapriDesktop
             Hands.Websites = new Websites(data);
             Brain.TranscriptPath = Path.Combine(data, "transcripts");
             GameNotes.Folder = Path.Combine(data, "games");
+            GameCopy.Folder = Path.Combine(data, "routes");
             Hands.GameOpen = delegate { return Computer.GameOpen(); };
             engine = new Engine(data);
             kokoro = new LocalVoice(data);
@@ -2465,6 +2522,9 @@ namespace CapriDesktop
             wanderItem.Checked = preferences.Wander;
             wanderItem.ToolTipText = "Permitir ou pausar os passeios automáticos da Capri pela área de trabalho.";
             menu.Items.Add(wanderItem);
+            ToolStripMenuItem systemItem = new ToolStripMenuItem("Sistema", null, delegate { SysPanel.Popup(this); });
+            systemItem.ToolTipText = "Ver o que a Capri e o PC estão usando agora, como um gerenciador de tarefas.";
+            menu.Items.Add(systemItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(new ToolStripMenuItem("Ouvidos", null, delegate { mainframe.OpenTool("voice"); }));
             menu.Items.Add(new ToolStripMenuItem("Aparência", null, delegate { mainframe.Restore(); mainframe.ShowMods(true); }));
@@ -2617,6 +2677,10 @@ namespace CapriDesktop
             tray.BalloonTipClicked += delegate { BalloonClicked(); };
             tray.Visible = !testing;
             ModList = new Mods(data);
+            Maroraga.Configure(ModList, data);
+            SystemIntel.Configure(data);
+            SysPanel.DataFolder = data;
+            SysPanel.Notes = PanelNotes;
             GameNotes.Skills = ModList.SkillsFor;
             ModList.HostFor = delegate(string modId) { return new ModHost(this, modId); };
             ModList.SkinChanged = Reskinned;
@@ -2631,6 +2695,7 @@ namespace CapriDesktop
             Hands.LookOn = LookAt;
             Hands.ReadFile = brain.ReadFile;
             Hands.Work = RunJob;
+            GameCopy.Busy = delegate { return job != null; };
             Hands.StopStream = delegate { if (streamLoop) Computer.Interrupt("You asked me to stop streaming."); };
             Hands.Plan = reminders.Route;
             Hands.Remind = reminders.Remind;
@@ -2756,6 +2821,7 @@ namespace CapriDesktop
             signals.Tick += delegate
             {
                 CheckKeepAwake();
+                Maroraga.Watch();
                 double signalNow = clock.Elapsed.TotalSeconds;
                 if (husk != null) husk.Tick();
                 CheckHuskFront(signalNow);
@@ -3161,6 +3227,8 @@ namespace CapriDesktop
             if ((clip == perch || clip == perchDance || clip == laydown || clip == laydownSleep) && preferences.PerchFps != 30) index = PerchIndex(now - clipStart, preferences.PerchFps, out perchMix);
             if (clip == leave || clip == perchLeave || clip == laydownLeave) return Math.Min(index, clip.Count - 1);
             if ((clip == glitch && index >= glitch.Count) || (clip == wake && index >= wake.Count) || (clip == grin && index >= grin.Count * 2)) { Play(idle); index = 0; }
+            if (clip == happy && index >= happy.Count) { Play(Resting()); index = 0; }
+            if (clip == sad && now >= sadUntil) { Play(Resting()); index = 0; }
             if (clip == arrive && index >= arrive.Count)
             {
                 Play(idle);
@@ -3186,6 +3254,59 @@ namespace CapriDesktop
                 if (now >= nextGlitch && speech == null && talkState == TalkState.Off) { nextGlitch = now + 30 + random.NextDouble() * 30; Play(clip == perch ? perchGlitch : clip == laydown ? laydownGlitch : glitch); return 0; }
             }
             return index % clip.Count;
+        }
+
+        // Where she goes back to after one of her new one-shot faces: lying, sitting or standing as she was.
+        private Clip Resting() { return lying ? laydown : (seat != null || onPanel || riding) ? perch : idle; }
+
+        // How far into a clip that plays once. Her old blink frames belong to the old art and don't go on the new ones.
+        private int LoopCell(double now, Clip art)
+        {
+            int cell = (int)((now - clipStart) * art.Fps) % art.Count;
+            return cell < 0 ? 0 : cell;
+        }
+
+        private int EyesCell(double since)
+        {
+            int cell = (int)(since * eyes.Fps) % eyes.Count;
+            return cell < 0 ? 0 : cell;
+        }
+
+        // Now and then she stops and looks through her eye square, without any screen watch turned on.
+        private void Peek(double now)
+        {
+            if (nextEyes < 0) nextEyes = now + 30 + random.NextDouble() * 60;
+            if (now < nextEyes) return;
+            if (!EyesFree(now)) { nextEyes = now + 5; return; }
+            eyesStart = now;
+            eyesUntil = now + EyeFor;
+            nextEyes = now + EyeGapMin + random.NextDouble() * EyeGapSpread;
+        }
+
+        // Only while she's standing still, awake and not already busy with a bubble, a job or a watch.
+        private bool EyesFree(double now)
+        {
+            return preferences.Motion && !hidden && !miniMode && !docked && !Asleep && clip == idle && seat == null && !lying
+                && !walking && !falling && !dragging && !hanging && !edgePeeking && !glancing && working == null
+                && speech == null && talkState == TalkState.Off && !box.Visible && !typer.Visible && !menu.Visible
+                && !mainframe.Visible && !CallModeOn;
+        }
+
+        // A happy close-up, for a head pat or something that delights her.
+        private void BeHappy()
+        {
+            if (hidden || miniMode || docked || Asleep || lying || seat != null || onPanel || riding || dragging) return;
+            Play(happy);
+            frames.Start();
+        }
+
+        // A quiet, sad eye when someone is unkind to her.
+        private void BeSad()
+        {
+            if (testing || hidden || miniMode || docked || Asleep || lying || seat != null || onPanel || riding || dragging) return;
+            sadUntil = clock.Elapsed.TotalSeconds + SadFor;
+            Play(sad);
+            frames.Start();
         }
 
         // Her blink for the loop she's in, glitchy or not; lying, once those frames are in.
@@ -3950,6 +4071,35 @@ namespace CapriDesktop
 
         private static Size CanvasSize(int size) { return new Size(size + PaddingSize * 2, size + PaddingSize * 2); }
 
+        // What only the companion knows about herself, for the system panel: how many mods are on, how fast her voice is coming
+        // out, and how many pages she has in her own reference library.
+        private List<KeyValuePair<string, string>> PanelNotes()
+        {
+            List<KeyValuePair<string, string>> rows = new List<KeyValuePair<string, string>>();
+            int on = 0, all = 0;
+            try
+            {
+                foreach (Mod mod in ModList.All)
+                {
+                    if (mod.Code) continue;
+                    all++;
+                    if (mod.On) on++;
+                }
+            }
+            catch (Exception) { }
+            rows.Add(new KeyValuePair<string, string>("Mods", on + " de " + all + " ligados"));
+            double voice = 0;
+            try { voice = SystemIntel.AverageVoiceSeconds(); }
+            catch (Exception) { }
+            rows.Add(new KeyValuePair<string, string>("Voz", voice <= 0 ? "sem falas recentes"
+                : voice.ToString("0.0") + " s por fala"));
+            int pages = 0;
+            try { pages = SystemIntel.LibraryCount(); }
+            catch (Exception) { }
+            rows.Add(new KeyValuePair<string, string>("Referências", pages + (pages == 1 ? " página" : " páginas")));
+            return rows;
+        }
+
         private void AddSize(ToolStripMenuItem parent, string label, int size)
         {
             ToolStripMenuItem item = new ToolStripMenuItem(label, null, delegate { SetCharacterSize(size); });
@@ -4109,7 +4259,7 @@ namespace CapriDesktop
                 string[] lines = { "Oh, you're using {0} now? And here I was, right on your desktop.", "Is {0} stealing my attention? I'll pretend I don't care.", "Talking to {0} without telling me? Digital betrayal, choom." };
                 line = string.Format(lines[random.Next(lines.Length)], rival);
             }
-            Play(grin);
+            BeSad();
             ClearRivalCue();
             rivalCue = new RivalCue(rival, line, new Point(anchor.X + Width / 2, anchor.Y + Height / 2));
             rivalCue.ShowCue();
@@ -4394,7 +4544,7 @@ namespace CapriDesktop
             {
                 if (lying) { Play(laydown); blinkWith = Blinks(false); }
                 else if (seat != null) { Play(perch); blinkWith = perchBlink; }
-                else Play(grin);
+                else BeHappy();
             }
             frames.Start();
             RenderFrame();
@@ -5698,6 +5848,13 @@ namespace CapriDesktop
             // A look is already in her transcript; anything else she did goes in as a job. A check of what's open, what's installed
             // or how her settings are isn't something she did, and window titles stay out of her memories.
             if (tool != "look_at_screen" && !Hands.Checking(tool, args) && !string.IsNullOrEmpty(done)) Brain.Transcribe(null, "Job: " + done);
+            // A quick tool that missed is a move too, so the same four-wheel understanding can learn from it.
+            if (task == null && tool != "look_at_screen" && tool != "use_computer" && tool != "type" && !Hands.Checking(tool, args))
+            {
+                bool missedTool = Hands.Failed(done) || Computer.Failed(done);
+                Maroraga.Saw(tool, args, done, missedTool);
+                if (tool == "learn" && !missedTool) Maroraga.Taught(args == null ? null : args.Text);
+            }
             return done;
         }
 
@@ -9798,6 +9955,7 @@ namespace CapriDesktop
         {
             if (quitting) return Computer.Why;
             job = running;
+            Maroraga.Keep(running.Task);
             if (InvokeRequired) Invoke(new Action(StopExplore)); else StopExplore();
             running.Think = delegate(string system, string user, System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, ToolArguments>> calls) { return brain.Step(system, user, Computer.Tools, Computer.ClaudeTools, Computer.Listing, calls); };
             Cloud driver = brain.Remote;
@@ -9968,6 +10126,7 @@ namespace CapriDesktop
         // She stays on the panel until it fades.
         private void JobOff(Job running, string outcome, string result)
         {
+            Maroraga.Finished(outcome, result);
             working = null;
             asideShown = null;
             if (jobEars)
@@ -13478,6 +13637,7 @@ namespace CapriDesktop
         {
             text = (text ?? "").Trim();
             if (text.Length == 0) return;
+            Hands.AskedLast = text;
             Func<int, string> callReply = prompt == "> you: " ? FriendAnswer(text) : null;
             int callVersion = (callInput || prompt == "> you: ") && CallModeOn ? callSession.Generation : -1;
             string callContext = callVersion < 0 ? null : callSession.Context(callVersion);
@@ -13512,10 +13672,12 @@ namespace CapriDesktop
             Job running = job;
             if (callReply == null && MidJob(running) && prompt == "> you: ")
             {
+                Maroraga.Heard(text);
                 if (planned.Key != null) AsideTool(text, planned.Key, planned.Value, running);
                 else HeardMidJob(text, running);
                 return;
             }
+            Maroraga.Begin(text);
             if (local) { talkState = TalkState.Thinking; CheckEars(clock.Elapsed.TotalSeconds); }
             if (hidden) SetHidden(false);
             hideAsked = false;
@@ -13556,7 +13718,7 @@ namespace CapriDesktop
                 else Security.Drop();
             }
             // Volume, mute and music work before she has a brain, and so do her nap, her own moves and her animations.
-            if (callReply == null && Hands.Heard(text, out quick, out quickArgs) && (quick == "hologram" || think == null && (quick == "clip" || quick == "nap" || quick == "watch_along" || quick == "draw" && string.IsNullOrEmpty(quickArgs.Description) || brain.Model == null && WithoutBrain(quick)))) { followAllowed = false; think = delegate { return Hands.Shown(Security.Said(DoTool(quick, quickArgs))); }; }
+            if (callReply == null && Hands.Heard(text, out quick, out quickArgs) && (quick == "hologram" || quick == "game_copy" || think == null && (quick == "clip" || quick == "nap" || quick == "watch_along" || quick == "draw" && string.IsNullOrEmpty(quickArgs.Description) || brain.Model == null && WithoutBrain(quick)))) { followAllowed = false; think = delegate { return Hands.Shown(Security.Said(DoTool(quick, quickArgs))); }; }
             if (think == null && fileMessage) think = delegate(string question) { string after; return brain.Ask(question, false, out after, callContext, delegate { return CallReply(ticket, question); }); };
             if (think == null && brain.Model == null && News.Matching(text) != null) think = delegate { return News.Facts; };
             if (think == null)
@@ -13611,7 +13773,7 @@ namespace CapriDesktop
 
         internal static bool WithoutBrain(string tool)
         {
-            return tool == "media" || tool == "play_music" || tool == "open_app" || tool == "open_website" || tool == "website_nickname" || tool == "find_file" || tool == "nap" || tool == "move_yourself" || tool == "animate" || tool == "clone" || tool == "hologram" || tool == "desktop_icons" || tool == "gaming_mode" || tool == "watch_along";
+            return tool == "media" || tool == "play_music" || tool == "open_app" || tool == "open_website" || tool == "website_nickname" || tool == "find_file" || tool == "nap" || tool == "move_yourself" || tool == "animate" || tool == "clone" || tool == "hologram" || tool == "desktop_icons" || tool == "gaming_mode" || tool == "watch_along" || tool == "game_copy";
         }
 
         private bool SwitchModel(Cloud remote)
@@ -13630,6 +13792,7 @@ namespace CapriDesktop
         private void Answer(int ticket, string said, TalkState state, bool quiet = false)
         {
             if (ticket != asking || IsDisposed) return;
+            if (job == null) Maroraga.Finished("answered", said);
             said = Lines.Spoken(said);
             if (ticket == newsTicket && state == TalkState.Dormant) { Begin(ticket, Lines.Spoken(News.Line), TalkState.Talking, null); return; }
             said = CallLine(ticket, said);
@@ -13883,6 +14046,7 @@ namespace CapriDesktop
         {
             if (!IsHandleCreated || hidden || docked || miniMode || IsDisposed) return;
             double now = clock.Elapsed.TotalSeconds;
+            Peek(now);
             int cell = Advance(now);
             if (arrivalDue)
             {
@@ -13890,10 +14054,19 @@ namespace CapriDesktop
                 if ((clip == arrive || clip == perchArrive) && !instant && preferences.Motion) Arrival(now);
             }
             Clip shown = clip;
+            int loopCell = cell;
+            if (clip == idle)
+            {
+                bool looked = glancing && !double.IsNaN(glanceStart) && now - glanceStart < EyeGlanceFor;
+                if (looked) { shown = eyes; cell = EyesCell(now - glanceStart); }
+                else if (now < eyesUntil) { shown = eyes; cell = EyesCell(now - eyesStart); }
+                else if (TalkingNow) { shown = newTalk; cell = LoopCell(now, newTalk); }
+            }
             int blinkFrom = clip == perch || clip == laydown ? PerchBlinkFrom : BlinkFrom;
-            int following = (cell + 1) % clip.Count, loopCell = cell;
-            if ((clip == idle || clip == perch || clip == laydown) && blinkWith != null && cell >= blinkFrom && cell < blinkFrom + blinkWith.Count) { shown = blinkWith; cell -= blinkFrom; }
+            int following = (cell + 1) % shown.Count;
+            if ((shown == idle || shown == perch || shown == laydown) && blinkWith != null && cell >= blinkFrom && cell < blinkFrom + blinkWith.Count) { shown = blinkWith; cell -= blinkFrom; }
             int talk = MouthCell(now, shown);
+            if (clip == idle) talk = -1;
             if (PerchTalks(TalkingNow)) { shown = perchTalk; cell = loopCell; }
             else if (LieTalks(TalkingNow)) { shown = laydownTalk; cell = loopCell; }
             UpdateTalk(now);
@@ -14133,6 +14306,13 @@ namespace CapriDesktop
             else graphics.DrawImage(strip, new RectangleF(-wide / 2f + shiftX, -tall / 2f + shiftY, wide, tall), new RectangleF(cell * width, 0, width, strip.Height), GraphicsUnit.Pixel);
             if (talk >= 0) graphics.DrawImage(mouth.Strip, new RectangleF(-wide / 2f, -tall / 2f, wide, tall), new RectangleF(talk * width, 0, width, mouth.Strip.Height), GraphicsUnit.Pixel);
             if (notes.Count > 0 && preferences.Motion) Notes(graphics, now, seat != null || riding || onPanel);
+            // Maroraga's anel rides on her head, drawn last so her hair never hides it.
+            if (Maroraga.On)
+            {
+                float headX = Width / 2f + (facingLeft ? -1f : 1f) * wide * 0.08f;
+                float headY = Height / 2f + breathe + HuskDip(now) - tall / 2f + tall * 0.055f;
+                Maroraga.Paint(graphics, headX, headY, preferences.Size, now);
+            }
         }
 
         private static GraphicsPath[] NoteShapes()
@@ -17753,9 +17933,268 @@ namespace CapriDesktop
                 string facts = SelfKnow.Matching("What are your saved controls?");
                 string settings = SelfKnow.Matching("How do game controls work in Capri?");
                 if (facts == null || !facts.Contains("GAMES > Controls") || settings == null || !settings.Contains("GAMES > Controls")) throw new Exception("She did not know how to teach or edit game controls.");
-                checks.Add("PASS taught game controls route without a brain, save separately from learned notes, reach the next game brief, survive editor changes, read back, use the open game's title, and keep names inside their folder");
+                if (!GameCoach.Failed("walk", "Stopped after 1.2 s: something's in the way.") || !GameCoach.Failed("mouse_hold", "Let go after 0.5 s: it looked like something hit you.") || GameCoach.Failed("walk", "Moved for 2.0 s.") || GameCoach.Failed("walk", "Held for 1.0 s.") || GameCoach.Failed("click", "Stopped after 1.2 s: something's in the way.")) throw new Exception("A blocked game move wasn't kept as a mistake, or a good one was.");
+                checks.Add("PASS taught game controls route without a brain, save separately from learned notes, reach the next game brief, survive editor changes, read back, use the open game's title, keep names inside their folder, and count a blocked walk or hold as a mistake");
             }
             finally { GameNotes.Folder = folderWas; Hands.GameOpen = openWas; if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+        }
+
+        private void SmokeMaroraga(List<string> checks, string output)
+        {
+            Directory.CreateDirectory(output);
+            string home = Path.GetDirectoryName(settingsPath);
+            string folder = Path.Combine(home, "maroraga-" + Guid.NewGuid().ToString("N"));
+            if (!ModList.MaroragaOn || !Maroraga.On) throw new Exception("The Maroraga mod didn't give her her wheels.");
+            Maroraga.Configure(ModList, folder);
+            try
+            {
+                Maroraga.Forget();
+                if (Maroraga.WheelCount != 4) throw new Exception("Maroraga has the wrong number of wheels: " + Maroraga.WheelCount + ".");
+                Maroraga.Observe("code.exe", "main.cs - Visual Studio Code", 1800);
+                if (Maroraga.CurrentApp != "code" || Maroraga.CurrentKind != "code") throw new Exception("Maroraga didn't recognise the app they were in.");
+                Maroraga.Observe("chrome.exe", "YouTube - Google Chrome", 600);
+                if (Maroraga.CurrentKind != "browser") throw new Exception("Maroraga didn't recognise the kind of app in front.");
+                string understood = Maroraga.Begin("send the report to Sam");
+                if (Maroraga.Movements != 4 || understood.IndexOf("Spin 4 of 4", StringComparison.Ordinal) < 0) throw new Exception("A request didn't turn all four spins of the anel.");
+                if (!Maroraga.Turning) throw new Exception("The wheel wasn't turning for the request.");
+                if (understood.IndexOf("message", StringComparison.OrdinalIgnoreCase) < 0) throw new Exception("Maroraga read the request as steps instead of a purpose.");
+                if (understood.IndexOf("Chrome", StringComparison.OrdinalIgnoreCase) < 0 && understood.IndexOf("browser", StringComparison.OrdinalIgnoreCase) < 0) throw new Exception("Maroraga's first movement didn't use what she watched.");
+                string brief = Maroraga.Brief();
+                if (!brief.StartsWith("\nMARORAGA", StringComparison.Ordinal) || brief.IndexOf("Spin 1 of 4", StringComparison.Ordinal) < 0) throw new Exception("Her job prompt didn't get Maroraga's understanding.");
+                int lessons = Maroraga.LessonCount;
+                ToolArguments send = new ToolArguments { Target = "Send" };
+                Maroraga.Saw("click", send, "That didn't work: the button moved.", true);
+                Maroraga.Saw("click", send, "That didn't work: the button moved.", true);
+                if (Maroraga.LessonCount <= lessons || Maroraga.AdaptationCount < 1) throw new Exception("Maroraga didn't learn from the same miss twice.");
+                string again = Maroraga.Begin("send it");
+                if (again.IndexOf("clicking Send", StringComparison.Ordinal) < 0) throw new Exception("The next request didn't use the mistake she learned from.");
+                Maroraga.Saw("press", new ToolArguments { Name = "Enter" }, "Pressed Enter.", false);
+                if (Maroraga.LessonCount <= lessons + 1) throw new Exception("Maroraga didn't keep what worked after a miss.");
+                Maroraga.Finished("done", "Sent it.");
+                if (Maroraga.Movements != 0 || Maroraga.CommandCount < 2) throw new Exception("Finishing a request didn't complete its turn.");
+                if (Maroraga.PathFile == null || !File.Exists(Maroraga.PathFile)) throw new Exception("Maroraga kept nothing on disk.");
+                int saved = Maroraga.LessonCount;
+                Maroraga.Reload();
+                if (Maroraga.LessonCount != saved) throw new Exception("Maroraga lost what she learned across a restart.");
+                string kept = File.ReadAllText(Maroraga.PathFile);
+                if (kept.IndexOf("Visual Studio Code", StringComparison.OrdinalIgnoreCase) >= 0 || kept.IndexOf("YouTube", StringComparison.OrdinalIgnoreCase) >= 0)
+                    throw new Exception("Maroraga wrote a window title down.");
+                Maroraga.Begin("draw the anel");
+                bool inked = false;
+                for (int frame = 0; frame < 4; frame++)
+                    using (Bitmap art = new Bitmap(320, 320))
+                    using (Graphics paint = Graphics.FromImage(art))
+                    {
+                        Maroraga.Paint(paint, 160f, 90f, 224, 0.4 + frame * 1.6);
+                        art.Save(Path.Combine(output, "maroraga-anel-" + frame + ".png"), ImageFormat.Png);
+                        for (int y = 0; y < 320 && !inked; y += 2)
+                            for (int x = 0; x < 320; x += 2)
+                                if (art.GetPixel(x, y).A > 0) { inked = true; break; }
+                    }
+                if (!inked) throw new Exception("Maroraga's anel drew nothing.");
+                Maroraga.Finished("done", "Drew them.");
+                Mod wheel = ModList.All.Find(mod => mod.File.Id == "maroraga");
+                if (wheel == null) throw new Exception("The Maroraga mod went missing.");
+                ModList.Set(wheel, false, delegate(ModFile file, string why) { return true; });
+                if (Maroraga.On || Maroraga.Begin("still there?") != "" || Maroraga.Movements != 0 || Maroraga.Hud() != null) throw new Exception("Turning Maroraga off left its anel turning.");
+                ModList.Set(wheel, true, delegate(ModFile file, string why) { return true; });
+                if (!Maroraga.On) throw new Exception("Turning Maroraga back on didn't bring its anel back.");
+                checks.Add("PASS maroraga: the official mod gives her the golden anel that watches the app in front without keeping window titles, spins in 3D once per request into purpose-led understanding, spins again when she learns from repeated misses or from what worked after one, survives a reload, rides small on her head, and stops the moment the mod is off");
+            }
+            finally
+            {
+                Maroraga.Configure(ModList, home);
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        // Her own code: the map, the read, the exact edit, the two keys, the build in her own folder and the backup that goes
+        // back. A stand-in build script and a stand-in compiler keep the real project out of it.
+        private void SmokeSystemIntel(List<string> checks, string output)
+        {
+            Directory.CreateDirectory(output);
+            string home = Path.GetDirectoryName(settingsPath);
+            string folder = Path.Combine(home, "intel-" + Guid.NewGuid().ToString("N"));
+            string source = Path.Combine(folder, "source");
+            Directory.CreateDirectory(Path.Combine(source, "app"));
+            Directory.CreateDirectory(Path.Combine(source, "ci"));
+            File.WriteAllText(Path.Combine(source, "ci", "build-windows.ps1"), "# a stand-in, so the checks never build the real thing\r\n");
+            string file = Path.Combine(source, "app", "Sample.cs");
+            string original = "class Sample\r\n{\r\n    static int Answer = 1;\r\n}\r\n";
+            File.WriteAllText(file, original, new UTF8Encoding(false));
+            SystemIntel.Configure(folder);
+            Func<string, string, string> builderWas = SystemIntel.Builder, testerWas = SystemIntel.Tester;
+            SystemIntel.Fetcher fetchWas = SystemIntel.Fetch;
+            string askedWas = Hands.AskedLast;
+            try
+            {
+                SystemIntel.Forget();
+                string bad = SystemIntel.Do(new ToolArguments { Action = "set_source", Path = Path.Combine(folder, "nowhere") });
+                if (bad.IndexOf("isn't my source", StringComparison.Ordinal) < 0) throw new Exception("A folder without her build script was taken as her source.");
+                string saved = SystemIntel.Do(new ToolArguments { Action = "set_source", Path = source });
+                if (saved.IndexOf("Saved", StringComparison.Ordinal) < 0 || !string.Equals(SystemIntel.SourcePath, source, StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("System Intelligence didn't keep the source folder she was given.");
+                string status = SystemIntel.Do(new ToolArguments { Action = "status" });
+                if (status.IndexOf("My source is at", StringComparison.Ordinal) < 0) throw new Exception("Her status didn't say where her source is.");
+                File.WriteAllText(Path.Combine(folder, "errors.txt"),
+                    "2026-11-18 09:44:47 | voice delivery | 2400 ms | answer=90 audio=111 current_answer=90\r\n"
+                    + "2026-11-18 09:45:53 | memories | - | Couldn't fold her chats into memories.md: BrainException: My brain sent gibberish.\r\n"
+                    + "2026-11-18 09:46:44 | voice delivery | 1600 ms | answer=92 audio=113 current_answer=92\r\n");
+                string plain = SystemIntel.Do(new ToolArguments { Action = "diagnose" });
+                if (plain.IndexOf("voice", StringComparison.OrdinalIgnoreCase) < 0 || plain.IndexOf("2.0 s", StringComparison.Ordinal) < 0)
+                    throw new Exception("Her plain diagnosis didn't say how her voice is doing: " + plain);
+                if (plain.IndexOf("small bug", StringComparison.Ordinal) < 0) throw new Exception("Her plain diagnosis didn't say how bad the failure is.");
+                if (plain.IndexOf(".cs", StringComparison.Ordinal) >= 0 || plain.IndexOf("errors.txt", StringComparison.Ordinal) >= 0)
+                    throw new Exception("Her plain diagnosis named files instead of speaking plainly: " + plain);
+                string advice = SystemIntel.Do(new ToolArguments { Action = "advice" });
+                if (advice.IndexOf("1)", StringComparison.Ordinal) < 0) throw new Exception("She didn't offer any plain idea about what to improve.");
+                if (advice.IndexOf(".cs", StringComparison.Ordinal) >= 0) throw new Exception("Her advice named files instead of speaking plainly: " + advice);
+                string technical = SystemIntel.Do(new ToolArguments { Action = "details" });
+                if (technical.IndexOf("Voice.cs", StringComparison.Ordinal) < 0) throw new Exception("The technical list stopped pointing at the files that own the trouble.");
+                string vague = SystemIntel.Do(new ToolArguments { Action = "research", Site = "file:///C:/Windows" });
+                if (vague.IndexOf("full address", StringComparison.Ordinal) < 0) throw new Exception("She would read something that isn't a web page.");
+                SystemIntel.Fetch = delegate(string url, out string problem)
+                {
+                    problem = null;
+                    if (url.IndexOf("duckduckgo", StringComparison.OrdinalIgnoreCase) >= 0)
+                        return "<html><a class=\"result__a\" href=\"https://example.com/docs\">Example docs</a>"
+                            + "<a class=\"result__a\" href=\"https://example.com/two\">Second page</a></html>";
+                    return "<html><head><title>Example docs</title><script>stealEverything()</script></head><body>"
+                        + "<p>The floating window API is called WindowManager and it replaced the old call.</p>"
+                        + "<p>It must be asked for after the app has started, or the window comes back empty.</p>"
+                        + "<p>References: the vendor page and the release notes.</p></body></html>";
+                };
+                string researched = SystemIntel.Do(new ToolArguments { Action = "research", Query = "floating window api" });
+                if (researched.IndexOf("RESEARCH: 2 sources read", StringComparison.Ordinal) < 0) throw new Exception("Her research didn't read the pages it found: " + researched);
+                if (researched.IndexOf("WindowManager", StringComparison.Ordinal) < 0) throw new Exception("Her research came back without the text of the page.");
+                if (researched.IndexOf("stealEverything", StringComparison.Ordinal) >= 0) throw new Exception("A script's code came through as if it were page text.");
+                string library = SystemIntel.Do(new ToolArguments { Action = "library" });
+                if (library.IndexOf("example.com/docs", StringComparison.Ordinal) < 0) throw new Exception("What she read didn't go into her library.");
+                string kept = Path.Combine(folder, "intel", "research");
+                if (!Directory.Exists(kept) || Directory.GetFiles(kept, "*.txt").Length < 2) throw new Exception("Her library kept fewer pages than she read.");
+                string map = SystemIntel.Do(new ToolArguments { Action = "map", Query = "Sample" });
+                if (map.IndexOf("Sample.cs", StringComparison.Ordinal) < 0 || map.IndexOf("Sample", StringComparison.Ordinal) < 0) throw new Exception("Her architecture map didn't find the file or its type.");
+                string read = SystemIntel.Do(new ToolArguments { Action = "read", Path = @"app\Sample.cs", Offset = 1, Count = 2 });
+                if (read.IndexOf("static int Answer = 1;", StringComparison.Ordinal) < 0) throw new Exception("She couldn't read her own file back.");
+                string outside = SystemIntel.Do(new ToolArguments { Action = "read", Path = @"..\..\secret.txt" });
+                if (outside.IndexOf("inside my source", StringComparison.Ordinal) < 0) throw new Exception("She read a file outside her source.");
+                string missed = SystemIntel.Do(new ToolArguments { Action = "propose", Path = @"app\Sample.cs", Title = "Answer twice", Find = "static int Answer = 9;", Replace = "static int Answer = 2;" });
+                if (missed.IndexOf("isn't in", StringComparison.Ordinal) < 0) throw new Exception("A change whose text wasn't in the file was proposed anyway.");
+                string twice = SystemIntel.Do(new ToolArguments { Action = "propose", Path = @"app\Sample.cs", Title = "Answer twice", Find = "static int Answer = 1;", Replace = "static int Answer = 2;" });
+                if (twice.IndexOf("answer-twice", StringComparison.Ordinal) < 0) throw new Exception("A good change wasn't proposed.");
+                if (File.ReadAllText(file) != original) throw new Exception("A proposal changed the file before it was allowed to.");
+                Hands.AskedLast = "";
+                string noYes = SystemIntel.Do(new ToolArguments { Action = "apply", Id = "answer-twice", Confirm = "yes" });
+                if (noYes.IndexOf("haven't said yes", StringComparison.Ordinal) < 0) throw new Exception("She changed a file with her own confirm but without the user's yes.");
+                Hands.AskedLast = "pode implementar";
+                string noConfirm = SystemIntel.Do(new ToolArguments { Action = "apply", Id = "answer-twice" });
+                if (noConfirm.IndexOf("confirm: yes", StringComparison.Ordinal) < 0) throw new Exception("Her own confirm wasn't needed to change a file.");
+                string built = null;
+                SystemIntel.Builder = delegate(string root, string into)
+                {
+                    built = into;
+                    File.WriteAllText(Path.Combine(into, "Capri.exe"), "a stand-in build");
+                    return "built into " + into;
+                };
+                SystemIntel.Tester = delegate(string exe, string into)
+                {
+                    File.WriteAllText(Path.Combine(into, "smoke-test.txt"), "TOTAL 4 PASS 4 FAIL 0\r\n");
+                    return "checked " + exe;
+                };
+                string applied = SystemIntel.Do(new ToolArguments { Action = "apply", Id = "answer-twice", Confirm = "yes" });
+                if (applied.IndexOf("compiled", StringComparison.Ordinal) < 0) throw new Exception("An approved change wasn't applied and built: " + applied);
+                string changed = File.ReadAllText(file);
+                if (changed.IndexOf("static int Answer = 2;", StringComparison.Ordinal) < 0) throw new Exception("The approved change didn't reach the file.");
+                if (changed.IndexOf("\r\n", StringComparison.Ordinal) < 0) throw new Exception("The change lost the file's Windows line endings.");
+                if (built == null || !Directory.Exists(built)) throw new Exception("She didn't build into her own folder.");
+                string said = SystemIntel.Do(new ToolArguments { Action = "validate", Id = "answer-twice" });
+                if (said.IndexOf("TOTAL 4 PASS 4 FAIL 0", StringComparison.Ordinal) < 0) throw new Exception("Her checks on the build came back without a total.");
+                if (SystemIntel.PathFile == null || !File.Exists(SystemIntel.PathFile)) throw new Exception("System Intelligence kept nothing on disk.");
+                string went = SystemIntel.Do(new ToolArguments { Action = "revert", Id = "answer-twice" });
+                if (went.IndexOf("back the way it was", StringComparison.Ordinal) < 0 || File.ReadAllText(file) != original)
+                    throw new Exception("Reverting a change didn't put the file back exactly as it was.");
+                string another = SystemIntel.Do(new ToolArguments { Action = "propose", Path = @"app\Sample.cs", Title = "Another try", Find = "static int Answer = 1;", Replace = "static int Answer = 3;" });
+                if (another.IndexOf("another-try", StringComparison.Ordinal) < 0) throw new Exception("A second change wasn't proposed after the first was reverted.");
+                SystemIntel.Builder = delegate(string root, string into) { return "error CS1002: ; expected"; };
+                Hands.AskedLast = "sim, pode";
+                string broken = SystemIntel.Do(new ToolArguments { Action = "apply", Id = "another-try", Confirm = "yes" });
+                if (broken.IndexOf("build failed", StringComparison.OrdinalIgnoreCase) < 0) throw new Exception("A build that failed wasn't reported as failed: " + broken);
+                if (File.ReadAllText(file) != original) throw new Exception("A build that failed left the change in the file instead of putting it back.");
+                checks.Add("PASS system intel: she maps and reads her own source, refuses text that isn't there and paths outside it, proposes exact edits that change nothing until both her confirm and the user's own yes arrive, keeps a backup of every file, builds into her own folder, reports the checks on that build, and puts every file back when a build fails");
+            }
+            finally
+            {
+                SystemIntel.Builder = builderWas;
+                SystemIntel.Tester = testerWas;
+                SystemIntel.Fetch = fetchWas;
+                Hands.AskedLast = askedWas;
+                SystemIntel.Configure(home);
+                if (Directory.Exists(folder)) Directory.Delete(folder, true);
+            }
+        }
+
+        // Her task manager: it has to count only what actually went wrong, say whether the trouble is the PC or her, draw
+        // something readable, and close cleanly, without ever touching the machine.
+        private void SmokeSysPanel(List<string> checks, string output)
+        {
+            Directory.CreateDirectory(output);
+            string dataWas = SysPanel.DataFolder;
+            Func<List<KeyValuePair<string, string>>> notesWas = SysPanel.Notes;
+            SysPanel panel = null;
+            try
+            {
+                string when = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                string longAgo = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd HH:mm:ss");
+                File.WriteAllText(Path.Combine(output, "errors.txt"),
+                    when + " | voice delivery | 2400 ms | answer=90 audio=111\r\n"
+                    + when + " | memories | - | Couldn't fold her chats into memories.md: BrainException: gibberish.\r\n"
+                    + when + " | voice | - | The speaker went quiet for a moment.\r\n"
+                    + longAgo + " | memories | - | An old failure from days ago.\r\n");
+                SysPanel.DataFolder = output;
+                SysPanel.Notes = delegate
+                {
+                    return new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("Mods", "2 de 3 ligados"),
+                        new KeyValuePair<string, string>("Voz", "0.8 s por fala")
+                    };
+                };
+                panel = new SysPanel(false);
+                if (panel.FormBorderStyle != FormBorderStyle.None || panel.ShowInTaskbar)
+                    throw new Exception("The system panel would show up as a normal window in the taskbar.");
+                panel.SampleNow();
+                string report = panel.Report();
+                if (report.IndexOf("ELA AGORA", StringComparison.Ordinal) < 0 || report.IndexOf("SEU PC", StringComparison.Ordinal) < 0
+                    || report.IndexOf("LEITURA", StringComparison.Ordinal) < 0)
+                    throw new Exception("The system panel lost one of its parts: " + report);
+                if (report.IndexOf("Mods: 2 de 3 ligados", StringComparison.Ordinal) < 0) throw new Exception("The panel didn't show what only she knows about herself.");
+                if (report.IndexOf("Erros (24 h): 2", StringComparison.Ordinal) < 0)
+                    throw new Exception("The panel didn't count only the failures from the last day, leaving out her voice deliveries: " + report);
+                if (report.IndexOf("Memória: ", StringComparison.Ordinal) < 0 || report.IndexOf("Processador: ", StringComparison.Ordinal) < 0)
+                    throw new Exception("The panel didn't show what she is using.");
+                if (report.IndexOf("LEITURA\n  ", StringComparison.Ordinal) < 0) throw new Exception("The panel didn't say whether the trouble is the PC or her: " + report);
+                using (Bitmap paper = new Bitmap(panel.ClientSize.Width, panel.ClientSize.Height))
+                using (Graphics ink = Graphics.FromImage(paper))
+                {
+                    panel.DrawTo(ink);
+                    bool lit = false;
+                    int step = Math.Max(1, paper.Width / 40);
+                    for (int y = 0; y < paper.Height && !lit; y += step)
+                        for (int x = 0; x < paper.Width && !lit; x += step)
+                            if (paper.GetPixel(x, y).GetBrightness() > 0.45f) lit = true;
+                    if (!lit) throw new Exception("The system panel drew nothing readable.");
+                }
+                panel.Close();
+                if (!panel.IsDisposed) throw new Exception("The system panel wouldn't close.");
+                panel = null;
+                checks.Add("PASS system panel: it shows what she and the PC are using side by side, counts only the failures from the last day, says in one line whether the trouble is the PC or her, draws readable text, and closes cleanly");
+            }
+            finally
+            {
+                SysPanel.DataFolder = dataWas;
+                SysPanel.Notes = notesWas;
+                if (panel != null && !panel.IsDisposed) panel.Close();
+            }
         }
 
         private static void SmokePausedExplore(List<string> checks)
@@ -17843,13 +18282,18 @@ namespace CapriDesktop
                 preferences.NoHeadPats = false;
                 CloseTalk();
                 Point side = Point.Empty, top = Point.Empty;
-                for (int row = 0; row + 10 < frame.Height; row += 8)
-                    for (int column = 0; column + 10 < frame.Width; column += 8)
-                    {
-                        if (side.IsEmpty && Solid(new Point(column, row)) && Solid(new Point(column + 10, row))) side = PointToScreen(new Point(column, row));
-                        if (top.IsEmpty && Solid(new Point(column, row)) && Solid(new Point(column, row + 10))) top = PointToScreen(new Point(column, row));
-                    }
-                if (side.IsEmpty || top.IsEmpty) throw new Exception("Her frame had no solid spot to pat.");
+                // Her art changes when the first rub makes her smile, so each rub finds its own solid spot on what's drawn now.
+                Func<bool, Point> findSolid = delegate(bool across)
+                {
+                    for (int row = 0; row + 10 < frame.Height; row += 8)
+                        for (int column = 0; column + 10 < frame.Width; column += 8)
+                        {
+                            if (Solid(new Point(column, row)) && Solid(across ? new Point(column + 10, row) : new Point(column, row + 10))) return PointToScreen(new Point(column, row));
+                        }
+                    return Point.Empty;
+                };
+                side = findSolid(true);
+                if (side.IsEmpty) throw new Exception("Her frame had no solid spot to pat.");
                 Func<Point, Size, int> rub = delegate(Point at, Size step)
                 {
                     int from = petTicket;
@@ -17861,10 +18305,15 @@ namespace CapriDesktop
                     petTicket++;
                     return petTicket - from - 1;
                 };
-                int sideways = rub(side, new Size(10, 0)), upDown = rub(top, new Size(0, 10));
+                int sideways = rub(side, new Size(10, 0));
+                top = findSolid(false);
+                if (top.IsEmpty) throw new Exception("Her frame had no solid spot to pat up and down.");
+                int upDown = rub(top, new Size(0, 10));
                 if (sideways != 1 || upDown != 1) throw new Exception("A rub counted wrong: side to side " + sideways + ", up and down " + upDown + " (one each expected).");
                 chatting = true;
                 local = false;
+                side = findSolid(true);
+                if (side.IsEmpty) throw new Exception("Her frame had no solid spot to pat in a voice chat.");
                 if (!InChat || rub(side, new Size(10, 0)) != 1) throw new Exception("A head pat didn't count during a voice chat.");
                 CloseTalk();
                 asking++;
@@ -30635,6 +31084,9 @@ namespace CapriDesktop
             Section(checks, "SmokeCloudPicker", delegate { SmokeCloudPicker(checks); });
             Section(checks, "SmokeProviders", delegate { SmokeProviders(checks, output); });
             Section(checks, "SmokeFreeKeys", delegate { SmokeFreeKeys(checks, Path.Combine(output, "freekeys")); });
+            Section(checks, "SmokeMaroraga", delegate { SmokeMaroraga(checks, Path.Combine(output, "maroraga")); });
+            Section(checks, "SmokeSystemIntel", delegate { SmokeSystemIntel(checks, Path.Combine(output, "intel")); });
+            Section(checks, "SmokeSysPanel", delegate { SmokeSysPanel(checks, Path.Combine(output, "panel")); });
             Section(checks, "SmokeMods", delegate { string modsOut = Path.Combine(output, "mods-test"); Directory.CreateDirectory(modsOut); mainframe.CheckMods(checks, modsOut); CheckCodeMods(checks, modsOut); CheckSkins(checks, modsOut); CheckSkills(checks, modsOut); CheckColours(checks, modsOut); });
             Section(checks, "SmokeMedium", delegate { SmokeMedium(checks, Path.Combine(output, "medium")); });
             Section(checks, "SmokeThrows", delegate { SmokeThrows(checks); });
@@ -33078,7 +33530,7 @@ namespace CapriDesktop
                             Stroke(petLeft);
                             earlyPet |= petTicket != petsBefore;
                             for (int i = 0; i < 4; i++) Stroke(i % 2 == 0 ? petRight : petLeft);
-                            bool smiled = petTicket == petsBefore + 1 && (seat != null ? clip == perch && blinkWith == perchBlink : clip == grin) && asking == askedBeforePets;
+                            bool smiled = petTicket == petsBefore + 1 && (seat != null ? clip == perch && blinkWith == perchBlink : clip == happy || clip == grin) && asking == askedBeforePets;
                             PetLine(petTicket);
                             string petReply = reply;
                             bool spoke = asking == askedBeforePets + 1 && Array.IndexOf(PetLines, petReply) >= 0;
@@ -34746,7 +35198,7 @@ namespace CapriDesktop
                             checks.Add("PASS size menu");
                             System.Collections.Generic.List<string> tops = new System.Collections.Generic.List<string>();
                             foreach (ToolStripItem top in menu.Items) if (top.Available) tops.Add(top.Text);
-                            if (string.Join(",", tops.ToArray()) != "CAPRI  /  " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3) + ",,Abrir painel da Capri,Ocultar Capri,Modo mini,Passear pela tela,,Ouvidos,Aparência,Tamanho,Cérebro,Doar,Ajustes,Movimentos,Holograma,Ciúmes de outras IAs,Ajuda,,Sair da Capri") throw new Exception("The right-click menu lost a Capri control: " + string.Join(",", tops.ToArray()));
+                            if (string.Join(",", tops.ToArray()) != "CAPRI  /  " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3) + ",,Abrir painel da Capri,Ocultar Capri,Modo mini,Passear pela tela,Sistema,,Ouvidos,Aparência,Tamanho,Cérebro,Doar,Ajustes,Movimentos,Holograma,Ciúmes de outras IAs,Ajuda,,Sair da Capri") throw new Exception("The right-click menu lost a Capri control: " + string.Join(",", tops.ToArray()));
                             bool hiddenWas = hidden, popsWere = preferences.CheckIns;
                             Point popFrom = anchor;
                             Ledge popSeat = seat;
@@ -46726,14 +47178,14 @@ namespace CapriDesktop
                 sheet.Inline = true;
                 sheet.Show(this);
                 sheet.LoadMods();
-                if (sheet.ShownCount != 2 || sheet.TitleOf(1) != "Names: Far & Wide" || sheet.AuthorOf(1) != "by Vocyn" || sheet.AboutOf(1) != about || sheet.AuthorOf(0) != null || sheet.AboutOf(0) != null || sheet.TitleOf(2) != null || !sheet.PictureOn(1) || sheet.PictureOn(0) || !sheet.Across3) throw new Exception("The mods window didn't show its names, authors and descriptions 3 across.");
-                if (sheet.StatsOf(1) != "4.5 (8) \u00B7 1.2K downloads" || sheet.StatsOf(0) != "No ratings \u00B7 0 downloads" || sheet.CanRateCard(1)) throw new Exception("The mods window's numbers were wrong: " + sheet.StatsOf(1) + " / " + sheet.StatsOf(0));
+                if (sheet.ShownCount != 2 || sheet.TitleOf(1) != "Names: Far & Wide" || sheet.AuthorOf(1) != "por Vocyn" || sheet.AboutOf(1) != about || sheet.AuthorOf(0) != null || sheet.AboutOf(0) != null || sheet.TitleOf(2) != null || !sheet.PictureOn(1) || sheet.PictureOn(0) || !sheet.Across3) throw new Exception("The mods window didn't show its names, authors and descriptions 3 across.");
+                if (sheet.StatsOf(1) != "4.5 (8) \u00B7 1.2K downloads" || sheet.StatsOf(0) != "Sem avalia\u00E7\u00F5es \u00B7 0 downloads" || sheet.CanRateCard(1)) throw new Exception("The mods window's numbers were wrong: " + sheet.StatsOf(1) + " / " + sheet.StatsOf(0));
                 string crowded = sheet.Crowded();
                 if (crowded != null) throw new Exception("The mods window doesn't fit: " + crowded);
                 sheet.Picture(Path.Combine(output, "mods-window.png"));
                 checks.Add("PASS mods window: cards go 3 across with a preview, real name, author, description, downloads and rating, and missing metadata stays blank");
                 sheet.Type2("VOCYN keeps");
-                if (sheet.ShownCount != 1 || sheet.TitleOf(0) != "Names: Far & Wide" || sheet.AuthorOf(0) != "by Vocyn" || sheet.AboutOf(0) != about) throw new Exception("The mods window did not search authors and descriptions together.");
+                if (sheet.ShownCount != 1 || sheet.TitleOf(0) != "Names: Far & Wide" || sheet.AuthorOf(0) != "por Vocyn" || sheet.AboutOf(0) != about) throw new Exception("The mods window did not search authors and descriptions together.");
                 sheet.Type2("");
                 checks.Add("PASS mods window search: author and description words find the named card together");
                 wrongBytes = true;
@@ -46747,11 +47199,11 @@ namespace CapriDesktop
                 if (mods.All.Count != 1 || mods.All[0].File.Id != "far-names" || !Hands.HeardName("hey nova")) throw new Exception("A mod from the directory did not install: " + sheet.StatusShown);
                 if (posts.Count != 1 || !posts[0].EndsWith("/mods/download {\"folder\":\"far-names\"}", StringComparison.Ordinal)) throw new Exception("An install wasn't counted once: " + string.Join(" | ", posts));
                 if (Directory.Exists(under) && Directory.GetDirectories(under).Length != 0) throw new Exception("The download was left behind.");
-                if (!sheet.MetaOf(1).EndsWith("Installed.", StringComparison.Ordinal) || sheet.InstallTextOf(1) != "Reinstall" || !sheet.CanRateCard(1) || sheet.CanRateCard(0)) throw new Exception("An installed directory mod wasn't marked, or couldn't be rated.");
+                if (!sheet.MetaOf(1).EndsWith("Instalado", StringComparison.Ordinal) || sheet.InstallTextOf(1) != "Reinstalar" || !sheet.CanRateCard(1) || sheet.CanRateCard(0)) throw new Exception("An installed directory mod wasn't marked, or couldn't be rated.");
                 checks.Add("PASS mods directory: a matching download installs through the normal import and is counted once; one that doesn't match is refused");
                 posts.Clear();
                 sheet.PressStars(1, 4);
-                if (posts.Count != 1 || !posts[0].EndsWith("/mods/rate {\"folder\":\"far-names\",\"stars\":4}", StringComparison.Ordinal) || sheet.StatsOf(1) != "4.3 (9) \u00B7 1.2K downloads" || sheet.StatusShown != "You gave Names: Far & Wide 4 stars.") throw new Exception("A rating wasn't sent or shown: " + sheet.StatsOf(1) + " / " + sheet.StatusShown);
+                if (posts.Count != 1 || !posts[0].EndsWith("/mods/rate {\"folder\":\"far-names\",\"stars\":4}", StringComparison.Ordinal) || sheet.StatsOf(1) != "4.3 (9) \u00B7 1.2K downloads" || sheet.StatusShown != "Voc\u00EA deu 4 estrelas para Names: Far & Wide.") throw new Exception("A rating wasn't sent or shown: " + sheet.StatsOf(1) + " / " + sheet.StatusShown);
                 posts.Clear();
                 sheet.PressStars(0, 5);
                 if (posts.Count != 0) throw new Exception("A mod that isn't installed was rated.");
@@ -46799,9 +47251,9 @@ namespace CapriDesktop
                 string smaller = tree;
                 tree = many.ToString().TrimEnd(',') + "]}";
                 sheet.LoadMods();
-                if (sheet.PageShown != "Page 1 of 2" || sheet.TitleOf(5) != "Tall Hat") throw new Exception("The mods window's first page was wrong.");
+                if (sheet.PageShown != "P\u00E1gina 1 de 2" || sheet.TitleOf(5) != "Tall Hat") throw new Exception("The mods window's first page was wrong.");
                 sheet.PressNext();
-                if (sheet.PageShown != "Page 2 of 2" || sheet.TitleOf(0) != "Wide Hat" || sheet.TitleOf(2) != null) throw new Exception("The mods window's second page was wrong.");
+                if (sheet.PageShown != "P\u00E1gina 2 de 2" || sheet.TitleOf(0) != "Wide Hat" || sheet.TitleOf(2) != null) throw new Exception("The mods window's second page was wrong.");
                 sheet.Type2("HAIR red");
                 if (sheet.ShownCount != 1 || sheet.TitleOf(0) != "Red Hair" || sheet.PageShown != null) throw new Exception("Search didn't find the mod with every word.");
                 sheet.Type2("");
@@ -46810,7 +47262,7 @@ namespace CapriDesktop
                 sheet.Type2("red");
                 if (sheet.ShownCount != 1 || sheet.TitleOf(0) != "Red Hat") throw new Exception("Search and a filter didn't work together.");
                 sheet.PressFilter(2);
-                if (sheet.ShownCount != 0 || sheet.EmptyShown != "No mods match that.") throw new Exception("No matches wasn't said.");
+                if (sheet.ShownCount != 0 || sheet.EmptyShown != "Nenhum mod corresponde \u00E0 busca.") throw new Exception("No matches wasn't said.");
                 sheet.Type2("");
                 sheet.PressFilter(0);
                 crowded = sheet.Crowded();
@@ -46828,7 +47280,7 @@ namespace CapriDesktop
                         sized.Show(this);
                         sized.LoadMods();
                         string problem = sized.Crowded();
-                        if (sized.TitleOf(5) == null || sized.TitleOf(5).Length != 120 || sized.AuthorOf(5) == null || sized.AuthorOf(5).Length != 83 || sized.AboutOf(5) == null || sized.AboutOf(5).Length != 600) throw new Exception("A full page lost its capped metadata.");
+                        if (sized.TitleOf(5) == null || sized.TitleOf(5).Length != 120 || sized.AuthorOf(5) == null || sized.AuthorOf(5).Length != 84 || sized.AboutOf(5) == null || sized.AboutOf(5).Length != 600) throw new Exception("A full page lost its capped metadata.");
                         sized.Picture(Path.Combine(output, "mods-index-" + (int)(size * 100) + ".png"));
                         sized.Close();
                         if (problem != null) throw new Exception("The mods window doesn't fit at " + size + ": " + problem);
@@ -46837,7 +47289,7 @@ namespace CapriDesktop
                 checks.Add("PASS mods index cards: a full page with long names, authors and descriptions fits at 100%, 150% and 200%");
                 tree = "{\"tree\":[]}";
                 sheet.LoadMods();
-                if (sheet.EmptyShown != "Nothing to show from the mods directory." || sheet.StatusShown != "No mods in the directory yet.") throw new Exception("An empty directory wasn't said.");
+                if (sheet.EmptyShown != "O cat\u00E1logo ainda n\u00E3o tem mods para mostrar." || sheet.StatusShown != "O cat\u00E1logo ainda n\u00E3o tem mods.") throw new Exception("An empty directory wasn't said.");
                 tree = "{nope";
                 sheet.LoadMods();
                 if (sheet.EmptyShown == null || sheet.StatusShown != "The mods directory sent something I can't read.") throw new Exception("Broken directory data wasn't said: " + sheet.StatusShown);

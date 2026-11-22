@@ -65,7 +65,7 @@ namespace CapriDesktop
             for (int i = 0; i < ArtColors.Slots; i++)
             {
                 int slot = i;
-                colourKeys[i] = Make(ArtColors.Names[i], 28 + i * 66, colourRow, 62, 26, delegate { PickColour(slot); });
+                colourKeys[i] = Make(ArtColors.Names[i], 28 + i * 66, colourRow, 65, 26, delegate { PickColour(slot); });
                 colourKeys[i].AccessibleName = "Change her " + ArtColors.Names[i].ToLowerInvariant() + " color";
                 Explain(colourKeys[i], "Her colors", "MainframeMods.cs", null, "Her colors");
             }
@@ -312,6 +312,9 @@ namespace CapriDesktop
                 return file;
             };
             string good = sample("custom-names" + Mods.Extension, "{\"format\":1,\"id\":\"custom-names\",\"name\":\"Custom Names\",\"version\":\"1.0.0\",\"author\":\"Avery\",\"description\":\"Answers to more names.\",\"wake_names\":[\"Nova\",\"Big Z\",\"Capricorn\"]}");
+            Mod official = mods.All.Find(mod => mod.File.Id == "maroraga");
+            if (official == null || !official.On || !mods.MaroragaOn || mods.Maroraga == null || mods.Maroraga.Stage != "test" || !Maroraga.On || Maroraga.WheelCount != 4 || !Maroraga.AnelLoaded || !File.Exists(Path.Combine(mods.Folder, "maroraga" + Mods.Extension))) throw new Exception("The official Maroraga test mod wasn't installed and on, with its anel read.");
+            checks.Add("PASS mods: the official Maroraga test mod ships installed and on, with its settings read and its golden anel spinning");
             foreach (Mod old in mods.All.ToArray()) mods.Remove(old);
             if (Hands.HeardName("Nova, what time is it?") || !Hands.HeardName("Capri, what time is it?")) throw new Exception("Her names were wrong before any mod.");
             ShowMods(true);
