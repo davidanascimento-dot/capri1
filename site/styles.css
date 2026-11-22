@@ -789,3 +789,23 @@ img { max-width: 100%; height: auto; }
   margin: 0 !important;
   width: 100% !important;
 }
+
+
+/* Vídeo TikTok no hero */
+.hero-video-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(10,10,16,0.35);
+  border-top: 1px solid rgba(255,0,85,0.2);
+}
+.hero-video-wrap .tiktok-embed {
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+@media (max-width: 720px) {
+  .hero-video-wrap { padding: 8px; }
+}
