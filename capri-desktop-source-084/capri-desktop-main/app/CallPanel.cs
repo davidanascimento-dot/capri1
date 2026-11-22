@@ -504,7 +504,7 @@ namespace CapriDesktop
             return sheet;
         }
 
-        private string Talking() { return live.Her ? "CAPRI is talking" : live.You ? "YOU are talking" : live.Discord ? Speaker(live.View.App) : "On call"; }
+        private string Talking() { return live.Her ? "CAPRI is talking" : live.You ? "VOCÊ está falando" : live.Discord ? Speaker(live.View.App) : "On call"; }
 
         internal static string Speaker(CallApp app) { return app.Caption + (app.Name == "Discord" ? " is talking" : " talking"); }
 
@@ -604,7 +604,7 @@ namespace CapriDesktop
             {
                 talking,
                 new CallView { Listening = true, Muted = true, Discord = true, Length = TimeSpan.FromSeconds(754) },
-                new CallView { Listening = true, Discord = true, Call = 0.7, Length = TimeSpan.FromSeconds(754), Who = "DISCORD", Said = "Yes, we can hear you.", SaidAt = DateTime.UtcNow },
+                new CallView { Listening = true, Discord = true, Call = 0.7, Length = TimeSpan.FromSeconds(754), Who = "DISCORD", Said = "Sim, podemos te ouvir.", SaidAt = DateTime.UtcNow },
                 new CallView { Ended = true, Answers = 6, Length = TimeSpan.FromSeconds(754) }
             };
             foreach (float scale in new[] { 1f, 1.5f, 2f })
@@ -631,7 +631,7 @@ namespace CapriDesktop
                                 CallPanel.Inside(pill.Body, words, "pill speaker"); CallPanel.Inside(pill.Body, timer, "pill timer"); CallPanel.Inside(pill.Body, bars, "pill bars");
                                 CallPanel.Apart(words, bars, "pill words and bars");
                                 CallPanel.Apart(words, timer, "pill speaker and timer");
-                                foreach (string who in new[] { "CAPRI is talking", "YOU are talking", "DISCORD is talking", "On call" }) CallPanel.Fits(graphics, who, pill.fonts.Name, words, "pill speaker");
+                                foreach (string who in new[] { "CAPRI is talking", "VOCÊ está falando", "DISCORD is talking", "On call" }) CallPanel.Fits(graphics, who, pill.fonts.Name, words, "pill speaker");
                                 CallPanel.Fits(graphics, "100:00:25", pill.fonts.Mono, timer, "pill clock");
                                 List<RectangleF> buttons = new List<RectangleF>();
                                 foreach (int part in new[] { 1, 7, 4 })
@@ -707,7 +707,7 @@ namespace CapriDesktop
             this.read = read;
             s = scale > 0 ? scale : DeviceDpi / 96f;
             fonts = new CallFonts(s);
-            Text = "Capri call";
+            Text = "Chamada da Capri";
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.Manual;
             ShowInTaskbar = false;
@@ -828,10 +828,10 @@ namespace CapriDesktop
 
         internal static string Status(CallView view)
         {
-            if (!view.Listening) return "She isn't listening.";
-            if (view.Muted) return "Muted: she hears no one.";
-            if (!view.Discord) return "She hears you only.";
-            return view.DiscordNote ?? "She hears you and " + view.App.Name + ".";
+            if (!view.Listening) return "Ela não está ouvindo.";
+            if (view.Muted) return "Silenciado: ela não ouve ninguém.";
+            if (!view.Discord) return "Ela só ouve você.";
+            return view.DiscordNote ?? "Ela ouve você e " + view.App.Name + ".";
         }
 
         internal static string Clock(TimeSpan length)
@@ -841,7 +841,7 @@ namespace CapriDesktop
             return length.TotalHours >= 1 ? (int)length.TotalHours + ":" + minutes : minutes;
         }
 
-        internal static string Short(string note) { return note != null && note.EndsWith(" isn't open.", StringComparison.Ordinal) ? "not open" : "can't hear it"; }
+        internal static string Short(string note) { return note != null && note.EndsWith(" isn't open.", StringComparison.Ordinal) ? "não aberto" : "não consegue ouvir"; }
         internal static string Answered(int answers) { return "she answered " + answers + (answers == 1 ? " time" : " times"); }
         internal static string EndLine(CallView view) { return Clock(view.Length) + " · " + Answered(view.Answers); }
 
@@ -917,7 +917,7 @@ namespace CapriDesktop
             Color note = index == 0 && view.Listening && view.Muted || index == 2 && view.Discord && view.DiscordNote != null ? Neon.Hot : lit ? Neon.Cyan : Neon.Faint;
             CallInk.Text(graphics, Note(index), fonts.Note, TileWords(index, 154, 18), note, true);
             if (index != 1) return;
-            CallInk.Text(graphics, view.InMic ? "IN YOUR MIC" : "NOT IN YOUR MIC", fonts.Tiny, TileWords(index, 175, 14), view.InMic ? Neon.Cyan : Neon.Faint, true);
+            CallInk.Text(graphics, view.InMic ? "IN YOUR MIC" : "NÃO ESTÁ NO SEU MICROFONE", fonts.Tiny, TileWords(index, 175, 14), view.InMic ? Neon.Cyan : Neon.Faint, true);
             RectangleF meter = TileWords(index, 192, 3);
             CallInk.Round(graphics, meter, 1.5f * s, Neon.Field, Neon.WellEdge, 0);
             float width = meter.Width * (float)(view.InMic ? CallInk.Loud(view.Mic) : 0);
@@ -991,24 +991,24 @@ namespace CapriDesktop
                 Apart(ring, name, "ring and name");
                 Apart(name, note, "name and note");
                 Fits(graphics, i == 0 ? "YOU" : i == 1 ? "CAPRI" : view.App.Caption, fonts.Name, name, "tile name");
-                foreach (string text in i == 0 ? new[] { "speaking", "mic on", "muted", "not listening" } : i == 1 ? new[] { "speaking", "listening", "thinking" } : new[] { "speaking", "friends", "off", "not open", "can't hear it" })
+                foreach (string text in i == 0 ? new[] { "speaking", "mic on", "muted", "not listening" } : i == 1 ? new[] { "speaking", "listening", "thinking" } : new[] { "speaking", "friends", "off", "não aberto", "não consegue ouvir" })
                     Fits(graphics, text, fonts.Note, note, "tile note");
                 if (i == 1)
                 {
                     RectangleF label = TileWords(i, 175, 14), meter = TileWords(i, 192, 3);
                     Inside(tile, label, "meter label"); Inside(tile, meter, "meter");
                     Apart(note, label, "note and meter label"); Apart(label, meter, "meter label and meter");
-                    Fits(graphics, "NOT IN YOUR MIC", fonts.Tiny, label, "meter label");
+                    Fits(graphics, "NÃO ESTÁ NO SEU MICROFONE", fonts.Tiny, label, "meter label");
                 }
             }
             Inside(window, StatusBox, "status");
             foreach (RectangleF button in buttons) Apart(StatusBox, button, "status and buttons");
             using (StringFormat wrap = new StringFormat { FormatFlags = StringFormatFlags.LineLimit })
             {
-                foreach (string text in new[] { Status(view), "She hears you and Discord.", "Windows speech can't hear Discord. Pick her own ears under VOICE." })
+                foreach (string text in new[] { Status(view), "Ela ouve você e o Discord.", "O reconhecimento de voz do Windows não consegue ouvir o Discord. Escolha os próprios ouvidos dela em VOZ." })
                 {
                     SizeF need = graphics.MeasureString(text, fonts.Words, new SizeF(StatusBox.Width, 10000), wrap);
-                    if (need.Height > StatusBox.Height) throw new Exception("The call panel status does not fit.");
+                    if (need.Height > StatusBox.Height) throw new Exception("O status do painel de chamada não cabe.");
                 }
             }
             if (view.Captions)
@@ -1018,7 +1018,7 @@ namespace CapriDesktop
                 Apart(CaptionBox, StatusBox, "captions and status");
                 CheckCaption(graphics, caption, fonts, CaptionBox, s);
             }
-            if (ClientSize.Height >= 400 * s) throw new Exception("The call panel grew past 400 pixels.");
+            if (ClientSize.Height >= 400 * s) throw new Exception("O painel de chamada passou de 400 pixels.");
         }
 
         internal static void CheckCaption(Graphics graphics, CallCaption caption, CallFonts fonts, RectangleF box, float scale, string who = "DISCORD")
@@ -1027,7 +1027,7 @@ namespace CapriDesktop
             RectangleF words = new RectangleF(speaker.Right + 4 * scale, speaker.Top, box.Right - 12 * scale - speaker.Right - 4 * scale, 35 * scale);
             Inside(box, speaker, "caption speaker"); Inside(box, words, "caption words"); Apart(speaker, words, "caption speaker and words");
             foreach (string name in new[] { "YOU", who, "CAPRI" }) Fits(graphics, name, fonts.Name, speaker, "caption speaker");
-            string longest = "I heard the whole call. " + new string('W', 120) + " and there are more words to show on the next line, with an ellipsis at the end.";
+            string longest = "Eu ouvi a chamada toda. " + new string('W', 120) + " e há mais palavras para mostrar na próxima linha, com reticências no final.";
             caption.Fit(graphics, longest, fonts.Mono, words.Width);
             if (caption.Lines.Length != 2 || !caption.Lines[1].EndsWith("...")) throw new Exception("Call captions did not stop at two lines with an ellipsis.");
             for (int i = 0; i < caption.Lines.Length; i++)
@@ -1042,10 +1042,10 @@ namespace CapriDesktop
             {
                 new CallView { Listening = true, Discord = true, You = 0.6, Length = TimeSpan.FromSeconds(754) },
                 new CallView { Listening = true, Discord = true, Talking = true, Her = 0.95, InMic = true, Mic = 0.68, Who = "CAPRI",
-                    Said = "I heard you. Keep talking while I listen to the call, and I'll answer when you're ready. We can stay here a little longer.", SaidAt = now, Length = TimeSpan.FromSeconds(3725) },
+                    Said = "Eu te ouvi. Continue falando enquanto eu escuto a chamada, e eu respondo quando você estiver pronto. Podemos ficar aqui mais um pouco.", SaidAt = now, Length = TimeSpan.FromSeconds(3725) },
                 new CallView { Listening = true, Muted = true, Discord = true, DiscordNote = CallEars.NotOpen, Length = TimeSpan.FromSeconds(42) },
                 new CallView { Discord = false, Captions = false },
-                new CallView { Listening = true, Discord = true, Thinking = true, Who = "DISCORD", Said = "Can you hear the rest of us?", SaidAt = now, Length = TimeSpan.FromSeconds(754) },
+                new CallView { Listening = true, Discord = true, Thinking = true, Who = "DISCORD", Said = "Você consegue ouvir o resto de nós?", SaidAt = now, Length = TimeSpan.FromSeconds(754) },
                 new CallView { Ended = true, Length = TimeSpan.FromSeconds(754), Answers = 6 }
             };
             Directory.CreateDirectory(folder);

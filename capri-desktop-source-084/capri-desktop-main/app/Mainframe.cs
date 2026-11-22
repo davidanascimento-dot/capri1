@@ -225,7 +225,7 @@ namespace CapriDesktop
         private string typeName = "Ctrl + Alt + T";
         private string hideName = "Ctrl + Alt + H";
         private string quietName = "Ctrl + Alt + P";
-        private string pushName = "not set";
+        private string pushName = "não definido";
         private string gameName = "Ctrl + Alt + G";
         private bool typeReady = true;
         private bool hideReady = true;
@@ -246,7 +246,7 @@ namespace CapriDesktop
         private readonly Label paidNote;
         private readonly Key movePaid;
         private string paidTextKey;
-        internal const string NvidiaNote = "NVIDIA's free API is often slow, especially at busy times.";
+        internal const string NvidiaNote = "A API grátis da NVIDIA costuma ser lenta, especialmente em horários de pico.";
         private bool textSaved;
         private readonly List<KeyValuePair<Control, int>> lower = new List<KeyValuePair<Control, int>>();
         private string[] lastInstalled;
@@ -328,8 +328,8 @@ namespace CapriDesktop
         private readonly Label voiceInMicNote;
         private readonly Label voiceInMicState;
         private readonly Key cableKey;
-        // Its Input and Output (Lachy, 3 Nov: "we need to be able to change the input and output for the mixer"), and How to,
-        // which opens its setup steps: "make it clear how to set it up too".
+        // Its Input and Output (Lachy, 3 Nov: "precisamos poder mudar a entrada e a saída do mixer"), and How to,
+        // which opens its setup steps: "deixe claro também como configurar".
         private readonly Key mixInput, mixOutput, mixHow;
         private readonly Slider micLoudness;
         private readonly Label micLoudnessName;
@@ -406,7 +406,7 @@ namespace CapriDesktop
             minimize.AccessibleName = "Minimize";
             close = Make("", 330, 20, 26, 22, delegate { Close(); });
             close.Glyph = 2;
-            close.AccessibleName = "Close";
+            close.AccessibleName = "Fechar";
             more = Make("Ajustes", 146, 20, 84, 22, delegate { if (modded) ShowMods(false); else ShowSettings(!paged); });
             more.Accent = Cyan;
             more.Loud = true;
@@ -424,12 +424,12 @@ namespace CapriDesktop
             brainName.AutoEllipsis = true;
             brainName.Size = new Size(244, 20);
             provider = Make("Provedor", 280, 79, 76, 20, delegate { OpenProvider(); });
-            provider.AccessibleName = "OpenAI-compatible provider address and key";
+            provider.AccessibleName = "Endereço e chave de provedor compatível com OpenAI";
             brainNote = Caption("", 28, 101, Font, Faint);
             modelMenu = Dropdown();
             models = Make("", 28, 134, 244, 28, delegate { modelMenu.Show(models, new Point(0, models.Height)); });
             models.Chevron = true;
-            models.AccessibleName = "Brain model";
+            models.AccessibleName = "Modelo de cérebro";
             refresh = Make("Atualizar", 280, 134, 76, 28, delegate { capri.FindBrain(); });
             for (int i = 0; i < 3; i++) steps[i] = Caption("", 28, 138 + i * 22, Font, Faint);
             setup = Make("Configurar cérebro", 28, 226, 170, 28, delegate { if (capri.SettingUp) capri.CancelSetup(); else capri.SetUpBrain(); });
@@ -437,7 +437,7 @@ namespace CapriDesktop
             setup.Loud = true;
             hint = Caption("Usa Ollama? Abra-o e pressione Atualizar.", 28, 264, Look.Mono(9f, FontStyle.Italic, GraphicsUnit.Point), Faint);
             tierNote = Caption("Escolha um; apenas um cérebro fica ativo.", 28, 168, Look.Mono(8.5f, FontStyle.Italic, GraphicsUnit.Point), Faint);
-            string[,] tiers = { { "NORMAL", "Free · local model" }, { "MEDIUM INTELLIGENCE", "Free" }, { "MAX INTELLIGENCE", "Cloud API keys" } };
+            string[,] tiers = { { "NORMAL", "Grátis · modelo local" }, { "INTELIGÊNCIA MÉDIA", "Free" }, { "INTELIGÊNCIA MÁXIMA", "Chaves de API na nuvem" } };
             for (int i = 0; i < rungs.Length; i++)
             {
                 int picked = i;
@@ -452,10 +452,10 @@ namespace CapriDesktop
                 Controls.Add(rung);
                 rungs[i] = rung;
             }
-            rungs[0].Flag = "Start with this!";
+            rungs[0].Flag = "Comece por aqui!";
             rungs[0].FlagFont = Type(9f);
             freeKeyMenu = Dropdown();
-            freeKeyMenu.AccessibleName = "Free key providers";
+            freeKeyMenu.AccessibleName = "Provedores de chave grátis";
             ToolStripMenuItem nvidiaKey = Choice("NVIDIA · free · often slow at busy times", false, delegate { capri.OpenFreeKeyPage(); });
             nvidiaKey.AccessibleName = "NVIDIA";
             freeKeyMenu.Items.Add(nvidiaKey);
@@ -469,17 +469,17 @@ namespace CapriDesktop
             freeKey.Chevron = true;
             // A wider fallback font cuts the label short instead of spilling out of the key.
             freeKey.Ellipsis = true;
-            freeKey.AccessibleName = "Free key: NVIDIA, Google AI Studio (Gemini) or OpenRouter";
+            freeKey.AccessibleName = "Chave grátis: NVIDIA, Google AI Studio (Gemini) ou OpenRouter";
             textEntry = Input(28, 262, 244);
             textEntry.Box.UseSystemPasswordChar = true;
-            textEntry.Box.AccessibleName = "NVIDIA, Google AI Studio (Gemini) or OpenRouter API key";
+            textEntry.Box.AccessibleName = "Chave de API da NVIDIA, Google AI Studio (Gemini) ou OpenRouter";
             textEntry.Cue = "NVIDIA / Google AI Studio / OpenRouter";
             textConnect = Make("Conectar", 280, 262, 76, 28, delegate { ConnectText(); });
             freeWarning = Caption("Chaves grátis podem ser lentas ou ter limites.", 28, 294, Type(8.5f), Neon.Amber);
             paidNote = Caption("Esta chave é paga; use-a em INTELIGÊNCIA MÁXIMA.", 28, 315, Font, Neon.Amber);
             paidNote.MaximumSize = new Size(328, 0);
             movePaid = Make("Mover para MAX", 28, 350, 128, 24, delegate { MovePaidText(); });
-            movePaid.AccessibleName = "Move key to MAX INTELLIGENCE";
+            movePaid.AccessibleName = "Mover chave para INTELIGÊNCIA MÁXIMA";
             freeWarning.Visible = paidNote.Visible = movePaid.Visible = false;
             textEntry.Box.TextChanged += delegate { RelabelText(); };
             textEntry.Box.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; ConnectText(); } };
@@ -492,7 +492,7 @@ namespace CapriDesktop
             // Keys are picked in Settings, where Confirm and Cancel sit beside them.
             shortcut.Click += delegate { ShowSettings(true); PickKeys(0); };
             Lower(shortcut);
-            string[,] voiceTiers = { { "OFF", "Silent · text only" }, { "PREBUILT LOCAL", "Her voices · free" }, { "CUSTOM LOCAL", "Your own model" }, { "CLOUD VOICE", "Needs a key" } };
+            string[,] voiceTiers = { { "OFF", "Silencioso · só texto" }, { "LOCAL PRONTO", "Vozes dela · grátis" }, { "LOCAL PERSONALIZADO", "Seu próprio modelo" }, { "VOZ NA NUVEM", "Precisa de chave" } };
             for (int i = 0; i < voiceRungs.Length; i++)
             {
                 int row = i;
@@ -511,7 +511,7 @@ namespace CapriDesktop
                 voiceRungs[i] = Lower(rung);
             }
             setUpModel = Lower(Make("Configurar", 276, 257, 80, 22, delegate { OpenServer(false, null); }));
-            setUpModel.AccessibleName = "Set up your own voice model";
+            setUpModel.AccessibleName = "Configure seu próprio modelo de voz";
             keyHelp = Lower(Make("Guia", 276, 281, 80, 22, delegate { CloudGuide(); }));
             cloudMenu = Dropdown();
             foreach (string name in Clouds)
@@ -521,10 +521,10 @@ namespace CapriDesktop
             }
             cloudPick = Lower(Make(Clouds[0], 28, KeyAt, 108, 28, delegate { cloudMenu.Show(cloudPick, new Point(0, cloudPick.Height)); }));
             cloudPick.Chevron = true;
-            cloudPick.AccessibleName = "Cloud voice service";
+            cloudPick.AccessibleName = "Serviço de voz na nuvem";
             keyEntry = Lower(Input(136, KeyAt, 136));
             keyEntry.Box.UseSystemPasswordChar = true;
-            keyEntry.Box.AccessibleName = "ElevenLabs API key";
+            keyEntry.Box.AccessibleName = "Chave de API do ElevenLabs";
             connect = Lower(Make("Conectar", 280, KeyAt, 76, 28, delegate { Connect(); }));
             keyEntry.Box.TextChanged += delegate { Relabel(); };
             keyEntry.Box.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Connect(); } };
@@ -533,13 +533,13 @@ namespace CapriDesktop
             voiceMenu = Dropdown();
             voiceEntry = Lower(Input(28, 346, 196));
             voiceEntry.Chevron = true;
-            voiceEntry.Cue = "Voice ID";
-            voiceEntry.Box.AccessibleName = "ElevenLabs voice ID";
+            voiceEntry.Cue = "ID de voz";
+            voiceEntry.Box.AccessibleName = "ID de voz do ElevenLabs";
             voiceEntry.Drop += delegate { voiceMenu.Show(voiceEntry, new Point(0, voiceEntry.Height)); };
             voiceEntry.Box.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; capri.ChooseVoice(voiceEntry.Box.Text); } };
             voiceEntry.Box.Leave += delegate { capri.ChooseVoice(voiceEntry.Box.Text); };
             speechModelMenu = Dropdown();
-            speechModels = Lower(Make("Default model", 232, 346, 124, 28, delegate { speechModelMenu.Show(speechModels, new Point(0, speechModels.Height)); }));
+            speechModels = Lower(Make("Modelo padrão", 232, 346, 124, 28, delegate { speechModelMenu.Show(speechModels, new Point(0, speechModels.Height)); }));
             speechModels.Chevron = true;
             freeMenu = Dropdown();
             freeVoices = Lower(Make("Voz grátis: própria", 28, 346, 196, 28, delegate { freeMenu.Show(freeVoices, new Point(0, freeVoices.Height)); }));
@@ -548,7 +548,7 @@ namespace CapriDesktop
             // CUSTOM LOCAL's model in use. Its panel offers only what runs on their PC.
             customVoice = Lower(Make("Modelo de voz", 28, 346, 328, 28, delegate { OpenServer(false, null); }));
             customVoice.Chevron = true;
-            customVoice.AccessibleName = "Your voice model";
+            customVoice.AccessibleName = "Seu modelo de voz";
             customVoice.Visible = false;
             freeSetup = Lower(Make("Baixar voz grátis", 232, 346, 124, 28, delegate { if (capri.SettingUpVoice) capri.CancelFreeVoice(); else capri.SetUpFreeVoice(); }));
             freeSetup.Accent = Cyan;
@@ -564,7 +564,7 @@ namespace CapriDesktop
             speakers = Lower(Make("Saída de áudio: padrão", 28, 418, 328, 28, delegate { ShowSpeakers(); }, "Her speaker"));
             speakers.Chevron = true;
             speakers.Ellipsis = true;
-            speakers.AccessibleName = "Her speaker: Default (follows Windows)";
+            speakers.AccessibleName = "Alto-falante dela: Padrão (segue o Windows)";
             hearingNote = Lower(Caption("", 28, 450, Type(9.5f), Faint));
             hearingNote.AutoSize = false;
             hearingNote.AutoEllipsis = true;
@@ -590,7 +590,7 @@ namespace CapriDesktop
             // Shorter than a band's other keys and level with CAPRI, so its lit rim stays off the band's teal rule (Lachy, 4 Nov).
             support = Lower(Make("Apoiar", 268, 183 + v, 88, 18, delegate { capri.OpenSupport(); }));
             support.Heart = true;
-            support.AccessibleName = "Support Capri: opens Lachy's Ko-fi in your browser";
+            support.AccessibleName = "Apoiar a Capri: abre o Ko-fi do Lachy no seu navegador";
             // Her version sits where Mods was, beside Support, now Mods is up by Settings.
             build = Lower(Caption("v" + version + " FAN", 196, 183 + v, small, Faint));
             build.AutoSize = false;
@@ -603,7 +603,7 @@ namespace CapriDesktop
             perch = Lower(Make("Seguir cursor", 252, 206 + v, 104, 28, delegate { capri.TogglePerch(); }));
             Lower(Make("Buscar atualizações", 28, 250 + v, 150, 28, delegate { capri.CheckUpdates(); }));
             Key help = Lower(Make("Ajuda", 186, 250 + v, 62, 28, delegate { capri.OpenHelp(); }));
-            help.AccessibleName = "Help: ask Capri on the website";
+            help.AccessibleName = "Ajuda: pergunte à Capri no site";
             Key quit = Lower(Make("Sair da Capri", 256, 250 + v, 100, 28, delegate { capri.Quit(); }));
             quit.Accent = Hot;
             updateNote = Lower(Caption("", 28, 288 + v, small, Faint));
@@ -618,11 +618,11 @@ namespace CapriDesktop
             advancedKey.Loud = true;
             Section("SOBRE VOCÊ >", 0, 58);
             notesKey = Make("Abrir anotações", 236, 55, 120, 20, delegate { EditNotes(false); });
-            notesKey.AccessibleName = "Open her notes: edit me.md here, or her note in your Obsidian vault";
+            notesKey.AccessibleName = "Abrir notas dela: edite o me.md aqui, ou a nota dela no seu cofre do Obsidian";
             // Their personality.md (back in 0.8.0): the key says whose personality she's using, and its menu edits or resets it.
             personalityMenu = Dropdown();
             personalityKey = Make("Personalidade", 92, 55, 136, 20, delegate { ShowPersonalityMenu(); });
-            personalityKey.AccessibleName = "Her personality: edit personality.md, or put her default back";
+            personalityKey.AccessibleName = "Personalidade dela: edite o personality.md, ou volte ao padrão dela";
             Named("Language", 0, 82);
             languageMenu = Dropdown();
             languageMenu.AccessibleName = "Her language";
@@ -633,7 +633,7 @@ namespace CapriDesktop
             FillLanguages(Screen.FromRectangle(Bounds).WorkingArea);
             // A label of its own, so the question still shows once a name is saved in the box.
             Named("Como ela deve chamar você?", 0, 110);
-            Make("Get to know me", 236, 113, 120, 22, delegate { capri.GetToKnow(); }).AccessibleName = "Get to know me: she asks what to call you, your pronouns and what you're into, and keeps them in me.md";
+            Make("Me conhecer melhor", 236, 113, 120, 22, delegate { capri.GetToKnow(); }).AccessibleName = "Me conhecer melhor: ela pergunta como te chamar, seus pronomes e do que você gosta, e guarda isso no me.md";
             nickname = Input(28, 141, 244, 22);
             nickname.Cue = "Seu nome ou apelido";
             nickname.Box.AccessibleName = "Como ela deve chamar você?";
@@ -646,25 +646,25 @@ namespace CapriDesktop
             styleNote.Bounds = new Rectangle(88, 178, 192, 20);
             // Her VOICE LAYERS window (Lachy, 29 Oct) opens from VOICE's band, and the button lights up while they're on.
             // "Layers: Off" and the note don't both fit the band at 150%.
-            layersKey = Make("Layers", 286, 177, 70, 20, delegate { OpenLayers(); });
-            layersKey.AccessibleName = "Voice layers: two copies of her voice under her, each with its own pitch and delay";
+            layersKey = Make("Camadas", 286, 177, 70, 20, delegate { OpenLayers(); });
+            layersKey.AccessibleName = "Camadas de voz: duas cópias da voz dela por baixo, cada uma com seu próprio tom e atraso";
             volume = Setting("Volume", VolumeNames, 0, 204, "Her voice volume");
             volumeName = new Readout(volume);
             volume.Changed += delegate { if (syncing) return; volumeName.Text = VolumeNames[volume.Value]; capri.SetVolume(Volumes[volume.Value]); };
             // Her voice's sliders change every voice she has as they move, and she says a line once they're let go.
-            pitchSlider = Setting("Pitch", PitchNames, 0, 232, "Her voice's pitch");
+            pitchSlider = Setting("Tom", PitchNames, 0, 232, "Her voice's pitch");
             pitchName = new Readout(pitchSlider);
             pitchSlider.Changed += delegate { if (syncing) return; pitchName.Text = PitchNames[pitchSlider.Value]; capri.SetVoicePitch(pitchSlider.Value - VoiceFx.MostPitch); ShowLayers(); };
             pitchSlider.Released += delegate { if (!syncing) capri.HearVoiceStyle(); };
-            paceSlider = Setting("Speed", PaceNames, 0, 260, "Her voice's speed");
+            paceSlider = Setting("Speed", PaceNames, 0, 260, "Velocidade da voz dela");
             paceName = new Readout(paceSlider);
             paceSlider.Changed += delegate { if (syncing) return; paceName.Text = PaceNames[paceSlider.Value]; capri.SetVoiceSpeed(Paces[paceSlider.Value]); };
             paceSlider.Released += delegate { if (!syncing) capri.HearVoiceStyle(); };
-            robotSlider = Setting("Robot", AmountNames, 0, 288, "How robotic her voice sounds");
+            robotSlider = Setting("Robot", AmountNames, 0, 288, "O quanto a voz dela soa robótica");
             robotName = new Readout(robotSlider);
             robotSlider.Changed += delegate { if (syncing) return; robotName.Text = AmountName(robotSlider.Value); capri.SetVoiceRobot(Amounts[robotSlider.Value]); };
             robotSlider.Released += delegate { if (!syncing) capri.HearVoiceStyle(); };
-            glitchSlider = Setting("Glitch", AmountNames, 0, 316, "How much her voice glitches");
+            glitchSlider = Setting("Glitch", AmountNames, 0, 316, "O quanto a voz dela falha/glitcha");
             glitchName = new Readout(glitchSlider);
             glitchSlider.Changed += delegate { if (syncing) return; glitchName.Text = AmountName(glitchSlider.Value); capri.SetVoiceGlitch(Amounts[glitchSlider.Value]); };
             glitchSlider.Released += delegate { if (!syncing) capri.HearVoiceStyle(); };
@@ -672,13 +672,13 @@ namespace CapriDesktop
             soundsName = new Readout(sounds);
             sounds.Changed += delegate { if (syncing) return; soundsName.Text = SoundNames[sounds.Value]; capri.SetSoundLevel(sounds.Value * 10); };
             typing = Switch("Typing sound", 0, 372, delegate { if (!syncing) capri.ToggleTyping(); });
-            typing.Hint = "When she types";
+            typing.Hint = "Quando ela digita";
             typing.HintFont = small;
-            typing.AccessibleName = "Typing sound. A soft typing sound while her text replies type out";
+            typing.AccessibleName = "Som de digitação. Um som suave de digitação enquanto as respostas dela aparecem";
             listenCapri = Switch("Listen for Capri", 0, 400, delegate { if (!syncing) capri.ToggleListenCapri(); });
-            Caption("Say her name anywhere to chat", 28, 428, small, Faint);
-            listenCapri.AccessibleName = "Listen for Capri. Keep the mic open; say her name anywhere in your sentence. Stop and push to talk still work";
-            Caption("Hearing", 28, 454, Type(9.5f), Rose).AccessibleName = "Hearing";
+            Caption("Diga o nome dela em qualquer lugar para conversar", 28, 428, small, Faint);
+            listenCapri.AccessibleName = "Ouvir por Capri. Mantenha o microfone aberto; diga o nome dela em qualquer parte da frase. Parar e pressionar para falar ainda funcionam";
+            Caption("Audição", 28, 454, Type(9.5f), Rose).AccessibleName = "Audição";
             hearingMenu = Dropdown();
             hearingMenu.AccessibleName = "Hearing engine choices";
             hearingChoice = Make("Auto", ValueAt, 450, ValueWide, 22, delegate { hearingMenu.Show(hearingChoice, new Point(0, hearingChoice.Height)); });
@@ -692,10 +692,10 @@ namespace CapriDesktop
             }
             // The row under Listen for Capri, shown only while her HD voice is on (Lachy, 29 Oct). Off out of the box.
             hdGames = Switch("Free voice in games", 0, 478, delegate { if (!syncing) capri.ToggleHdGameRest(); });
-            hdGames.AccessibleName = "Free voice in games: while a game or video is full screen, her free voice talks instead of her HD voice, so the game gets the graphics card";
+            hdGames.AccessibleName = "Voz grátis em jogos: quando um jogo ou vídeo está em tela cheia, a voz grátis dela fala em vez da voz HD, para o jogo usar a placa de vídeo";
             hdGames.Visible = false;
             callMode = Switch("Call mode (beta)", 0, 506, delegate { if (!syncing) capri.ToggleCallMode(); });
-            callMode.AccessibleName = "Call mode. Only your mic or typing can confirm requests";
+            callMode.AccessibleName = "Modo chamada. Só seu microfone ou digitação podem confirmar pedidos";
             callAppName = Named("Call app", 0, 534);
             callAppMenu = Dropdown();
             callAppMenu.AccessibleName = "Call app choices";
@@ -708,78 +708,78 @@ namespace CapriDesktop
                 callAppMenu.Items.Add(Choice(name, false, delegate { capri.ChooseCallApp(chosen); }));
             }
             callAppNote = Caption(CallApps.Note, 28, 562, small, Faint);
-            voiceInMic = Switch("Her voice in your mic", 0, MixAt, delegate { if (!syncing) capri.ToggleVoiceInMic(); });
+            voiceInMic = Switch("Voz dela no seu microfone", 0, MixAt, delegate { if (!syncing) capri.ToggleVoiceInMic(); });
             voiceInMic.Switch = 68;
-            voiceInMic.AccessibleName = "Her voice plays into your mic only in call mode. Pick CABLE Output or Steam Streaming Microphone in your call app.";
+            voiceInMic.AccessibleName = "A voz dela toca no seu microfone apenas no modo de chamada. Escolha CABLE Output ou Steam Streaming Microphone no seu app de chamada.";
             voiceInMicNote = Caption(MicMix.PickLine(MicMix.CableEnd), 28, MixAt + 26, small, Faint);
             // Without a cable the note credits VB-CABLE, and opens its page, where they can donate.
             voiceInMicNote.Click += delegate { if (voiceInMicNote.Text == CableSetup.Credit) capri.OpenCablePage(); };
             voiceInMicState = Caption("", 28, MixAt + 50, small, Faint);
-            cableKey = Make("Get VB-CABLE", 244, MixAt + 76, 112, 22, delegate { capri.SetUpCable(); }, "Her voice in your mic");
+            cableKey = Make("Obter VB-CABLE", 244, MixAt + 76, 112, 22, delegate { capri.SetUpCable(); }, "Voz dela no seu microfone");
             cableKey.AccessibleName = "Get VB-CABLE: opens VB-Audio's own setup, which Windows asks you to let run. Click Install Driver in it, then restart your PC. VB-CABLE is donationware from vb-cable.com";
             cableKey.Visible = false;
             mixInputMenu = Dropdown();
-            mixInput = Make("Input: default", 28, MixAt + 76, 328, 22, delegate { ShowMixInputs(mixInput); }, "Her voice in your mic");
+            mixInput = Make("Entrada: padrão", 28, MixAt + 76, 328, 22, delegate { ShowMixInputs(mixInput); }, "Voz dela no seu microfone");
             mixInput.Chevron = true;
-            mixInput.AccessibleName = "Her mix's input: the mic that goes in with her voice";
+            mixInput.AccessibleName = "Entrada do mix dela: o microfone que entra junto com a voz dela";
             mixOutputMenu = Dropdown();
-            mixOutput = Make("Output: none", 28, MixAt + 104, 244, 22, delegate { ShowMixOutputs(mixOutput); }, "Her voice in your mic");
+            mixOutput = Make("Saída: nenhuma", 28, MixAt + 104, 244, 22, delegate { ShowMixOutputs(mixOutput); }, "Voz dela no seu microfone");
             mixOutput.Chevron = true;
-            mixOutput.AccessibleName = "Her mix's output: the virtual mic it plays into, which you pick as your mic in your call app";
-            mixHow = Make("How to", 280, MixAt + 104, 76, 22, delegate { OpenMix(); }, "Her voice in your mic");
-            mixHow.AccessibleName = "How to set up her voice in your mic for your call app";
-            micLoudnessName = Caption("Her voice in your mic: loudness", 28, MixAt + 134, Type(9.5f), Rose);
+            mixOutput.AccessibleName = "Saída do mix dela: o microfone virtual para onde toca, que você escolhe como microfone no app de chamada";
+            mixHow = Make("Como usar", 280, MixAt + 104, 76, 22, delegate { OpenMix(); }, "Voz dela no seu microfone");
+            mixHow.AccessibleName = "Como configurar a voz dela no seu microfone para o app de chamada";
+            micLoudnessName = Caption("Voz dela no seu microfone: volume", 28, MixAt + 134, Type(9.5f), Rose);
             micLoudness = new Slider(MicLevels);
             micLoudness.Font = Type(9.5f);
             micLoudness.Bounds = new Rectangle(28, MixAt + 158, 328, 22);
-            micLoudness.AccessibleName = "Her voice in your mic: loudness";
+            micLoudness.AccessibleName = "Voz dela no seu microfone: volume";
             Controls.Add(micLoudness);
             micLoudness.Changed += delegate { if (!syncing) capri.SetMicLoudness(50 + micLoudness.Value * 10); };
             int afterVoice = Controls.Count;
             Section("COMPORTAMENTO >", 0, 442);
-            popTimes = Make("Pop-in times", 236, 439, 120, 20, delegate { using (PopWindow dialog = new PopWindow(capri)) dialog.ShowDialog(this); });
-            popTimes.AccessibleName = "Pop-in times: set the shortest and longest wait in minutes";
+            popTimes = Make("Tempos de aparição", 236, 439, 120, 20, delegate { using (PopWindow dialog = new PopWindow(capri)) dialog.ShowDialog(this); });
+            popTimes.AccessibleName = "Tempos de aparição: defina a espera mais curta e mais longa em minutos";
             // Her mini player shows what's playing while music plays, with her perched on it.
             miniPlayer = Switch("Mini player", 0, 466, delegate { if (!syncing) capri.TogglePlayer(); });
-            miniPlayer.AccessibleName = "Mini player. It shows what's playing while music plays, and she sits on it";
-            wander = Setting("Wander", WanderNames, 0, 494, "How much she wanders");
+            miniPlayer.AccessibleName = "Mini player. Mostra o que está tocando enquanto a música toca, e ela senta nele";
+            wander = Setting("Wander", WanderNames, 0, 494, "O quanto ela anda por aí");
             wanderName = new Readout(wander);
             wander.Changed += delegate { if (syncing) return; wanderName.Text = WanderNames[wander.Value]; capri.SetWanderLevel(wander.Value); };
-            sleepAfter = Setting("Sleep", SleepNames, 0, 522, "How long until she falls asleep");
+            sleepAfter = Setting("Sleep", SleepNames, 0, 522, "Quanto tempo até ela dormir");
             sleepName = new Readout(sleepAfter);
             sleepAfter.Changed += delegate { if (syncing) return; sleepName.Text = SleepNames[sleepAfter.Value]; capri.SetSleepAfter(Sleeps[sleepAfter.Value]); };
             // How often Check in on me brings her over to say hi.
-            pops = Setting("Pop-ins", PopNames, 0, 550, "How often she pops in to say hi");
+            pops = Setting("Pop-ins", PopNames, 0, 550, "Com que frequência ela aparece para dar oi");
             popsName = new Readout(pops);
             pops.Changed += delegate { if (syncing) return; popsName.Text = PopNames[pops.Value]; capri.SetPopPace(pops.Value); };
             dance = Switch("Dance to music", 0, 578, delegate { if (!syncing) capri.ToggleDance(); });
             intro = Switch("Glitch in at startup", 0, 606, delegate { if (!syncing) capri.ToggleIntro(); });
             Section("ATALHOS >", 0, 648);
-            talkKeys = Make("Talk: Ctrl + Alt + V", 28, 675, 328, 22, delegate { PickKeys(0); });
-            talkKeys.AccessibleName = "Her talk key. Click, press new keys, then Confirm";
-            muteKeys = Make("Mute mic: Ctrl + Alt + N", 28, 703, 328, 22, delegate { PickKeys(1); });
-            muteKeys.AccessibleName = "Her mute key. Click, press new keys, then Confirm";
-            typeKeys = Make("Type: Ctrl + Alt + T", 28, 731, 328, 22, delegate { PickKeys(2); });
-            typeKeys.AccessibleName = "Her typing key. Click, press new keys, then Confirm";
-            hideKeys = Make("Hide/show: Ctrl + Alt + H", 28, 759, 328, 22, delegate { PickKeys(3); });
-            hideKeys.AccessibleName = "Her hide key. Click, press new keys, then Confirm";
-            quietKeys = Make("Quiet: Ctrl + Alt + P", 28, 787, 328, 22, delegate { PickKeys(4); });
-            quietKeys.AccessibleName = "Her quiet key: she only talks when you talk to her until you press it again. Click, press new keys, then Confirm";
+            talkKeys = Make("Falar: Ctrl + Alt + V", 28, 675, 328, 22, delegate { PickKeys(0); });
+            talkKeys.AccessibleName = "Tecla de falar dela. Clique, pressione novas teclas e depois Confirmar";
+            muteKeys = Make("Silenciar microfone: Ctrl + Alt + N", 28, 703, 328, 22, delegate { PickKeys(1); });
+            muteKeys.AccessibleName = "Tecla de silenciar dela. Clique, pressione novas teclas e depois Confirmar";
+            typeKeys = Make("Digitar: Ctrl + Alt + T", 28, 731, 328, 22, delegate { PickKeys(2); });
+            typeKeys.AccessibleName = "Tecla de digitar dela. Clique, pressione novas teclas e depois Confirmar";
+            hideKeys = Make("Ocultar/mostrar: Ctrl + Alt + H", 28, 759, 328, 22, delegate { PickKeys(3); });
+            hideKeys.AccessibleName = "Tecla de ocultar dela. Clique, pressione novas teclas e depois Confirmar";
+            quietKeys = Make("Silêncio: Ctrl + Alt + P", 28, 787, 328, 22, delegate { PickKeys(4); });
+            quietKeys.AccessibleName = "Tecla de silêncio dela: ela só fala quando você fala com ela até você apertar de novo. Clique, pressione novas teclas e depois Confirmar";
             // Hold to talk, on any key or mouse button. It's read rather than taken, so it still does its own job in a game.
-            pushKeys = Make("Push to talk: not set", 28, 815, 328, 22, delegate { PickKeys(Companion.PushSlot); });
-            pushKeys.AccessibleName = "Her push-to-talk key: hold it to talk to her, with a game in front too. Click, press a key or a mouse button, then Confirm";
-            gameKeys = Make("Gaming Mode: Ctrl + Alt + G", 28, 843, 328, 22, delegate { PickKeys(5); });
-            gameKeys.AccessibleName = "Her Gaming Mode key: she reacts to your game until you close it. Click, press new keys, then Confirm";
+            pushKeys = Make("Pressionar para falar: não definido", 28, 815, 328, 22, delegate { PickKeys(Companion.PushSlot); });
+            pushKeys.AccessibleName = "Tecla de pressionar para falar: segure para falar com ela, mesmo com jogo na frente. Clique, pressione uma tecla ou botão do mouse e depois Confirmar";
+            gameKeys = Make("Modo jogo: Ctrl + Alt + G", 28, 843, 328, 22, delegate { PickKeys(5); });
+            gameKeys.AccessibleName = "Tecla do Modo Jogo: ela reage ao seu jogo até você fechá-lo. Clique, pressione novas teclas e depois Confirmar";
             // Only a click ends picking a key, so Enter, Esc and Tab can be her keys too. Confirm and Cancel show in KEYS' band
             // while one is being picked.
-            confirmKeys = Make("Confirm", 212, 645, 78, 20, delegate { ConfirmKeys(); });
+            confirmKeys = Make("Confirmar", 212, 645, 78, 20, delegate { ConfirmKeys(); });
             confirmKeys.Accent = Cyan;
             confirmKeys.Loud = true;
-            confirmKeys.AccessibleName = "Confirm her new keys";
-            cancelKeys = Make("Cancel", 296, 645, 60, 20, delegate { CancelKeys(); });
-            cancelKeys.AccessibleName = "Cancel and keep her old keys";
-            clearKeys = Make("Off", 160, 645, 46, 20, delegate { ClearPush(); });
-            clearKeys.AccessibleName = "Turn her push-to-talk key off";
+            confirmKeys.AccessibleName = "Confirmar novas teclas";
+            cancelKeys = Make("Cancelar", 296, 645, 60, 20, delegate { CancelKeys(); });
+            cancelKeys.AccessibleName = "Cancelar e manter as teclas antigas";
+            clearKeys = Make("Desligado", 160, 645, 46, 20, delegate { ClearPush(); });
+            clearKeys.AccessibleName = "Desligar a tecla de pressionar para falar";
             confirmKeys.Visible = cancelKeys.Visible = clearKeys.Visible = false;
             keysNote = Caption("", 28, 872, small, Faint);
             keysNote.MaximumSize = new Size(328, 0);
@@ -794,7 +794,7 @@ namespace CapriDesktop
             sizeSlider = Setting("Size", SizeNames, c, 82, "Her size");
             sizeName = new Readout(sizeSlider);
             sizeSlider.Changed += delegate { if (syncing) return; sizeName.Text = SizeNames[sizeSlider.Value]; capri.SetCharacterSize(SizeSteps[sizeSlider.Value]); };
-            checkIns = Switch("Check in on me", c, 110, delegate { if (!syncing) capri.ToggleCheckIns(); });
+            checkIns = Switch("Dar uma olhada em mim", c, 110, delegate { if (!syncing) capri.ToggleCheckIns(); });
             careMenu = Dropdown();
             for (int careRow = 0; careRow < careToggles.Length; careRow++)
             {
@@ -802,47 +802,47 @@ namespace CapriDesktop
                 Toggle careToggle = Switch(Care.Names[careRow], c, 138 + careRow * Row, delegate { if (!syncing) capri.ToggleCare(careKind); });
                 careToggle.Width = 224;
                 careToggle.Switch = 68;
-                careToggle.AccessibleName = "Check in on me: " + Care.Names[careRow] + " check-in" + (careKind == CareKind.Eyes ? ", look away for 20 seconds" : careKind == CareKind.Meal ? ", mealtimes from noon, if you've been here since before lunch" : "");
+                careToggle.AccessibleName = "Dar uma olhada em mim: " + Care.Names[careRow] + " check-in" + (careKind == CareKind.Eyes ? ", desvie o olhar por 20 segundos" : careKind == CareKind.Meal ? ", horários de refeição a partir do meio-dia, se você estiver aqui desde antes do almoço" : "");
                 careToggles[careRow] = careToggle;
                 Key careTime = Make("", 260 + c, 141 + careRow * Row, 96, 22, delegate { ChooseCareTime(careKind); });
                 careTime.Chevron = true;
                 careTimes[careRow] = careTime;
             }
-            careEdit = Make("Edit check-in lines", 28 + c, 338, 328, 20, delegate { capri.OpenCare(); });
-            careEdit.AccessibleName = "Check in on me: edit her check-in lines in check-ins.md; remove lines to silence a check-in";
+            careEdit = Make("Editar falas de aparição", 28 + c, 338, 328, 20, delegate { capri.OpenCare(); });
+            careEdit.AccessibleName = "Dar uma olhada em mim: edite as falas em check-ins.md; remova linhas para silenciar um check-in";
             int afterCare = Controls.Count;
             onTop = Switch("Always on top", c, 138, delegate { if (!syncing) capri.ToggleOnTop(); });
             // Zenni's ask (30 Oct): under Virtual Super Resolution her Mainframe came out tiny. Auto grows it by how much bigger
             // the desktop is than the panel showing it; 100% to 200% sizes it by hand.
-            frameSize = Setting("Mainframe size", FrameSizeNames, c, 166, "Mainframe size. Auto makes it bigger when Virtual Super Resolution or DSR shrinks a big desktop onto a smaller screen");
+            frameSize = Setting("Mainframe size", FrameSizeNames, c, 166, "Tamanho do painel. Auto aumenta quando Virtual Super Resolution ou DSR encolhe uma área grande em uma tela menor");
             frameSizeName = new Readout(frameSize);
             frameSize.Changed += delegate { if (!syncing) ShowFrameSize(); };
             frameSize.Released += delegate { if (!syncing) { capri.SetMainframeSize(FrameSizes[frameSize.Value]); Rezoom(Wanted()); ShowFrameSize(); } };
-            frameColours = Setting("Mainframe colours", Neon.LookNames, c, 194, "Mainframe colours. Night City is red and cyan; Black, White and Grey change the Mainframe, her menus, the Type box and her notes");
+            frameColours = Setting("Mainframe colours", Neon.LookNames, c, 194, "Cores do painel. Night City é vermelho e ciano; Preto, Branco e Cinza mudam o painel, menus, caixa de digitação e notas");
             frameColours.Changed += delegate { if (!syncing) capri.SetMainframeColours(frameColours.Value); };
             headPats = Switch("Head pats", c, 222, delegate { if (!syncing) capri.ToggleHeadPats(); });
-            headPats.AccessibleName = "Head pats. Rubbing the cursor over her gets a grin and a line";
+            headPats.AccessibleName = "Carinhos na cabeça. Passar o cursor por cima dela faz ela sorrir e falar uma frase";
             upsetChaos = Switch("Chaos when upset", c, 250, delegate { if (!syncing) capri.ToggleUpsetChaos(); });
-            upsetChaos.AccessibleName = "Chaos when upset. Insulting her can set her clones off until you hold Esc";
+            upsetChaos.AccessibleName = "Caos quando chateada. Insultá-la pode deixar os clones dela soltos até você segurar Esc";
             // Hologram stays reversible here even while clicks pass through her body (Lachy, 2 Nov).
             hologram = Switch("Hologram", c, 278, delegate { if (!syncing) capri.ToggleHologram(); });
-            hologram.AccessibleName = "Hologram. Clicks pass through her body, talk pill and bubble. Turn this off to give her clicks back";
+            hologram.AccessibleName = "Holograma. Cliques passam pelo corpo, pílula de fala e balão dela. Desligue isso para ela voltar a receber cliques";
             int afterPats = Controls.Count;
             Section("OBSERVAÇÃO >", c, 208);
             watch = Switch("Watch my screen", c, 232, delegate { if (!syncing) capri.ToggleWatch(); });
-            watch.AccessibleName = "Watch my screen. She comments now and then about the desktop. Game comments have their own Comments setting under GAMES";
+            watch.AccessibleName = "Observar minha tela. Ela comenta de vez em quando sobre a área de trabalho. Comentários de jogo têm configuração própria em JOGOS";
             Named("Screens", c, 260);
             screenMenu = Dropdown();
-            screens = Make("All screens", ValueAt + c, 263, ValueWide, 22, delegate { ShowScreens(); }, "Screens");
+            screens = Make("Todas as telas", ValueAt + c, 263, ValueWide, 22, delegate { ShowScreens(); }, "Screens");
             screens.Chevron = true;
             screens.Ellipsis = true;
-            screens.AccessibleName = "Screens to watch: All screens";
-            caughtUp = Switch("Remember what she sees", c, 288, delegate { if (!syncing) capri.ToggleCaughtUp(); });
+            screens.AccessibleName = "Telas para observar: Todas as telas";
+            caughtUp = Switch("Lembrar o que ela vê", c, 288, delegate { if (!syncing) capri.ToggleCaughtUp(); });
             caughtUp.AccessibleName = "Remember what she sees. What she saw on your screen stays in her memory for three hours even when she said nothing about it, which uses a little more of your API";
             gap = Setting("Every", GapNames, c, 316, "Time between glances");
             gapName = new Readout(gap);
             gap.Changed += delegate { if (syncing) return; gapName.Text = GapNames[gap.Value]; capri.SetGlanceGap(Gaps[gap.Value]); };
-            watchMemory = Setting("Watch-along memory", WatchLineNames, c, 344, "Lines of PC dialogue held in memory while watching together. The oldest half becomes a note when Remember what she sees is on");
+            watchMemory = Setting("Watch-along memory", WatchLineNames, c, 344, "Linhas de diálogo do PC mantidas na memória ao assistir juntos. A metade mais antiga vira uma nota quando Lembrar o que ela vê está ligado");
             watchMemoryName = new Readout(watchMemory);
             watchMemory.Changed += delegate { if (!syncing) capri.SetWatchMemory(WatchLines[watchMemory.Value]); };
             int afterWatchMemory = Controls.Count;
@@ -850,7 +850,7 @@ namespace CapriDesktop
             Named("Code/Husk Mode", c, 354);
             huskMenu = Dropdown();
             huskMenu.AccessibleName = "Code/Husk Mode choices";
-            huskMode = Make("Off", ValueAt + c, 357, ValueWide, 22, delegate { huskMenu.Show(huskMode, new Point(0, huskMode.Height)); }, "Code/Husk Mode");
+            huskMode = Make("Desligado", ValueAt + c, 357, ValueWide, 22, delegate { huskMenu.Show(huskMode, new Point(0, huskMode.Height)); }, "Code/Husk Mode");
             huskMode.Chevron = true;
             huskMode.AccessibleName = "Code/Husk Mode";
             for (int i = 0; i < HuskNames.Length; i++)
@@ -859,116 +859,116 @@ namespace CapriDesktop
                 huskMenu.Items.Add(Choice(HuskNames[i], false, delegate { capri.SetHusk(choice); }));
             }
             int afterHusk = Controls.Count;
-            stayOnModel = Switch("Stay on my model", c, 354, delegate { if (!syncing) capri.ToggleStayOnModel(); });
-            stayOnModel.AccessibleName = "Stay on my model. When an NVIDIA model gets stuck she says so instead of switching to another one";
+            stayOnModel = Switch("Ficar no meu modelo", c, 354, delegate { if (!syncing) capri.ToggleStayOnModel(); });
+            stayOnModel.AccessibleName = "Ficar no meu modelo. Quando um modelo NVIDIA trava, ela avisa em vez de trocar para outro";
             replies = Setting("Replies", Lengths, c, 382, "Reply length");
             repliesName = new Readout(replies);
             replies.Changed += delegate { if (syncing) return; repliesName.Text = Lengths[replies.Value]; capri.SetWordiness(replies.Value); };
-            recall = Setting("Memory", Lengths, c, 410, "How much of the chat she keeps");
+            recall = Setting("Memory", Lengths, c, 410, "Quanto da conversa ela mantém");
             recallName = new Readout(recall);
             recall.Changed += delegate { if (syncing) return; recallName.Text = Lengths[recall.Value]; capri.SetRecall(Recalls[recall.Value]); };
-            memorySize = Setting("Memory size", MemoryNames, c, 438, "Memory size in tokens for Ollama and her built-in brain. Auto keeps her usual context size");
+            memorySize = Setting("Memory size", MemoryNames, c, 438, "Tamanho da memória em tokens para Ollama e cérebro integrado. Auto mantém o tamanho de contexto normal");
             memorySizeName = new Readout(memorySize);
             memorySize.Changed += delegate { if (syncing) return; memorySizeName.Text = MemoryNames[memorySize.Value]; capri.SetMemorySize(Brain.MemorySizes[memorySize.Value]); };
-            replyLength = Setting("Max reply", ReplyNames, c, 466, "The longest reply she can give, in tokens. Auto keeps to Replies above; 2K or 8K lets her run on. Jobs keep more room when they need it");
+            replyLength = Setting("Max reply", ReplyNames, c, 466, "A resposta mais longa que ela pode dar, em tokens. Auto segue Respostas acima; 2K ou 8K deixa ela falar mais. Tarefas têm mais espaço quando precisam");
             replyLengthName = new Readout(replyLength);
             replyLength.Changed += delegate { if (syncing) return; replyLengthName.Text = ReplyNames[replyLength.Value]; capri.SetReplyLength(replyLength.Value); };
-            bubble = Setting("Bubble", BubbleNames, c, 494, "How long her replies stay up");
+            bubble = Setting("Bubble", BubbleNames, c, 494, "Por quanto tempo as respostas dela ficam na tela");
             bubbleName = new Readout(bubble);
             bubble.Changed += delegate { if (syncing) return; bubbleName.Text = BubbleNames[bubble.Value]; capri.SetBubbleTime(bubble.Value); };
             followUps = Switch("Follow-up messages", c, 522, delegate { if (!syncing) capri.ToggleFollowUps(); });
-            followUps.AccessibleName = "Follow-up messages. Sometimes she adds a second thought after her answer. Your typing or speech drops it";
+            followUps.AccessibleName = "Mensagens de acompanhamento. Às vezes ela adiciona um segundo pensamento depois da resposta. Sua digitação ou fala cancela isso";
             int afterFollowUps = Controls.Count;
             custom = Input(28 + c, 525, 244, 22);
             custom.Cue = "Custom model name";
             custom.Box.AccessibleName = "Custom model name";
             custom.Box.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; UseCustom(); } };
-            Make("Use", 280 + c, 525, 76, 22, delegate { UseCustom(); }, "Custom model name");
-            customNote = Caption("A model in Ollama, on your local server or on your key.", 28 + c, 554, small, Faint);
+            Make("Usar", 280 + c, 525, 76, 22, delegate { UseCustom(); }, "Custom model name");
+            customNote = Caption("Um modelo no Ollama, no seu servidor local ou na sua chave.", 28 + c, 554, small, Faint);
             customNote.AutoSize = false;
             customNote.AutoEllipsis = true;
             customNote.Size = new Size(328, 28);
-            Caption("Local server address", 28 + c, 586, Font, Rose);
+            Caption("Endereço do servidor local", 28 + c, 586, Font, Rose);
             localAddress = Input(28 + c, 615, 244, 22);
             localAddress.Cue = "http://127.0.0.1:1234";
-            localAddress.Box.AccessibleName = "Local server address";
+            localAddress.Box.AccessibleName = "Endereço do servidor local";
             localAddress.Box.KeyDown += delegate(object sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; UseLocalAddress(); } };
-            Make("Save", 280 + c, 615, 76, 22, delegate { UseLocalAddress(); }, "Local server address");
+            Make("Salvar", 280 + c, 615, 76, 22, delegate { UseLocalAddress(); }, "Endereço do servidor local");
             Section("HÁBITOS >", c, 656);
-            Make("Obsidian vault", 104 + c, 653, 112, 20, delegate { ShowMemoryVault(); }).AccessibleName = "Obsidian vault: keep her notes in your Obsidian vault";
-            memoriesKey = Make("Open her memories", 220 + c, 653, 136, 20, delegate { EditNotes(true); });
-            memoriesKey.AccessibleName = "Open her memories: edit memories.md here";
+            Make("Cofre do Obsidian", 104 + c, 653, 112, 20, delegate { ShowMemoryVault(); }).AccessibleName = "Cofre do Obsidian: guarde as notas dela no seu cofre do Obsidian";
+            memoriesKey = Make("Abrir memórias dela", 220 + c, 653, 136, 20, delegate { EditNotes(true); });
+            memoriesKey.AccessibleName = "Abrir memórias dela: edite memories.md aqui";
             startup = Switch("Start with Windows", c, 680, delegate { if (!syncing) capri.ToggleStartup(); });
-            discord = Switch("Show on Discord", c, 708, delegate { if (!syncing) capri.ToggleDiscord(); });
-            cursor = Switch("Use her cursor", c, 736, delegate { if (!syncing) capri.ToggleCursor(); });
+            discord = Switch("Mostrar no Discord", c, 708, delegate { if (!syncing) capri.ToggleDiscord(); });
+            cursor = Switch("Usar o cursor dela", c, 736, delegate { if (!syncing) capri.ToggleCursor(); });
             remembering = Switch("Remember our chats", c, 764, delegate { if (!syncing) capri.ToggleRemembering(); });
-            remembering.AccessibleName = "Remember our chats. She keeps daily transcripts and memories.md on this PC, never uploaded";
+            remembering.AccessibleName = "Lembrar nossas conversas. Ela mantém transcrições diárias e memories.md neste PC, nunca enviados";
             // SECURITY took Blackwall mode's place (Lachy, 29 Oct): its button opens her SECURITY window, and the line under it
             // says what the preset does. Blackwall mode is its Blackwall preset now.
-            security = Make("Security: " + Security.PresetName, 28 + c, 795, 328, 22, delegate { OpenSecurity(); });
-            security.AccessibleName = "Security: what she does on your PC without asking first";
+            security = Make("Segurança: " + Security.PresetName, 28 + c, 795, 328, 22, delegate { OpenSecurity(); });
+            security.AccessibleName = "Segurança: o que ela faz no seu PC sem pedir antes";
             blackwallNote = Caption(Security.Short, 28 + c, 819, small, Faint);
             blackwallNote.AutoSize = false;
             blackwallNote.TextAlign = ContentAlignment.MiddleRight;
             blackwallNote.Bounds = new Rectangle(28 + c, 819, 328, 18);
             // Frames a second while she sits on a window. Her sway takes 2 s at every fps; past 30 she draws in-betweens.
-            perchFps = Setting("Perch", PerchNames, c, 840, "Her perch frames per second");
+            perchFps = Setting("Perch", PerchNames, c, 840, "Quadros por segundo do pouso dela");
             perchFpsName = new Readout(perchFps);
             perchFps.Changed += delegate { if (syncing) return; capri.SetPerchFps(Companion.PerchRates[perchFps.Value]); ShowPerch(); };
             perchNote = Caption("", 28 + c, 868, small, Faint);
             perchNote.AutoSize = false;
             perchNote.TextAlign = ContentAlignment.MiddleRight;
             perchNote.Bounds = new Rectangle(28 + c, 868, 328, 18);
-            keepAwake = Switch("Keep PC awake for jobs", c, 888, delegate { if (!syncing) capri.ToggleKeepAwake(); });
-            hideFullScreen = Switch("Hide in full screen", c, 916, delegate { if (!syncing) capri.ToggleHideFullScreen(); });
+            keepAwake = Switch("Manter PC acordado para tarefas", c, 888, delegate { if (!syncing) capri.ToggleKeepAwake(); });
+            hideFullScreen = Switch("Ocultar em tela cheia", c, 916, delegate { if (!syncing) capri.ToggleHideFullScreen(); });
             playerFullScreen = Switch("Mini player over full screen", c, 944, delegate { if (!syncing) capri.TogglePlayerFullScreen(); });
             exploreAway = Switch("Explore while I'm away", c, 972, delegate { if (!syncing) capri.ToggleExploreAway(); });
             keepAwake.Switch = hideFullScreen.Switch = playerFullScreen.Switch = exploreAway.Switch = 68;
-            keepAwake.AccessibleName = "Keep PC awake for jobs. Keeps the PC and screen awake while a job runs, waits for your answer or watches for something";
-            hideFullScreen.AccessibleName = "Hide in full screen. Gaming Mode takes priority; a manual hide stays hidden";
-            playerFullScreen.AccessibleName = "Mini player over full screen. Works over borderless windows; exclusive full screen cannot show overlays";
-            exploreAway.AccessibleName = "Explore while I'm away. Scrolls browser or reader pages without moving your mouse; your input stops her";
-            exploreAfter = Setting("Explore after", AwayNames, c, 1000, "How long you are away before she scrolls a browser or reader");
+            keepAwake.AccessibleName = "Manter PC acordado para tarefas. Mantém o PC e a tela acordados enquanto uma tarefa roda, espera sua resposta ou observa algo";
+            hideFullScreen.AccessibleName = "Ocultar em tela cheia. O Modo Jogo tem prioridade; um ocultar manual permanece oculto";
+            playerFullScreen.AccessibleName = "Mini player sobre tela cheia. Funciona em janelas sem borda; tela cheia exclusiva não mostra overlays";
+            exploreAway.AccessibleName = "Explorar enquanto estou fora. Rola páginas do navegador ou leitor sem mover seu mouse; sua interação faz ela parar";
+            exploreAfter = Setting("Explore after", AwayNames, c, 1000, "Quanto tempo você fica ausente antes dela rolar navegador ou leitor");
             exploreAfterName = new Readout(exploreAfter);
             exploreAfter.Changed += delegate { if (!syncing) capri.SetExploreAfter(AwayTimes[exploreAfter.Value]); };
             int gamesFrom = Controls.Count;
             Section("JOGOS >", 0, 914);
-            miniGames = Make("Play...", 140, 911, 96, 20, delegate { ShowMiniGames(); });
-            miniGames.AccessibleName = "Play a mini-game with Capri";
-            gameNotes = Make("Controls", 244, 911, 112, 20, delegate { ShowGameNotes(); });
-            gameNotes.AccessibleName = "Game controls: teach her the keys before she plays";
+            miniGames = Make("Reproduzir...", 140, 911, 96, 20, delegate { ShowMiniGames(); });
+            miniGames.AccessibleName = "Jogar um mini-jogo com a Capri";
+            gameNotes = Make("Controles", 244, 911, 112, 20, delegate { ShowGameNotes(); });
+            gameNotes.AccessibleName = "Controles do jogo: ensine as teclas antes dela jogar";
             // What she says about a game they're playing, from what happens in it rather than on a timer.
-            comments = Setting("Comments", Commentary.PaceNames, 0, 938, "Game comments run separately from Watch my screen and Gaming Mode. Off stops them; Events only and Chatty let her watch your game");
+            comments = Setting("Comments", Commentary.PaceNames, 0, 938, "Comentários de jogo rodam separados de Observar minha tela e Modo Jogo. Desligado para; Só eventos e Tagarela deixam ela assistir seu jogo");
             commentsName = new Readout(comments);
             comments.Changed += delegate { if (syncing) return; commentsName.Text = Commentary.PaceNames[comments.Value]; capri.SetCommentPace(comments.Value); };
             // Her live reactions (F67), on by default, under Comments since they only run while her comments do.
             liveReactions = Switch("Live reactions", 0, 966, delegate { if (!syncing) capri.ToggleReactions(); });
-            liveReactions.AccessibleName = "Live reactions. Quick lines on the right of a full-screen game when something happens, while her game comments run. Mute her keeps them as text";
+            liveReactions.AccessibleName = "Reações ao vivo. Frases rápidas à direita de um jogo em tela cheia quando algo acontece, enquanto os comentários de jogo rodam. Silenciar ela mantém them as text";
             gamingMode = Switch("Gaming Mode", 0, 994, delegate { if (!syncing) capri.ToggleGaming(); });
             gamingMode.AccessibleName = "Gaming Mode. She reacts to your game until you close it. \"Hey Capri, activate gaming mode\" turns it on. Works best on MAX INTELLIGENCE.";
-            Caption("She reacts to your game until you close it.", 28, 1020, small, Faint);
+            Caption("Ela reage ao seu jogo até você fechá-lo.", 28, 1020, small, Faint);
             Caption("\"Hey Capri, activate gaming mode\" turns it on.", 28, 1036, small, Faint);
-            Caption("Works best on MAX INTELLIGENCE.", 28, 1052, small, Faint);
+            Caption("Funciona melhor na INTELIGÊNCIA MÁXIMA.", 28, 1052, small, Faint);
             fastHands = Switch("Fast hands in games", 0, 1074, delegate { if (!syncing) capri.ToggleFastHands(); });
             hdGames.Switch = intro.Switch = caughtUp.Switch = fastHands.Switch = 68;
             gameMute = Switch("Mute her", 0, 1102, delegate { if (!syncing) capri.ToggleShush(); });
-            gameMute.AccessibleName = "Mute her. She stops talking on her own and only answers when you talk to her, the same as her Quiet key";
-            fastHands.AccessibleName = "Fast hands in games. On a Claude key she plays games on Claude Haiku, which moves about three times faster and costs far less. When she's stuck she asks the brain you picked, or Claude Sonnet if that's Haiku, and chat stays on the brain you picked";
+            gameMute.AccessibleName = "Silenciar ela. Ela para de falar sozinha e só responde quando você fala com ela, igual à tecla de Silêncio";
+            fastHands.AccessibleName = "Mãos rápidas nos jogos. Com uma chave Claude ela joga no Claude Haiku, que é cerca de três vezes mais rápido e custa bem menos. Quan she's stuck she asks the brain you picked, or Claude Sonnet if that's Haiku, and chat stays on the brain you picked";
             clipHead = Section("CLIPES >", 0, 1158);
             clipGames = Switch("Clip my games", 0, 1182, delegate { if (!syncing) capri.ToggleClips(); });
-            clipGames.AccessibleName = "Clip my games. Keeps recent game video and PC sound in memory while the game is in front";
+            clipGames.AccessibleName = "Gravar meus jogos. Mantém vídeo recente do jogo e som do PC na memória enquanto o jogo está na frente";
             clipMoments = Switch("Save big moments", 0, 1210, delegate { if (!syncing) capri.ToggleClipMoments(); });
-            clipMoments.AccessibleName = "Save big moments. Turns on Clip my games; her game comments can save a clip using your default length";
-            Caption("Save folder", 28, 1242, Type(9.5f), Rose);
-            clipChoose = Make("Choose folder...", ValueAt, 1238, ValueWide, 22, delegate { PickClipFolder(); });
-            clipChoose.AccessibleName = "Choose the folder for future clips";
+            clipMoments.AccessibleName = "Salvar grandes momentos. Liga Gravar meus jogos; os comentários de jogo dela podem salvar um clipe usando a duração padrão";
+            Caption("Pasta de salvamento", 28, 1242, Type(9.5f), Rose);
+            clipChoose = Make("Escolher pasta...", ValueAt, 1238, ValueWide, 22, delegate { PickClipFolder(); });
+            clipChoose.AccessibleName = "Escolha a pasta para clipes futuros";
             clipPath = Caption("", 28, 1266, small, Faint);
             clipPath.AutoSize = false;
             clipPath.AutoEllipsis = true;
             clipPath.Bounds = new Rectangle(28, 1266, 328, 20);
-            clipsFolder = Make("Open clips folder", 28, 1294, 328, 22, delegate { capri.OpenClips(); });
-            clipsFolder.AccessibleName = "Open your selected clips folder";
-            clipLength = Setting("Default length", new[] { "15 s", "30 s", "45 s", "1 min", "1.5 min", "2 min" }, 0, 1322, "Default duration for clip that and automatic clips");
+            clipsFolder = Make("Abrir pasta de clipes", 28, 1294, 328, 22, delegate { capri.OpenClips(); });
+            clipsFolder.AccessibleName = "Abrir a pasta de clipes selecionada";
+            clipLength = Setting("Default length", new[] { "15 s", "30 s", "45 s", "1 min", "1.5 min", "2 min" }, 0, 1322, "Duração padrão para \"grava isso\" e clipes automáticos");
             clipRate = Setting("Frame rate", new[] { "Up to 15 fps", "Up to 24 fps", "Up to 30 fps", "Up to 60 fps" }, 0, 1350, "Target capture frame rate; may drop under load or the memory budget");
             clipSize = Setting("Resolution", new[] { "Auto", "Up to 480p", "Up to 720p", "Up to 1080p" }, 0, 1378, "Maximum clip resolution, keeping the game's shape without upscaling");
             clipBits = Setting("Video bitrate", new[] { "Auto", "2 Mbps", "4 Mbps", "8 Mbps", "12 Mbps", "20 Mbps" }, 0, 1406, "H.264 video bitrate target; higher values make larger files");
@@ -1026,7 +1026,7 @@ namespace CapriDesktop
         {
             try
             {
-                using (NoteWindow dialog = new NoteWindow(Brain.OpenNote(memories), memories ? "Her memories" : "Her notes about you")) dialog.ShowDialog(this);
+                using (NoteWindow dialog = new NoteWindow(Brain.OpenNote(memories), memories ? "Her memories" : "As notas dela sobre você")) dialog.ShowDialog(this);
             }
             catch (System.IO.IOException) { Notice.Tell(this, "Couldn't read this note. Try opening it again.", "Her notes", true); }
             catch (UnauthorizedAccessException) { Notice.Tell(this, "Couldn't read this note. Check access to its folder.", "Her notes", true); }
@@ -1036,7 +1036,7 @@ namespace CapriDesktop
         {
             using (Form dialog = new Form())
             {
-                dialog.Text = "Game controls";
+                dialog.Text = "Controles do jogo";
                 dialog.AutoScaleMode = AutoScaleMode.Dpi;
                 dialog.StartPosition = FormStartPosition.CenterParent;
                 dialog.ShowInTaskbar = false;
@@ -1046,20 +1046,20 @@ namespace CapriDesktop
                 dialog.ForeColor = White;
                 dialog.Font = Look.Mono(10f, FontStyle.Regular, GraphicsUnit.Point);
                 dialog.ClientSize = new Size(480, 172);
-                Label label = new Label { Text = "Game name", Bounds = new Rectangle(16, 16, 448, 20) };
+                Label label = new Label { Text = "Nome do jogo", Bounds = new Rectangle(16, 16, 448, 20) };
                 TextBox game = new TextBox { Text = GameNotes.Name(Hands.GameOpen()), Bounds = new Rectangle(16, 42, 448, 24), BackColor = Field, ForeColor = White, BorderStyle = BorderStyle.FixedSingle, AccessibleName = "Game name for controls" };
-                Label note = new Label { Text = "She reads these controls before each game job.", Bounds = new Rectangle(16, 78, 448, 30), ForeColor = Faint };
-                Button edit = DialogButton("Edit controls", 16, 122, 128, Cyan);
-                Button close = DialogButton("Close", 364, 122, 100, Edge);
+                Label note = new Label { Text = "Ela lê esses controles antes de cada tarefa no jogo.", Bounds = new Rectangle(16, 78, 448, 30), ForeColor = Faint };
+                Button edit = DialogButton("Editar controles", 16, 122, 128, Cyan);
+                Button close = DialogButton("Fechar", 364, 122, 100, Edge);
                 edit.Click += delegate
                 {
-                    if (GameNotes.Name(game.Text).Length == 0) { note.Text = "Enter the game's name first."; return; }
+                    if (GameNotes.Name(game.Text).Length == 0) { note.Text = "Digite o nome do jogo primeiro."; return; }
                     try
                     {
-                        using (NoteWindow page = new NoteWindow(GameNotes.OpenControls(game.Text), "Game controls")) page.ShowDialog(dialog);
+                        using (NoteWindow page = new NoteWindow(GameNotes.OpenControls(game.Text), "Controles do jogo")) page.ShowDialog(dialog);
                     }
-                    catch (System.IO.IOException) { note.Text = "Couldn't read these controls. Check the game's name and folder."; }
-                    catch (UnauthorizedAccessException) { note.Text = "Couldn't read these controls. Check access to their folder."; }
+                    catch (System.IO.IOException) { note.Text = "Não foi possível ler esses controles. Verifique o nome e a pasta do jogo."; }
+                    catch (UnauthorizedAccessException) { note.Text = "Não foi possível ler esses controles. Verifique o acesso à pasta."; }
                 };
                 close.Click += delegate { dialog.Close(); };
                 dialog.AcceptButton = edit;
@@ -1099,7 +1099,7 @@ namespace CapriDesktop
         {
             using (FolderBrowserDialog picker = new FolderBrowserDialog())
             {
-                picker.Description = "Choose where future Capri clips are saved";
+                picker.Description = "Escolha onde os clipes futuros da Capri serão salvos";
                 picker.SelectedPath = capri.ClipOptions.Folder;
                 picker.ShowNewFolderButton = true;
                 if (picker.ShowDialog(this) != DialogResult.OK) return;
@@ -1119,7 +1119,7 @@ namespace CapriDesktop
             {
                 dialog.SuspendLayout();
                 dialog.AutoScaleMode = AutoScaleMode.None;
-                dialog.Text = "Obsidian memory vault";
+                dialog.Text = "Cofre de memórias do Obsidian";
                 dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
                 dialog.MaximizeBox = false;
                 dialog.MinimizeBox = false;
@@ -1153,8 +1153,8 @@ namespace CapriDesktop
                 bool showing = true;
                 showVault();
                 showing = false;
-                Button pickVault = DialogButton("Browse", 392, 42, 112, Neon.SheetDim);
-                Label vaultNote = Hint(capri.Vault.Length > 0 ? capri.VaultHere ? "She saves her memories to " + System.IO.Path.GetFileName(Companion.NotesIn(capri.Vault)) + "." : "That vault wasn't there when she started, so she's using her own notes." : vaults.Count > 0 ? "Pick one of your Obsidian vaults and her memories go in a Capri Memories note there." : "No Obsidian vaults found on this PC. Open one in Obsidian first, or Browse to a note.", 78, 34);
+                Button pickVault = DialogButton("Procurar", 392, 42, 112, Neon.SheetDim);
+                Label vaultNote = Hint(capri.Vault.Length > 0 ? capri.VaultHere ? "Ela salva as memórias dela em " + System.IO.Path.GetFileName(Companion.NotesIn(capri.Vault)) + "." : "Esse cofre não estava lá quando ela iniciou, então ela está usando as próprias notas." : vaults.Count > 0 ? "Escolha um dos seus cofres do Obsidian e as memórias dela vão para uma nota Capri Memories lá." : "Nenhum cofre do Obsidian encontrado neste PC. Abra um no Obsidian primeiro, ou procure uma nota.", 78, 34);
                 Action<string> useVault = delegate(string chosen)
                 {
                     vaultNote.Text = capri.SetVault(chosen);
@@ -1166,7 +1166,7 @@ namespace CapriDesktop
                 pickVault.Click += delegate
                 {
                     // A save box, so they can pick a note already in a vault or type a new one's name.
-                    using (SaveFileDialog picker = new SaveFileDialog { Title = "Pick the note her memories go in", Filter = "Notes (*.md)|*.md", DefaultExt = "md", AddExtension = true, OverwritePrompt = false, CheckPathExists = true, FileName = Companion.VaultNote })
+                    using (SaveFileDialog picker = new SaveFileDialog { Title = "Escolha a nota onde as memórias dela vão ficar", Filter = "Notes (*.md)|*.md", DefaultExt = "md", AddExtension = true, OverwritePrompt = false, CheckPathExists = true, FileName = Companion.VaultNote })
                     {
                         string current = Companion.NotesIn(capri.Vault);
                         if (current == null && vaults.Count > 0) current = System.IO.Path.Combine(vaults[0].Value, Companion.VaultNote);
@@ -1174,7 +1174,7 @@ namespace CapriDesktop
                         if (picker.ShowDialog(dialog) == DialogResult.OK) useVault(picker.FileName);
                     }
                 };
-                Button close = DialogButton("Close", 404, 124, 100, Neon.SheetDim);
+                Button close = DialogButton("Fechar", 404, 124, 100, Neon.SheetDim);
                 close.Click += delegate { dialog.Close(); };
                 dialog.CancelButton = close;
                 dialog.Controls.AddRange(new Control[] { Heading("MEMORY VAULT >", 12), vault, pickVault, vaultNote, close });
@@ -1570,7 +1570,7 @@ namespace CapriDesktop
             string chosen = capri.MixInputPick;
             List<Mic> found = capri.HearingMics.FindAll(delegate(Mic mic) { return !MicMix.IsCableOut(mic.Name); });
             mixInputMenu.Items.Clear();
-            mixInputMenu.Items.Add(Choice("Same as her ears (VOICE > Mic)", Ears.Find(chosen, found) == null, delegate { capri.ChooseMixInput(null); }));
+            mixInputMenu.Items.Add(Choice("Igual aos ouvidos dela (VOZ > Microfone)", Ears.Find(chosen, found) == null, delegate { capri.ChooseMixInput(null); }));
             if (found.Count > 0) mixInputMenu.Items.Add(new ToolStripSeparator());
             foreach (Mic mic in found)
             {
@@ -1587,7 +1587,7 @@ namespace CapriDesktop
             List<MixDevice> cables = capri.MixOutputs;
             bool vb = false;
             mixOutputMenu.Items.Clear();
-            mixOutputMenu.Items.Add(Choice("Automatic: VB-CABLE, else Steam's", cables.Find(delegate(MixDevice each) { return each.Id == chosen; }) == null, delegate { capri.ChooseMixOutput(null); }));
+            mixOutputMenu.Items.Add(Choice("Automático: VB-CABLE, senão o do Steam", cables.Find(delegate(MixDevice each) { return each.Id == chosen; }) == null, delegate { capri.ChooseMixOutput(null); }));
             if (cables.Count > 0) mixOutputMenu.Items.Add(new ToolStripSeparator());
             foreach (MixDevice cable in cables)
             {
@@ -1598,7 +1598,7 @@ namespace CapriDesktop
             if (!vb)
             {
                 mixOutputMenu.Items.Add(new ToolStripSeparator());
-                mixOutputMenu.Items.Add(Choice("Get VB-CABLE (free)...", false, delegate { capri.SetUpCable(); }));
+                mixOutputMenu.Items.Add(Choice("Obter VB-CABLE (grátis)...", false, delegate { capri.SetUpCable(); }));
             }
             mixOutputMenu.Show(under, new Point(0, under.Height));
         }
@@ -2657,7 +2657,7 @@ namespace CapriDesktop
             hearingChoice.AccessibleName = "Hearing: " + hearingChoice.Text;
             for (int i = 0; i < hearingMenu.Items.Count; i++) ((ToolStripMenuItem)hearingMenu.Items[i]).Checked = i == capri.HearingChoice;
             showHide.Text = capri.IsHidden ? "Mostrar Capri" : "Ocultar Capri";
-            perch.Text = capri.Riding ? "Hop off" : "Ride cursor";
+            perch.Text = capri.Riding ? "Descer" : "Montar no cursor";
             int near = 0;
             for (int i = 0; i < SizeSteps.Length; i++) if (Math.Abs(SizeSteps[i] - capri.CharacterSize) < Math.Abs(SizeSteps[near] - capri.CharacterSize)) near = i;
             sizeSlider.Value = near;
@@ -2668,7 +2668,7 @@ namespace CapriDesktop
             discord.Checked = capri.OnDiscord;
             cursor.Checked = capri.UsesCursor;
             gamingMode.Checked = capri.GamingWanted;
-            security.Text = "Security: " + Security.PresetName;
+            security.Text = "Segurança: " + Security.PresetName;
             blackwallNote.Text = Security.Short;
             if (guard != null && !guard.IsDisposed) guard.Sync();
             if (extras != null && !extras.IsDisposed) extras.Sync();
@@ -2693,7 +2693,7 @@ namespace CapriDesktop
                 careToggles[careSync].Dimmed = !capri.CheckIns;
                 careTimes[careSync].Text = CareTimeName(careSetting, capri.CareTime(careSetting));
                 careTimes[careSync].Dimmed = !capri.CheckIns;
-                careTimes[careSync].AccessibleName = "Check in on me: " + Care.Names[careSync] + (careSetting == CareKind.Late ? " after " : " every ") + careTimes[careSync].Text;
+                careTimes[careSync].AccessibleName = "Dar uma olhada em mim: " + Care.Names[careSync] + (careSetting == CareKind.Late ? " after " : " every ") + careTimes[careSync].Text;
             }
             careEdit.Dimmed = !capri.CheckIns;
             ShowPersonality();
@@ -2770,7 +2770,7 @@ namespace CapriDesktop
         private void ShowPerch()
         {
             perchFpsName.Text = PerchNames[perchFps.Value];
-            perchNote.Text = Companion.PerchRates[perchFps.Value] > 30 ? "Perch over 30 fps uses more CPU" : "";
+            perchNote.Text = Companion.PerchRates[perchFps.Value] > 30 ? "Pouso acima de 30 fps usa mais CPU" : "";
         }
 
         internal string PerchStatus { get { return perchFpsName.Text + " | " + (perchNote.Text.Length > 0 ? perchNote.Text : "-"); } }
@@ -2848,12 +2848,12 @@ namespace CapriDesktop
                 Key time = careTimes[row];
                 if (Hidden(toggle) != simple || Hidden(time) != simple || toggle.TabStop == simple || time.TabStop == simple) return "a care row has the wrong Settings view";
                 if (!toggle.Enabled || !time.Enabled || toggle.Dimmed != !capri.CheckIns || time.Dimmed != !capri.CheckIns) return "a care row is locked or has the wrong dimming";
-                if (!(toggle.AccessibleName ?? "").StartsWith("Check in on me: ", StringComparison.Ordinal) || !(time.AccessibleName ?? "").StartsWith("Check in on me: ", StringComparison.Ordinal)) return "a care row has lost its parent name";
+                if (!(toggle.AccessibleName ?? "").StartsWith("Dar uma olhada em mim: ", StringComparison.Ordinal) || !(time.AccessibleName ?? "").StartsWith("Dar uma olhada em mim: ", StringComparison.Ordinal)) return "a care row has lost its parent name";
                 if (!simple && (Math.Abs(toggle.Top - above.Top - Scaled(Row)) > 1 || Math.Abs(toggle.Top - time.Top) > 1 || toggle.Left != checkIns.Left || toggle.Right > time.Left)) return "a care row is out of place";
                 above = toggle;
             }
             if (Hidden(careEdit) != simple || careEdit.TabStop == simple || !careEdit.Enabled || careEdit.Dimmed != !capri.CheckIns) return "Edit check-in lines has the wrong view or dimming";
-            if (!(careEdit.AccessibleName ?? "").StartsWith("Check in on me: ", StringComparison.Ordinal)) return "Edit check-in lines has lost its parent name";
+            if (!(careEdit.AccessibleName ?? "").StartsWith("Dar uma olhada em mim: ", StringComparison.Ordinal)) return "Edit check-in lines has lost its parent name";
             if (!simple && (careEdit.Top < above.Bottom || careEdit.Bottom > onTop.Top || careEdit.Left != checkIns.Left)) return "Edit check-in lines is out of place";
             if (simple && Math.Abs(onTop.Top - checkIns.Top - Scaled(Row)) > 1) return "Simple Settings left a gap under Check in on me";
             string tip = checkIns.AccessibleDescription ?? "";
@@ -2959,7 +2959,7 @@ namespace CapriDesktop
         {
             get
             {
-                string[] names = { "OFF", "PREBUILT LOCAL", "CUSTOM LOCAL", "CLOUD VOICE" };
+                string[] names = { "OFF", "LOCAL PRONTO", "LOCAL PERSONALIZADO", "VOZ NA NUVEM" };
                 bool elevenLabs = voiceRow == 3 && cloudName == Eleven;
                 return names[voiceRow] + " | " + (voiceRow != 3 ? "-" : elevenLabs ? "key" : cloudName) + " | " + (voiceRow == 1 ? "free voice" : voiceRow == 2 ? "voice model" : elevenLabs && keySaved ? "voice id" : "-") + " | fold " + arrangedFold;
             }
@@ -3201,7 +3201,7 @@ namespace CapriDesktop
 
         internal void Searching()
         {
-            brainName.Text = "Looking for a brain...";
+            brainName.Text = "Procurando um cérebro...";
             brainNote.Text = "";
             modelMenu.Items.Clear();
             menuRemote = null;
@@ -3214,7 +3214,7 @@ namespace CapriDesktop
         internal void ShowOllama(string[] installed, string chosen)
         {
             brainName.Text = "Ollama · " + chosen;
-            brainNote.Text = "Running on this PC";
+            brainNote.Text = "Rodando neste PC";
             models.Text = chosen;
             models.Visible = true;
             hint.Visible = false;
@@ -3241,7 +3241,7 @@ namespace CapriDesktop
                 item.Checked = remote == null && name == chosen;
                 modelMenu.Items.Add(item);
             }
-            if (lastLocal != null) modelMenu.Items.Add(Choice("Built-in · " + lastLocal.Name, remote == null && chosen == lastLocal.Name, delegate { capri.ChooseLocalBrain(null, lastLocal.Name, lastLocal); ShowLocal(lastLocal); }));
+            if (lastLocal != null) modelMenu.Items.Add(Choice("Integrado · " + lastLocal.Name, remote == null && chosen == lastLocal.Name, delegate { capri.ChooseLocalBrain(null, lastLocal.Name, lastLocal); ShowLocal(lastLocal); }));
             List<Cloud> listed = new List<Cloud>(lastServers);
             if (remote != null && !listed.Exists(candidate => candidate.Source == remote.Source)) listed.Add(remote);
             foreach (Cloud server in listed)
@@ -3255,8 +3255,8 @@ namespace CapriDesktop
 
         internal void ShowProvider(string address, bool keyed, string model, string[] found)
         {
-            brainName.Text = "My provider" + (model == null ? "" : " · " + model);
-            brainNote.Text = keyed ? "Using your provider with a key" : "Using your server with no key";
+            brainName.Text = "Meu provedor" + (model == null ? "" : " · " + model);
+            brainNote.Text = keyed ? "Usando seu provedor com uma chave" : "Usando seu servidor sem chave";
             models.Text = model;
             models.Visible = model != null;
             hint.Visible = false;
@@ -3329,7 +3329,7 @@ namespace CapriDesktop
         internal void ShowCloud(Cloud remote, List<string> found)
         {
             brainName.Text = remote.Name + (remote.Model == null ? "" : " · " + remote.Model);
-            brainNote.Text = remote.Kind == "local" ? "Running on this PC · :" + remote.Port : remote.Kind == "nvidia" ? NvidiaNote : "Using your " + remote.Company + " key";
+            brainNote.Text = remote.Kind == "local" ? "Running on this PC · :" + remote.Port : remote.Kind == "nvidia" ? NvidiaNote : "Usando sua chave " + remote.Company + " chave";
             models.Text = remote.Model;
             models.Visible = remote.Model != null;
             hint.Visible = false;
@@ -3379,9 +3379,9 @@ namespace CapriDesktop
             syncing = false;
             string tail = tier == 1 ? nvidiaTail : tier == 2 ? paidTail : null;
             textSaved = tail != null;
-            textEntry.Box.AccessibleName = tier == 1 ? "NVIDIA, Google AI Studio (Gemini) or OpenRouter API key" : "Google AI, OpenRouter, NVIDIA, OpenAI, Anthropic or DeepSeek API key";
+            textEntry.Box.AccessibleName = tier == 1 ? "Chave de API da NVIDIA, Google AI Studio (Gemini) ou OpenRouter" : "Google AI, OpenRouter, NVIDIA, OpenAI, Anthropic or DeepSeek API key";
             textEntry.AccessibleName = textEntry.Box.AccessibleName;
-            tierNote.Text = tier == 1 ? mediumKind == "nvidia" ? "Most NVIDIA models can't see your screen." : "NVIDIA, Gemini, OpenRouter" : tier == 2 ? "Gemini, OpenRouter, ChatGPT, Claude, DeepSeek" : "Pick one. Only one brain runs at a time.";
+            tierNote.Text = tier == 1 ? mediumKind == "nvidia" ? "A maioria dos modelos NVIDIA não consegue ver sua tela." : "NVIDIA, Gemini, OpenRouter" : tier == 2 ? "Gemini, OpenRouter, ChatGPT, Claude, DeepSeek" : "Pick one. Only one brain runs at a time.";
             textEntry.Cue = textSaved ? "Key saved, ends " + tail : tier == 1 ? "NVIDIA / Google AI Studio / OpenRouter" : "Paste a brain API key";
             RelabelText();
             Arrange(expanded);
@@ -3440,7 +3440,7 @@ namespace CapriDesktop
             if (tier == 1 && kind != null && !Cloud.MediumKind(kind)) OfferPaidText(typed);
             else ClearPaidText();
             bool forget = textSaved && textEntry.Box.Text.Trim().Length == 0;
-            textConnect.Text = forget ? "Forget" : "Connect";
+            textConnect.Text = forget ? "Esquecer" : "Conectar";
             textConnect.Accent = forget ? Hot : Rose;
             textConnect.Invalidate();
         }
@@ -3469,8 +3469,8 @@ namespace CapriDesktop
 
         internal void ShowLocal(Pick pick)
         {
-            brainName.Text = "Built-in · " + pick.Name;
-            brainNote.Text = "Running on this PC";
+            brainName.Text = "Integrado · " + pick.Name;
+            brainNote.Text = "Rodando neste PC";
             models.Text = pick.Name;
             models.Visible = lastServers.Count > 0 || (lastInstalled != null && lastInstalled.Length > 0);
             LocalMenu(pick.Name, null);
@@ -3480,14 +3480,14 @@ namespace CapriDesktop
 
         internal void ShowSetup(Machine machine, Pick pick, bool viaOllama, string problem)
         {
-            brainName.Text = problem == null ? "No brain yet" : "Setup stopped";
-            brainNote.Text = problem ?? "Best fit for this PC: " + pick.Name;
+            brainName.Text = problem == null ? "Nenhum cérebro ainda" : "Configuração interrompida";
+            brainNote.Text = problem ?? "Melhor opção para este PC: " + pick.Name;
             models.Visible = false;
             Step(0, "✓", machine.Describe(), White);
             Step(1, "2", "Download " + pick.Name + " (" + pick.Download + ")" + (viaOllama ? " with Ollama" : ""), Faint);
             Step(2, "3", "Wake her up", Faint);
             filled = 0;
-            setup.Text = problem == null ? "Set up her brain" : "Try again";
+            setup.Text = problem == null ? "Configurar o cérebro dela" : "Tentar novamente";
             setup.Enabled = true;
             hint.Visible = !viaOllama;
             Arrange(true);
@@ -3497,10 +3497,10 @@ namespace CapriDesktop
         {
             Step(1, step > 1 ? "✓" : "2", stepText[1], step == 1 ? Cyan : White);
             Step(2, "3", stepText[2], step == 2 ? Cyan : Faint);
-            brainName.Text = step == 1 ? "Setting up her brain" : "Waking her up";
+            brainName.Text = step == 1 ? "Configurando o cérebro dela" : "Acordando ela";
             brainNote.Text = total > 0 ? text + " · " + Engine.Amount(done) + " of " + Engine.Amount(total) : text;
             filled = total > 0 ? Math.Min(1f, done / (float)total) : step == 2 ? 1f : 0f;
-            setup.Text = step == 1 ? "Cancel" : "Starting...";
+            setup.Text = step == 1 ? "Cancelar" : "Starting...";
             setup.Enabled = step == 1;
             hint.Visible = false;
             if (!expanded) Arrange(true);
@@ -3655,8 +3655,8 @@ namespace CapriDesktop
             voiceMenu.Items.Clear();
             voiceEntry.Chevron = listing != null && listing.Voices.Count > 0;
             speechModelMenu.Items.Clear();
-            speechModelMenu.Items.Add(Choice("Default model", string.IsNullOrEmpty(model), delegate { capri.ChooseVoiceModel(null); }));
-            speechModels.Text = string.IsNullOrEmpty(model) ? "Default model" : model;
+            speechModelMenu.Items.Add(Choice("Modelo padrão", string.IsNullOrEmpty(model), delegate { capri.ChooseVoiceModel(null); }));
+            speechModels.Text = string.IsNullOrEmpty(model) ? "Modelo padrão" : model;
             if (listing != null)
             {
                 foreach (VoiceEntry entry in listing.Voices)
@@ -3683,9 +3683,9 @@ namespace CapriDesktop
             ShowHdGames();
             freeReady = ready;
             yoursShown = hd && yours;
-            freeVoices.Text = "Free voice: " + (yoursShown ? "Your voice" : served ?? chosen);
+            freeVoices.Text = "Voz grátis: " + (yoursShown ? "Your voice" : served ?? chosen);
             customVoice.Text = served != null ? "Voice model: " + served : "Pick a voice model...";
-            freeSetup.Text = busy ? "Cancel" : "Get free voice";
+            freeSetup.Text = busy ? "Cancelar" : "Get free voice";
             freeSetup.Visible = (voiceRow == 1 || voiceRow == 2) && !ready;
             freeVoices.Width = Scaled(ready && !yoursShown ? 328 : 196);
             customVoice.Width = Scaled(ready ? 328 : 196);
@@ -3705,7 +3705,7 @@ namespace CapriDesktop
             // Only her HD voice clones from a clip; her other styles are set voices.
             if (yours || kept)
             {
-                ToolStripMenuItem theirs = Choice("Your voice (HD)", yoursShown, delegate { if (yours) capri.ChooseVoiceStyle(QwenVoice.Style); else capri.UseKeptVoice(); });
+                ToolStripMenuItem theirs = Choice("Sua voz (HD)", yoursShown, delegate { if (yours) capri.ChooseVoiceStyle(QwenVoice.Style); else capri.UseKeptVoice(); });
                 freeMenu.Items.Add(theirs);
             }
             ToolStripMenuItem pick = Choice(yours || kept ? "Pick a new clip of you..." : "Your voice (HD) · pick a clip of you...", false, delegate { PickYourVoice(); });
@@ -3722,7 +3722,7 @@ namespace CapriDesktop
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Title = "Pick 5 to 30 seconds of you talking, or of a voice you have the rights and consent to use";
+                dialog.Title = "Escolha de 5 a 30 segundos de você falando, ou de uma voz que você tenha direito e consentimento para usar";
                 dialog.Filter = "Voice clips (*.wav;*.mp3;*.m4a)|*.wav;*.mp3;*.m4a|All files (*.*)|*.*";
                 if (dialog.ShowDialog(this) == DialogResult.OK) capri.UseYourVoice(dialog.FileName);
             }
@@ -3840,7 +3840,7 @@ namespace CapriDesktop
 
         internal void CloseLayers() { if (layered != null && !layered.IsDisposed) layered.Close(); }
 
-        internal string LayersCrowded { get { return layered == null || layered.IsDisposed ? "not open" : layered.Crowded(); } }
+        internal string LayersCrowded { get { return layered == null || layered.IsDisposed ? "não aberto" : layered.Crowded(); } }
 
         // VOICE's heading from 100% to 200%: "Applies to every voice" and the Layers button each fit their own text, and
         // they don't meet. Null when they do.
@@ -3896,9 +3896,9 @@ namespace CapriDesktop
 
         internal void CloseExtras() { if (extras != null && !extras.IsDisposed) extras.Close(); }
 
-        internal string ExtrasCrowded { get { return extras == null || extras.IsDisposed ? "not open" : extras.Crowded(); } }
+        internal string ExtrasCrowded { get { return extras == null || extras.IsDisposed ? "não aberto" : extras.Crowded(); } }
 
-        internal string SecurityCrowded { get { return guard == null || guard.IsDisposed ? "not open" : guard.Crowded(); } }
+        internal string SecurityCrowded { get { return guard == null || guard.IsDisposed ? "não aberto" : guard.Crowded(); } }
 
         // Her SECURITY window drawn at a scale of the screen's own (1.5 for 150% on a 100% screen), checked for overlaps and
         // text that doesn't fit, with its picture saved. Null when it all fits.
@@ -4210,14 +4210,14 @@ namespace CapriDesktop
 
         internal void ShowMic(string name)
         {
-            mics.Text = "Mic: " + (name ?? "default");
+            mics.Text = "Microfone: " + (name ?? "default");
             mics.Invalidate();
         }
 
         internal void ShowSpeaker(string name)
         {
-            speakers.Text = "Her speaker: " + (name ?? "Default");
-            speakers.AccessibleName = "Her speaker: " + (name ?? "Default (follows Windows)");
+            speakers.Text = "Alto-falante dela: " + (name ?? "Default");
+            speakers.AccessibleName = "Alto-falante dela: " + (name ?? "Padrão (segue o Windows)");
             speakers.Invalidate();
         }
 
@@ -4225,7 +4225,7 @@ namespace CapriDesktop
         {
             capri.RefreshSpeakers();
             speakerMenu.Items.Clear();
-            speakerMenu.Items.Add(Choice("Default (follows Windows)", string.IsNullOrEmpty(capri.SpeakerId), delegate { capri.ChooseSpeaker(null); }));
+            speakerMenu.Items.Add(Choice("Padrão (segue o Windows)", string.IsNullOrEmpty(capri.SpeakerId), delegate { capri.ChooseSpeaker(null); }));
             List<Speaker.Output> found = capri.SpeakerDevices;
             bool missing = !string.IsNullOrEmpty(capri.SpeakerId) && Speaker.Find(capri.SpeakerId, found) == null;
             if (found.Count > 0 || missing) speakerMenu.Items.Add(new ToolStripSeparator());
@@ -4241,7 +4241,7 @@ namespace CapriDesktop
 
         internal void ShowWatchScreen(string name)
         {
-            screens.Text = name ?? "All screens";
+            screens.Text = name ?? "Todas as telas";
             screens.AccessibleName = "Screens to watch: " + screens.Text;
             screens.Invalidate();
         }
@@ -4250,7 +4250,7 @@ namespace CapriDesktop
         {
             capri.RefreshWatchScreens();
             screenMenu.Items.Clear();
-            screenMenu.Items.Add(Choice("All screens", string.IsNullOrEmpty(capri.WatchScreenId), delegate { capri.ChooseWatchScreen(null); }));
+            screenMenu.Items.Add(Choice("Todas as telas", string.IsNullOrEmpty(capri.WatchScreenId), delegate { capri.ChooseWatchScreen(null); }));
             List<Companion.WatchScreen> found = capri.WatchScreens;
             bool missing = !string.IsNullOrEmpty(capri.WatchScreenId) && !found.Exists(delegate(Companion.WatchScreen screen) { return string.Equals(screen.Id, capri.WatchScreenId, StringComparison.OrdinalIgnoreCase); });
             if (found.Count > 0 || missing) screenMenu.Items.Add(new ToolStripSeparator());
@@ -4304,7 +4304,7 @@ namespace CapriDesktop
 
         internal void ShowMicTest(bool listening, double level, bool muted)
         {
-            micTest.Text = listening ? "Stop" : "Test";
+            micTest.Text = listening ? "Stop" : "Testar";
             double db = level <= 0 ? -96 : Math.Max(-96, 20 * Math.Log10(level));
             micTest.Meter = listening ? (db + 96) / 96 : -1;
             micTest.AccessibleName = listening ? "Stop microphone test. " + (muted ? "Mic muted" : "Input level " + db.ToString("0") + " dB") : "Test microphone input";
@@ -4325,7 +4325,7 @@ namespace CapriDesktop
             string chosen = capri.MicId;
             List<Mic> found = capri.HearingMics;
             micMenu.Items.Clear();
-            micMenu.Items.Add(Choice("Windows default", Ears.Find(chosen, found) == null, delegate { capri.ChooseMic(null); }));
+            micMenu.Items.Add(Choice("Padrão do Windows", Ears.Find(chosen, found) == null, delegate { capri.ChooseMic(null); }));
             if (found.Count > 0) micMenu.Items.Add(new ToolStripSeparator());
             foreach (Mic mic in found)
             {
@@ -4413,7 +4413,7 @@ namespace CapriDesktop
         private void Relabel()
         {
             bool forget = keySaved && keyEntry.Box.Text.Trim().Length == 0;
-            connect.Text = forget ? "Forget" : "Connect";
+            connect.Text = forget ? "Esquecer" : "Conectar";
             connect.Accent = forget ? Hot : Rose;
             connect.Invalidate();
         }
@@ -4431,8 +4431,8 @@ namespace CapriDesktop
         private void ShowPersonalityMenu()
         {
             personalityMenu.Items.Clear();
-            personalityMenu.Items.Add(Choice("Edit personality.md", false, delegate { capri.OpenPersonality(); }));
-            ToolStripMenuItem reset = Choice("Reset to her default", false, delegate { capri.ResetPersonality(); });
+            personalityMenu.Items.Add(Choice("Editar personality.md", false, delegate { capri.OpenPersonality(); }));
+            ToolStripMenuItem reset = Choice("Restaurar padrão dela", false, delegate { capri.ResetPersonality(); });
             reset.Enabled = Brain.PersonalityPath != null && System.IO.File.Exists(Brain.PersonalityPath);
             personalityMenu.Items.Add(reset);
             string note = Brain.PersonalityNote;
@@ -4873,18 +4873,18 @@ namespace CapriDesktop
                 Label path = new Label { Text = note.Path, Bounds = new Rectangle(16, 14, 548, 24), AutoEllipsis = true, ForeColor = Faint, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right, AccessibleName = "Note file" };
                 draft = new TextBox { Text = note.Text, Multiline = true, AcceptsReturn = true, AcceptsTab = true, WordWrap = true, ScrollBars = ScrollBars.Vertical, MaxLength = int.MaxValue, Bounds = new Rectangle(16, 44, 548, 324), BorderStyle = BorderStyle.FixedSingle, BackColor = Field, ForeColor = White, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right, AccessibleName = title };
                 status = new Label { Bounds = new Rectangle(16, 376, 548, 34), ForeColor = Cyan, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
-                Button save = DialogButton("Save", 16, 414, 100, Cyan);
-                reload = DialogButton("Reload", 124, 414, 164, Edge);
-                close = DialogButton("Close", 464, 414, 100, Edge);
+                Button save = DialogButton("Salvar", 16, 414, 100, Cyan);
+                reload = DialogButton("Recarregar", 124, 414, 164, Edge);
+                close = DialogButton("Fechar", 464, 414, 100, Edge);
                 save.Anchor = reload.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
                 close.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
                 save.Click += delegate { SaveDraft(); };
                 reload.Click += delegate { ReloadNote(true); };
                 close.Click += delegate { discard = true; Close(); };
-                draft.TextChanged += delegate { close.Text = Dirty ? "Discard" : "Close"; reload.Text = Dirty ? "Discard + reload" : "Reload"; status.Text = Dirty ? "Unsaved changes." : ""; };
+                draft.TextChanged += delegate { close.Text = Dirty ? "Descartar" : "Fechar"; reload.Text = Dirty ? "Descartar + recarregar" : "Recarregar"; status.Text = Dirty ? "Unsaved changes." : ""; };
                 FormClosing += delegate(object sender, FormClosingEventArgs e)
                 {
-                    if (!discard && Dirty && e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; status.Text = "Save your changes, or press Discard."; }
+                    if (!discard && Dirty && e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; status.Text = "Salve suas alterações ou clique em Descartar."; }
                 };
                 Controls.AddRange(new Control[] { path, draft, status, save, reload, close });
             }
@@ -4896,19 +4896,19 @@ namespace CapriDesktop
             internal bool SaveDraft()
             {
                 string problem = note.Save(draft.Text);
-                status.Text = problem ?? "Saved.";
+                status.Text = problem ?? "Salvo.";
                 status.ForeColor = problem == null ? Cyan : Hot;
-                close.Text = Dirty ? "Discard" : "Close";
-                reload.Text = Dirty ? "Discard + reload" : "Reload";
+                close.Text = Dirty ? "Descartar" : "Fechar";
+                reload.Text = Dirty ? "Descartar + recarregar" : "Recarregar";
                 return problem == null;
             }
 
             internal void ReloadNote(bool discard = false)
             {
-                if (Dirty && !discard) { status.Text = "Save your changes, or press Discard + reload."; return; }
-                try { note.Reload(); draft.Text = note.Text; status.Text = "Reloaded."; }
-                catch (System.IO.IOException) { status.Text = "Couldn't reload this note. Your changes are still here."; }
-                catch (UnauthorizedAccessException) { status.Text = "Couldn't reload this note. Your changes are still here."; }
+                if (Dirty && !discard) { status.Text = "Salve suas alterações ou clique em Descartar + recarregar."; return; }
+                try { note.Reload(); draft.Text = note.Text; status.Text = "Recarregado."; }
+                catch (System.IO.IOException) { status.Text = "Não foi possível recarregar esta nota. Suas alterações ainda estão aqui."; }
+                catch (UnauthorizedAccessException) { status.Text = "Não foi possível recarregar esta nota. Suas alterações ainda estão aqui."; }
             }
         }
 
@@ -4921,7 +4921,7 @@ namespace CapriDesktop
             internal PopWindow(Companion owner)
             {
                 capri = owner;
-                Text = "Pop-in times";
+                Text = "Tempos de aparição";
                 AutoScaleMode = AutoScaleMode.Dpi;
                 StartPosition = FormStartPosition.CenterParent;
                 ShowInTaskbar = false;
@@ -4931,14 +4931,14 @@ namespace CapriDesktop
                 ForeColor = White;
                 Font = Look.Mono(10f, FontStyle.Regular, GraphicsUnit.Point);
                 ClientSize = new Size(440, 214);
-                Label shortest = new Label { Text = "Shortest wait (minutes)", Bounds = new Rectangle(16, 18, 272, 24) };
-                Label longest = new Label { Text = "Longest wait (minutes)", Bounds = new Rectangle(16, 56, 272, 24) };
+                Label shortest = new Label { Text = "Espera mais curta (minutos)", Bounds = new Rectangle(16, 18, 272, 24) };
+                Label longest = new Label { Text = "Espera mais longa (minutos)", Bounds = new Rectangle(16, 56, 272, 24) };
                 low = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Value = capri.PopMin, Bounds = new Rectangle(296, 16, 128, 26), BackColor = Field, ForeColor = White, AccessibleName = "Shortest pop-in wait in minutes" };
                 high = new NumericUpDown { Minimum = 1, Maximum = int.MaxValue, Value = capri.PopMax, Bounds = new Rectangle(296, 54, 128, 26), BackColor = Field, ForeColor = White, AccessibleName = "Longest pop-in wait in minutes" };
-                status = new Label { Text = "Check in on me still decides whether she visits.", Bounds = new Rectangle(16, 94, 408, 64), ForeColor = Faint };
-                Button save = DialogButton("Save", 16, 168, 96, Cyan);
-                Button preset = DialogButton("Use preset", 120, 168, 128, Edge);
-                Button close = DialogButton("Close", 328, 168, 96, Edge);
+                status = new Label { Text = "A opção \"Dar uma olhada em mim\" ainda decide se ela aparece.", Bounds = new Rectangle(16, 94, 408, 64), ForeColor = Faint };
+                Button save = DialogButton("Salvar", 16, 168, 96, Cyan);
+                Button preset = DialogButton("Usar predefinição", 120, 168, 128, Edge);
+                Button close = DialogButton("Fechar", 328, 168, 96, Edge);
                 save.Click += delegate { if (Apply()) Close(); };
                 preset.Click += delegate { capri.SetPopPace(capri.PopPace); Close(); };
                 close.Click += delegate { Close(); };
@@ -4952,7 +4952,7 @@ namespace CapriDesktop
             internal bool Apply()
             {
                 if (capri.SetPopRange(Low, High)) return true;
-                status.Text = "The longest wait must be at least the shortest wait.";
+                status.Text = "A espera mais longa deve ser pelo menos igual à mais curta.";
                 status.ForeColor = Hot;
                 return false;
             }
@@ -5141,7 +5141,7 @@ namespace CapriDesktop
             {
                 this.owner = owner;
                 Zoom = zoom;
-                Text = "Brain provider";
+                Text = "Provedor de cérebro";
                 Icon = owner.Icon;
                 ShowInTaskbar = false;
                 FormBorderStyle = FormBorderStyle.None;
@@ -5157,39 +5157,39 @@ namespace CapriDesktop
                 Key close = Make("", 468, 20, 26, delegate { Close(); });
                 close.Height = 22;
                 close.Glyph = 2;
-                close.AccessibleName = "Close";
+                close.AccessibleName = "Fechar";
                 CancelButton = close;
-                Caption("OpenAI-compatible chat API. Groq has a ready-made preset.", 28, 47, 462, 20, Faint);
-                Caption("Provider", 28, 79, 125, 24, Rose);
+                Caption("API de chat compatível com OpenAI. O Groq tem uma predefinição pronta.", 28, 47, 462, 20, Faint);
+                Caption("Provedor", 28, 79, 125, 24, Rose);
                 provider = ChoiceBox(164, 75, 328, "API provider", "Groq", "OpenAI", "Custom");
-                Caption("API address", 28, 116, 125, 24, Rose);
+                Caption("Endereço da API", 28, 116, 125, 24, Rose);
                 address = Input(164, 112, 328, "https://api.groq.com/openai/v1", "Provider API base URL");
-                Caption("Model ID", 28, 153, 125, 24, Rose);
+                Caption("ID do modelo", 28, 153, 125, 24, Rose);
                 model = Input(164, 149, 328, "openai/gpt-oss-120b", "Provider model ID");
-                Caption("API key", 28, 190, 125, 24, Rose);
+                Caption("Chave de API", 28, 190, 125, 24, Rose);
                 key = Input(164, 186, 328, "Paste the provider key", "Provider API key");
                 key.Box.UseSystemPasswordChar = true;
-                reveal = new CheckBox { Text = "Show key", Bounds = new Rectangle(164, 218, 140, 22), BackColor = Ground, ForeColor = White, Font = Mainframe.Type(8.5f) };
+                reveal = new CheckBox { Text = "Mostrar chave", Bounds = new Rectangle(164, 218, 140, 22), BackColor = Ground, ForeColor = White, Font = Mainframe.Type(8.5f) };
                 reveal.AccessibleName = "Show API key";
                 reveal.CheckedChanged += delegate { key.Box.UseSystemPasswordChar = !reveal.Checked; };
                 Controls.Add(reveal);
-                Caption("Token limit field", 28, 250, 125, 24, Rose);
-                tokenField = ChoiceBox(164, 246, 328, "Token limit field", "max_tokens", "max_completion_tokens");
-                Caption("Reasoning effort", 28, 287, 125, 24, Rose);
-                reasoning = ChoiceBox(164, 283, 328, "Reasoning effort", "None", "Low", "Medium", "High");
-                Caption("Max response tokens", 28, 324, 125, 24, Rose);
+                Caption("Campo de limite de tokens", 28, 250, 125, 24, Rose);
+                tokenField = ChoiceBox(164, 246, 328, "Campo de limite de tokens", "max_tokens", "max_completion_tokens");
+                Caption("Nível de raciocínio", 28, 287, 125, 24, Rose);
+                reasoning = ChoiceBox(164, 283, 328, "Nível de raciocínio", "None", "Low", "Medium", "High");
+                Caption("Máximo de tokens na resposta", 28, 324, 125, 24, Rose);
                 maxTokens = new NumericUpDown { Bounds = new Rectangle(164, 320, 328, 26), Minimum = 1, Maximum = 32768, Increment = 64, Value = 256, BackColor = Field, ForeColor = White, BorderStyle = BorderStyle.FixedSingle, Font = Mainframe.Type(9f) };
                 maxTokens.AccessibleName = "Maximum response tokens";
                 Controls.Add(maxTokens);
                 address.Box.TextChanged += delegate { key.Box.Clear(); Kept(); };
                 key.Box.TextChanged += delegate { Kept(); };
                 provider.SelectedIndexChanged += delegate { if (!filling) Preset(); };
-                Caption("Your key is encrypted on this PC. Chats and requested screen context go to this provider.", 28, 354, 464, 34, Faint);
-                Key connect = Make("Save and connect", 28, 432, 150, delegate { Connect(); });
+                Caption("Sua chave é criptografada neste PC. Conversas e contexto de tela solicitado vão para este provedor.", 28, 354, 464, 34, Faint);
+                Key connect = Make("Salvar e conectar", 28, 432, 150, delegate { Connect(); });
                 connect.Accent = Cyan;
                 connect.Loud = true;
-                saved = Make("Use saved", 190, 432, 112, delegate { key.Box.Clear(); owner.capri.UseSavedProvider(); });
-                Key forget = Make("Forget", 314, 432, 84, delegate { key.Box.Clear(); address.Box.Clear(); model.Box.Clear(); owner.capri.ForgetProvider(); });
+                saved = Make("Usar salvo", 190, 432, 112, delegate { key.Box.Clear(); owner.capri.UseSavedProvider(); });
+                Key forget = Make("Esquecer", 314, 432, 84, delegate { key.Box.Clear(); address.Box.Clear(); model.Box.Clear(); owner.capri.ForgetProvider(); });
                 forget.Accent = Hot;
                 note = Caption("", 28, 391, 464, 34, Faint);
                 AcceptButton = connect;
@@ -5412,37 +5412,37 @@ namespace CapriDesktop
                 title = Heading(this, "", new Point(24, 15), Display(15f), Rose, 0);
                 Key shut = Make("", 330, 20, 26, 22, delegate { Close(); });
                 shut.Glyph = 2;
-                shut.AccessibleName = "Close";
+                shut.AccessibleName = "Fechar";
                 hint = Caption("", 28, 52, Look.Mono(8.5f, FontStyle.Regular, GraphicsUnit.Point), Faint);
-                from = Caption("Voice from", 28, 112, Font, Rose);
+                from = Caption("Voz de", 28, 112, Font, Rose);
                 services = owner.Dropdown();
                 service = Make(picked.Name, 28, 132, 328, 28, delegate { services.Show(service, new Point(0, service.Height)); });
                 service.Chevron = true;
-                service.AccessibleName = "Voice from";
-                place = Caption("Address", 28, 168, Font, Rose);
+                service.AccessibleName = "Voz de";
+                place = Caption("Endereço", 28, 168, Font, Rose);
                 url = Input(28, 188, 328, VoiceServer.Address, "Voice server address, or a voice model's folder");
                 url.Box.TextChanged += delegate { Kept(); };
-                modelName = Caption("Model", 28, 224, Font, Rose);
+                modelName = Caption("Modelo", 28, 224, Font, Rose);
                 model = Input(28, 244, 160, "Optional", "Model name, optional");
-                voiceName = Caption("Voice", 196, 224, Font, Rose);
+                voiceName = Caption("Voz", 196, 224, Font, Rose);
                 speaker = Input(196, 244, 160, "Optional", "Voice name or ID, optional");
                 // Fish Audio's cloud lists their own voices under the Voice box's arrow. A model file's arrow picks a clip for Pocket TTS.
                 voices = owner.Dropdown();
                 speaker.Drop += delegate { if (picked.Api == VoiceServer.Files) PickClip(); else ListVoices(); };
-                keyName = Caption("Key", 28, 280, Font, Rose);
+                keyName = Caption("Chave", 28, 280, Font, Rose);
                 key = Input(28, 300, 244, "Optional", "Key. It goes only to this server, as a Bearer key");
                 key.Box.UseSystemPasswordChar = true;
-                forget = Make("Forget", 280, 300, 76, 28, delegate { owner.capri.ForgetServerKey(savedUrl, savedApi); savedTail = null; Kept(); Say("Key forgotten.", false); });
+                forget = Make("Esquecer", 280, 300, 76, 28, delegate { owner.capri.ForgetServerKey(savedUrl, savedApi); savedTail = null; Kept(); Say("Key forgotten.", false); });
                 forget.Accent = Hot;
                 // A model file has no key; Browse takes its place.
-                browse = Make("Browse...", 28, 300, 150, 28, delegate { Browse(); });
+                browse = Make("Procurar...", 28, 300, 150, 28, delegate { Browse(); });
                 browse.Visible = false;
-                test = Make("Test", 28, 344, 84, 28, delegate { Try(); });
-                Key use = Make("Use this server", 120, 344, 150, 28, delegate { Use(); });
+                test = Make("Testar", 28, 344, 84, 28, delegate { Try(); });
+                Key use = Make("Usar este servidor", 120, 344, 150, 28, delegate { Use(); });
                 use.Accent = Cyan;
                 use.Loud = true;
                 AcceptButton = use;
-                CancelButton = Make("Cancel", 278, 344, 78, 28, delegate { Close(); });
+                CancelButton = Make("Cancelar", 278, 344, 78, 28, delegate { Close(); });
                 note = Caption("", 28, 384, Look.Mono(8.5f, FontStyle.Regular, GraphicsUnit.Point), Faint);
                 // Her Mainframe size: every font, then every place and size, before Windows scales it to the screen.
                 if (zoom != 1f)
@@ -5460,7 +5460,7 @@ namespace CapriDesktop
                 string api, address, name, voice, tail;
                 bool saved = owner.capri.SavedServer(cloud, out api, out address, out name, out voice, out tail);
                 Text = cloud ? "Cloud voice" : "Custom local voice";
-                title.Text = (cloud ? "CLOUD VOICE" : "CUSTOM LOCAL") + " >";
+                title.Text = (cloud ? "VOZ NA NUVEM" : "LOCAL PERSONALIZADO") + " >";
                 ShowAddress(!cloud);
                 for (int i = services.Items.Count - 1; i >= 0; i--) services.Items[i].Dispose();
                 foreach (VoiceServer.Service choice in VoiceServer.Services)
@@ -5561,11 +5561,11 @@ namespace CapriDesktop
                 service.Text = choice.Name;
                 hint.Text = choice.Hint;
                 FitHint();
-                place.Text = file ? "Model folder" : "Address";
+                place.Text = file ? "Model folder" : "Endereço";
                 url.Cue = file ? "Browse to a voice model" : VoiceServer.Address;
-                modelName.Text = file ? "Language" : "Model";
+                modelName.Text = file ? "Language" : "Modelo";
                 model.Cue = file ? "Kokoro only, like es" : "Optional";
-                voiceName.Text = file ? "Speaker or clip" : "Voice";
+                voiceName.Text = file ? "Speaker or clip" : "Voz";
                 keyName.Visible = key.Visible = !file;
                 browse.Visible = file;
                 speaker.Cue = choice.VoiceCue;
@@ -5614,7 +5614,7 @@ namespace CapriDesktop
             {
                 using (OpenFileDialog dialog = new OpenFileDialog())
                 {
-                    dialog.Title = "Pick 10 to 30 seconds of a voice you have the rights and consent to use";
+                    dialog.Title = "Escolha de 10 a 30 segundos de uma voz que você tenha direito e consentimento para usar";
                     dialog.Filter = "Voice clips (*.wav;*.mp3;*.m4a;*.flac)|*.wav;*.mp3;*.m4a;*.flac|All files (*.*)|*.*";
                     if (dialog.ShowDialog(this) == DialogResult.OK) MakeVoice(dialog.FileName);
                 }
@@ -5657,7 +5657,7 @@ namespace CapriDesktop
             {
                 using (OpenFileDialog dialog = new OpenFileDialog())
                 {
-                    dialog.Title = "Pick a clip of a voice you have the rights and consent to use";
+                    dialog.Title = "Escolha um clipe de uma voz que você tenha direito e consentimento para usar";
                     dialog.Filter = "Voice clips (*.wav;*.mp3;*.m4a;*.flac)|*.wav;*.mp3;*.m4a;*.flac|All files (*.*)|*.*";
                     if (dialog.ShowDialog(this) == DialogResult.OK) TakeClip(dialog.FileName);
                 }
@@ -5673,7 +5673,7 @@ namespace CapriDesktop
             {
                 using (OpenFileDialog dialog = new OpenFileDialog())
                 {
-                    dialog.Title = "Pick a voice model: its .tar.bz2, or the .onnx in its folder";
+                    dialog.Title = "Escolha um modelo de voz: o .tar.bz2 dele, ou o .onnx na pasta dele";
                     dialog.Filter = "Voice models (*.tar.bz2;*.zip;*.onnx)|*.tar.bz2;*.zip;*.onnx|All files (*.*)|*.*";
                     if (dialog.ShowDialog(this) == DialogResult.OK) Take(dialog.FileName);
                 }
@@ -5742,9 +5742,9 @@ namespace CapriDesktop
                 Close();
             }
 
-            internal string Showing { get { return picked.Name + " | " + url.Box.Text + " | " + model.Box.Text + " | " + speaker.Box.Text + " | " + key.Cue + " | " + (forget.Visible ? "Forget" : "-") + " | " + note.Text; } }
+            internal string Showing { get { return picked.Name + " | " + url.Box.Text + " | " + model.Box.Text + " | " + speaker.Box.Text + " | " + key.Cue + " | " + (forget.Visible ? "Esquecer" : "-") + " | " + note.Text; } }
 
-            internal string Fields { get { return (addressShown ? place.Text : "no address") + " | " + modelName.Text + " | " + voiceName.Text + " | " + (key.Visible ? "Key" : "no key") + " | " + (browse.Visible ? browse.Text : "-"); } }
+            internal string Fields { get { return (addressShown ? place.Text : "no address") + " | " + modelName.Text + " | " + voiceName.Text + " | " + (key.Visible ? "Chave" : "no key") + " | " + (browse.Visible ? browse.Text : "-"); } }
 
             // Its title and the choices in its Voice from menu, for the smoke test.
             internal string Choices
@@ -5883,7 +5883,7 @@ namespace CapriDesktop
                 SuspendLayout();
                 this.owner = owner;
                 Zoom = zoom;
-                Text = "Security";
+                Text = "Segurança";
                 Icon = owner.Icon;
                 ShowInTaskbar = false;
                 FormBorderStyle = FormBorderStyle.None;
@@ -5900,11 +5900,11 @@ namespace CapriDesktop
                 Key shut = new Key();
                 shut.Bounds = Box(Wide - 54, 20, 26, 22);
                 shut.Glyph = 2;
-                shut.AccessibleName = "Close";
+                shut.AccessibleName = "Fechar";
                 shut.Click += delegate { Close(); };
                 Controls.Add(shut);
-                Caption("What she does on your PC without asking. With a toggle off she asks first, and does it when you say yes.", 28, 52, small, Faint);
-                Caption("Preset", 28, 82, Type(9.5f * zoom), Rose);
+                Caption("O que ela faz no seu PC sem pedir. Com a opção desligada, ela pede antes e faz quando você disser sim.", 28, 52, small, Faint);
+                Caption("Predefinição", 28, 82, Type(9.5f * zoom), Rose);
                 presets = new Slider(new[] { Security.Presets[0], Security.Presets[1], Security.Presets[2], Security.Presets[3] });
                 presets.Font = Type(12f * zoom, true);
                 presets.Bounds = Box(120, 70, 340, 36);
@@ -6115,16 +6115,16 @@ namespace CapriDesktop
                 Key shut = new Key();
                 shut.Bounds = Box(Wide - 54, 20, 26, 22);
                 shut.Glyph = 2;
-                shut.AccessibleName = "Close";
+                shut.AccessibleName = "Fechar";
                 shut.Click += delegate { Close(); };
                 Controls.Add(shut);
-                Caption("These start off. Turn on what you want. They're all in Settings too.", 28, 52, small, Faint);
+                Caption("Estas começam desligadas. Ative o que quiser. Todas estão também nos Ajustes.", 28, 52, small, Faint);
                 Extra(0, "Watch my screen", "She glances at your screen and comments. Costs a little on a paid brain.", small, delegate { owner.capri.ToggleWatch(); });
                 Extra(1, "Comment on my games", "She talks about your game as you play. Costs a little on a paid brain.", small, delegate { owner.capri.SetCommentPace(toggles[1].Checked ? 2 : 0); owner.Sync(); });
                 Extra(2, "Clip my games", "Keeps the last two minutes of your game in memory. Say clip that to save it.", small, delegate { owner.capri.ToggleClips(); });
                 Extra(3, "Listen for Capri", "She keeps listening and answers when you say her name.", small, delegate { owner.capri.ToggleListenCapri(); });
                 Key done = new Key();
-                done.Text = "Done";
+                done.Text = "Concluído";
                 done.Font = Type(9f * zoom, true);
                 done.Accent = Cyan;
                 done.Loud = true;
@@ -6276,7 +6276,7 @@ namespace CapriDesktop
                 SuspendLayout();
                 this.owner = owner;
                 Zoom = zoom;
-                Text = "Voice layers";
+                Text = "Camadas de voz";
                 Icon = owner.Icon;
                 ShowInTaskbar = false;
                 FormBorderStyle = FormBorderStyle.None;
@@ -6293,12 +6293,12 @@ namespace CapriDesktop
                 Key shut = new Key();
                 shut.Bounds = Box(Wide - 54, 20, 26, 22);
                 shut.Glyph = 2;
-                shut.AccessibleName = "Close";
+                shut.AccessibleName = "Fechar";
                 shut.Click += delegate { Close(); };
                 Controls.Add(shut);
-                Caption("Her voice, and two copies of it mixed in under her, each with its own pitch and delay.", 28, 52, small, Faint);
+                Caption("A voz dela, e duas cópias misturadas por baixo, cada uma com seu próprio tom e atraso.", 28, 52, small, Faint);
                 onOff = new Toggle();
-                onOff.Text = "Voice layers";
+                onOff.Text = "Camadas de voz";
                 onOff.Font = Font;
                 onOff.Switch = 120;
                 onOff.Bounds = Box(28, 76, 260, 22);
@@ -6311,11 +6311,11 @@ namespace CapriDesktop
                     owner.capri.HearVoiceStyle();
                 };
                 Controls.Add(onOff);
-                Caption("Off: she sounds as she always has. On: every voice she has, ElevenLabs too.", 28, 102, small, Faint);
-                Make("Hear her", Wide - 236, 76, 100, 22, delegate { owner.capri.HearVoiceStyle(); }).AccessibleName = "Hear her: she says a line in her voice as it is now";
-                Make("Defaults", Wide - 128, 76, 100, 22, delegate { Defaults(); }).AccessibleName = "Defaults: Layer 1 " + VoiceFx.Layering.PitchName(VoiceFx.Layering.HigherPitch) + " and Layer 2 " + VoiceFx.Layering.PitchName(VoiceFx.Layering.LowerPitch) + " semitones, both " + VoiceFx.Layering.DelayName(VoiceFx.Layering.Behind) + " behind her";
+                Caption("Desligado: ela soa como sempre. Ligado: todas as vozes dela, inclusive ElevenLabs.", 28, 102, small, Faint);
+                Make("Ouvir ela", Wide - 236, 76, 100, 22, delegate { owner.capri.HearVoiceStyle(); }).AccessibleName = "Hear her: she says a line in her voice as it is now";
+                Make("Padrões", Wide - 128, 76, 100, 22, delegate { Defaults(); }).AccessibleName = "Defaults: Layer 1 " + VoiceFx.Layering.PitchName(VoiceFx.Layering.HigherPitch) + " and Layer 2 " + VoiceFx.Layering.PitchName(VoiceFx.Layering.LowerPitch) + " semitones, both " + VoiceFx.Layering.DelayName(VoiceFx.Layering.Behind) + " behind her";
                 Heading(this, "MAIN >", new Point(Z(28), Z(136)), head, White, Wide - 28);
-                Caption("Pitch", 28, 166, Font, Rose);
+                Caption("Tom", 28, 166, Font, Rose);
                 mainPitch = Bar(PitchNames, 120, 163, 300, "Her voice's pitch, the same as Settings > VOICE > Pitch");
                 mainName = new Readout(mainPitch);
                 mainPitch.Changed += delegate
@@ -6326,16 +6326,16 @@ namespace CapriDesktop
                     owner.Sync();
                 };
                 mainPitch.Released += delegate { if (!syncing) owner.capri.HearVoiceStyle(); };
-                Caption("Her voice itself. Its pitch is Settings > VOICE > Pitch, and they move together.", 28, 192, small, Faint);
+                Caption("A própria voz dela. O tom dela fica em Ajustes > VOZ > Tom, e eles se movem juntos.", 28, 192, small, Faint);
                 for (int layer = 1; layer <= 2; layer++)
                 {
                     int x = layer == 1 ? 28 : 28 + Column, at = layer - 1, which = layer;
                     Heading(this, "LAYER " + layer + " >", new Point(Z(x), Z(228)), head, White, Column - 12);
-                    Caption("Pitch", x, 258, Font, Rose);
+                    Caption("Tom", x, 258, Font, Rose);
                     pitches[at] = Bar(PitchSteps, x + 84, 255, 244, "Layer " + layer + "'s pitch, in semitones from hers");
                     pitches[at].TickEvery = 4;
                     pitchNames[at] = new Readout(pitches[at]);
-                    Caption("Delay", x, 286, Font, Rose);
+                    Caption("Atraso", x, 286, Font, Rose);
                     delays[at] = Bar(DelaySteps, x + 84, 283, 244, "Layer " + layer + "'s delay behind her");
                     delays[at].TickEvery = 10;
                     delayNames[at] = new Readout(delays[at]);
@@ -6535,7 +6535,7 @@ namespace CapriDesktop
             }
         }
 
-        // Her voice in your mic's setup in a window of its own (Lachy, 3 Nov: "make it clear how to set it up too"): the switch,
+        // Her voice in your mic's setup in a window of its own (Lachy, 3 Nov: "deixe claro também como configurar"): the switch,
         // the mix's Input and Output, then Discord's steps with the exact name to pick there, and whether Discord hears it yet,
         // read from Windows each second.
         private sealed class MixSheet : Form, LookWindow
@@ -6559,7 +6559,7 @@ namespace CapriDesktop
                 SuspendLayout();
                 this.owner = owner;
                 Zoom = zoom;
-                Text = "Her voice in your mic";
+                Text = "Voz dela no seu microfone";
                 Icon = owner.Icon;
                 ShowInTaskbar = false;
                 FormBorderStyle = FormBorderStyle.None;
@@ -6576,23 +6576,23 @@ namespace CapriDesktop
                 Key shut = new Key();
                 shut.Bounds = Box(Wide - 54, 20, 26, 22);
                 shut.Glyph = 2;
-                shut.AccessibleName = "Close";
+                shut.AccessibleName = "Fechar";
                 shut.Click += delegate { Close(); };
                 Controls.Add(shut);
-                note = Caption("Her voice joins your mic only in call mode.", 28, 52, small, Faint);
+                note = Caption("A voz dela entra no seu microfone apenas no modo de chamada.", 28, 52, small, Faint);
                 onOff = new Toggle();
-                onOff.Text = "Her voice in your mic";
+                onOff.Text = "Voz dela no seu microfone";
                 onOff.Font = Font;
                 onOff.Switch = 120;
                 onOff.Bounds = Box(28, 76, 300, 22);
-                onOff.AccessibleName = "Her voice in your mic";
+                onOff.AccessibleName = "Voz dela no seu microfone";
                 onOff.CheckedChanged += delegate { if (!syncing) owner.capri.ToggleVoiceInMic(); };
                 Controls.Add(onOff);
-                Caption("Input", 28, 115, Font, Rose);
+                Caption("Entrada", 28, 115, Font, Rose);
                 input = Make("", 120, 112, Wide - 148, 22, delegate { owner.ShowMixInputs(input); });
                 input.Chevron = true;
                 input.AccessibleName = "Input: the mic that goes in with her voice";
-                Caption("Output", 28, 143, Font, Rose);
+                Caption("Saída", 28, 143, Font, Rose);
                 output = Make("", 120, 140, Wide - 148, 22, delegate { owner.ShowMixOutputs(output); });
                 output.Chevron = true;
                 output.AccessibleName = "Output: the virtual mic she plays into, which your call app hears";
@@ -6600,7 +6600,7 @@ namespace CapriDesktop
                 callHead = Heading(this, "IN DISCORD >", new Point(Z(28), Z(208)), head, White, Wide - 28);
                 steps = new Label[5];
                 steps[0] = Caption("", 28, 240, Font, White);
-                pickStep = Caption("2   Input Device:", 28, 266, Font, White);
+                pickStep = Caption("2   Dispositivo de entrada:", 28, 266, Font, White);
                 pick = Caption("", 28, 266, Font, Cyan);
                 steps[1] = Caption("", 28, 292, Font, White);
                 steps[2] = Caption("", 28, 318, Font, White);
@@ -6667,7 +6667,7 @@ namespace CapriDesktop
                     "6   Join the call and check they hear both of you"
                 };
                 for (int i = 0; i < steps.Length; i++) Retext(steps[i], lines[i]);
-                Retext(pickStep, isDiscord ? "2   Input Device:" : "2   Microphone:");
+                Retext(pickStep, isDiscord ? "2   Dispositivo de entrada:" : "2   Microphone:");
                 syncing = true;
                 onOff.Checked = on;
                 onOff.Enabled = cable || on;

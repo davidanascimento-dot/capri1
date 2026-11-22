@@ -75,7 +75,7 @@ namespace CapriDesktop
             try
             {
                 ClipSettings chosen = new ClipSettings(path);
-                if (!Directory.Exists(chosen.Folder)) return "Pick an existing folder for your clips.";
+                if (!Directory.Exists(chosen.Folder)) return "Escolha uma pasta existente para seus clipes.";
                 ClipSettings.CheckFolder(chosen.Folder);
                 preferences.ClipFolder = chosen.Folder;
                 clips.Configure(ClipOptions);
@@ -83,7 +83,7 @@ namespace CapriDesktop
                 mainframe.Sync();
                 return null;
             }
-            catch (Exception) { return "Couldn't save clips in that folder. Pick a folder you can write to."; }
+            catch (Exception) { return "Não foi possível salvar clipes nessa pasta. Escolha uma pasta onde você possa gravar."; }
         }
     }
 }

@@ -34,7 +34,7 @@ namespace CapriDesktop
             import.Loud = true;
             modBrowse = Make("Catálogo", 134, 104, 100, 28, delegate { BrowseMods(); });
             Key folder = Make("Pasta de mods", 240, 104, 116, 28, delegate { OpenModsFolder(); });
-            Explain(import, "Import mod", "MainframeMods.cs");
+            Explain(import, "Importar mod", "MainframeMods.cs");
             Explain(modBrowse, "Browse mods", "MainframeMods.cs");
             Explain(folder, "Open mods folder", "MainframeMods.cs");
             modStatus = ModLabel("", 28, 138, 328, 36, Font, Faint);
@@ -46,11 +46,11 @@ namespace CapriDesktop
             {
                 int row = i, top = ModRowTop + ModRowHeight * i;
                 modNames[i] = ModLabel("", 28, top + 3, 196, 20, Type(10f, true), White);
-                modSwitches[i] = Make("On", 230, top, 54, 22, delegate { SwitchMod(row); });
+                modSwitches[i] = Make("Ligado", 230, top, 54, 22, delegate { SwitchMod(row); });
                 modRemoves[i] = Make("Remover", 290, top, 66, 22, delegate { RemoveMod(row); });
                 modAbouts[i] = ModLabel("", 28, top + 26, 256, 30, Look.Mono(8.5f, FontStyle.Regular, GraphicsUnit.Point), Faint);
-                Explain(modSwitches[i], "Mod switch", "MainframeMods.cs", null, "On / Off");
-                Explain(modRemoves[i], "Remove", "MainframeMods.cs");
+                Explain(modSwitches[i], "Mod switch", "MainframeMods.cs", null, "Ligado / Desligado");
+                Explain(modRemoves[i], "Remover", "MainframeMods.cs");
                 modPublishes[i] = Make("Publicar", 290, top + 28, 66, 22, delegate { PublishMod(row); });
                 Explain(modPublishes[i], "Publish mod", "MainframeMods.cs");
             }
@@ -66,7 +66,7 @@ namespace CapriDesktop
             {
                 int slot = i;
                 colourKeys[i] = Make(ArtColors.Names[i], 28 + i * 66, colourRow, 65, 26, delegate { PickColour(slot); });
-                colourKeys[i].AccessibleName = "Change her " + ArtColors.Names[i].ToLowerInvariant() + " color";
+                colourKeys[i].AccessibleName = "Mudar a " + ArtColors.Names[i].ToLowerInvariant() + " color";
                 Explain(colourKeys[i], "Her colors", "MainframeMods.cs", null, "Her colors");
             }
             Key colourReset = Make("Restaurar cores", 28, colourRow + 32, 160, 24, delegate { ResetColours(); });
@@ -227,8 +227,8 @@ namespace CapriDesktop
                     FillMods();
                     ModSays("A cor de " + ArtColors.Names[slot].ToLowerInvariant() + " mudou e foi salva em Minhas Cores.", false);
                 }
-                catch (IOException error) { ModSays("Couldn't save that color: " + error.Message, true); }
-                catch (UnauthorizedAccessException error) { ModSays("Couldn't save that color: " + error.Message, true); }
+                catch (IOException error) { ModSays("Não foi possível salvar essa cor: " + error.Message, true); }
+                catch (UnauthorizedAccessException error) { ModSays("Não foi possível salvar essa cor: " + error.Message, true); }
             }
         }
 
@@ -240,8 +240,8 @@ namespace CapriDesktop
                 FillMods();
                 ModSays("As cores originais da Capri foram restauradas.", false);
             }
-            catch (IOException error) { ModSays("Couldn't reset her colors: " + error.Message, true); }
-            catch (UnauthorizedAccessException error) { ModSays("Couldn't reset her colors: " + error.Message, true); }
+            catch (IOException error) { ModSays("Não foi possível restaurar as cores dela: " + error.Message, true); }
+            catch (UnauthorizedAccessException error) { ModSays("Não foi possível restaurar as cores dela: " + error.Message, true); }
         }
 
         private bool SwitchMod(int row)
@@ -255,8 +255,8 @@ namespace CapriDesktop
                 return done;
             }
             catch (ModException error) { ModSays(error.Message, true); }
-            catch (IOException error) { ModSays("Couldn't change that mod: " + error.Message, true); }
-            catch (UnauthorizedAccessException error) { ModSays("Couldn't change that mod: " + error.Message, true); }
+            catch (IOException error) { ModSays("Não foi possível alterar esse mod: " + error.Message, true); }
+            catch (UnauthorizedAccessException error) { ModSays("Não foi possível alterar esse mod: " + error.Message, true); }
             return false;
         }
 
@@ -270,7 +270,7 @@ namespace CapriDesktop
             string message = mod.Name + (string.IsNullOrEmpty(mod.Version) ? "" : " v" + mod.Version) + (string.IsNullOrEmpty(mod.Author) ? "" : ", which says it's by " + mod.Author) + ", is a code mod.\n\n"
                 + "Code mods run as part of Capri with full access to your PC: your files, your accounts and the API keys she has saved. Nothing limits what it can do, and Capri doesn't check whether it's safe.\n\n"
                 + "Only run it if you wrote it, or you've read it and trust who did.\n\nFile fingerprint (SHA-256):\n" + hash + "\n\nRun this code?";
-            return MessageBox.Show(this, message, "Run this code mod?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+            return MessageBox.Show(this, message, "Executar este mod de código?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
         }
 
         private void RemoveMod(int row)
@@ -282,8 +282,8 @@ namespace CapriDesktop
                 FillMods();
             ModSays(mod.File.Name + " foi removido.", false);
             }
-            catch (IOException error) { ModSays("Couldn't remove that mod: " + error.Message, true); }
-            catch (UnauthorizedAccessException error) { ModSays("Couldn't remove that mod: " + error.Message, true); }
+            catch (IOException error) { ModSays("Não foi possível remover esse mod: " + error.Message, true); }
+            catch (UnauthorizedAccessException error) { ModSays("Não foi possível remover esse mod: " + error.Message, true); }
         }
 
         private void OpenModsFolder()
@@ -296,7 +296,7 @@ namespace CapriDesktop
             catch (Exception error)
             {
                 if (!(error is IOException || error is UnauthorizedAccessException || error is System.ComponentModel.Win32Exception)) throw;
-                ModSays("Couldn't open the mods folder: " + error.Message, true);
+                ModSays("Não foi possível abrir a pasta de mods: " + error.Message, true);
             }
         }
 

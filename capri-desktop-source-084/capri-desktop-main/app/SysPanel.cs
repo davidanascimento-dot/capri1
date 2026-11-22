@@ -13,7 +13,7 @@ using System.Windows.Forms;
 namespace CapriDesktop
 {
     // Her task manager, opened from her right-click menu: what she is using and what the PC is using, side by side, so
-    // "is it the code or the PC?" has a straight answer. It only reads the machine, the way Windows does, and changes nothing.
+    // "é o código ou o PC?" has a straight answer. It only reads the machine, the way Windows does, and changes nothing.
     internal sealed class SysPanel : Form
     {
         // Her own side, which only the companion knows: mods, how fast her voice is. Filled in by Capri.
@@ -261,7 +261,7 @@ namespace CapriDesktop
 
         private List<KeyValuePair<string, string>> hers = new List<KeyValuePair<string, string>>();
 
-        // "Is it the code or the PC?", said in one line, with the numbers that led there.
+        // "É o código ou o PC?", said in one line, with the numbers that led there.
         private void ReadVerdict()
         {
             if (pc == null)
@@ -320,9 +320,9 @@ namespace CapriDesktop
                     if (line.IndexOf("| voice interruption |", StringComparison.OrdinalIgnoreCase) >= 0) continue;
                     if (line.IndexOf("| closed |", StringComparison.OrdinalIgnoreCase) >= 0) continue;
                     if (line.IndexOf("Pick another model in Capri Mainframe", StringComparison.OrdinalIgnoreCase) >= 0) continue;
-                    if (line.IndexOf("pick a model that can", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                    if (line.IndexOf("escolha um modelo que consiga", StringComparison.OrdinalIgnoreCase) >= 0) continue;
                     if (line.IndexOf("HTTP 404 model", StringComparison.OrdinalIgnoreCase) >= 0) continue;
-                    if (line.IndexOf("Not found for account", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                    if (line.IndexOf("Não encontrado para a conta", StringComparison.OrdinalIgnoreCase) >= 0) continue;
                     if ((line.IndexOf("| free voice |", StringComparison.OrdinalIgnoreCase) >= 0
                         || line.IndexOf("| HD voice |", StringComparison.OrdinalIgnoreCase) >= 0
                         || line.IndexOf("| ElevenLabs voice |", StringComparison.OrdinalIgnoreCase) >= 0)
