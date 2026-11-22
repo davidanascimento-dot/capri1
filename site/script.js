@@ -129,7 +129,7 @@
       role: "Ripperdoc",
       desc: "Cirurgião do mercado negro que fornece implantes ilegais.",
       img: "assets/Doc_Infobox_CPEDGE.webp",
-      fandom: "https://cyberpunk.fandom.com/wiki/Doc"
+      fandom: "https://cyberpunk.fandom.com/wiki/Doc_(Edgerunners)"
     },
     gloria: {
       name: "Gloria Martinez",
