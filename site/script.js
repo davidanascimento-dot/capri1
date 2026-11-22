@@ -180,6 +180,13 @@
   const audio = document.getElementById('capri-intro-audio');
   if (!intro || !img) return;
 
+  const SEEN_KEY = 'capri_intro_seen_v1';
+  if (localStorage.getItem(SEEN_KEY) === '1') {
+    intro.remove();
+    document.body.style.overflow = '';
+    return;
+  }
+
   const total = 43;
   const frames = Array.from({length: total}, (_, i) => `assets/capri/legacy-intro/${i + 1}.png`);
   frames.forEach(src => { const im = new Image(); im.src = src; });
@@ -190,6 +197,7 @@
   document.body.style.overflow = 'hidden';
 
   function finish() {
+    localStorage.setItem(SEEN_KEY, '1');
     intro.classList.add('hide');
     document.body.style.overflow = '';
     setTimeout(() => intro.remove(), 800);
@@ -203,6 +211,7 @@
   }
 
   function start() {
+    try { localStorage.setItem(SEEN_KEY, '1'); } catch (_) {}
     if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
     if (audio) { audio.volume = 0.7; audio.play().catch(() => {}); }
     setTimeout(step, 100);
