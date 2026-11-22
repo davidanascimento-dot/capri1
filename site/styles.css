@@ -777,3 +777,16 @@ img { max-width: 100%; height: auto; }
   .discord-community-info { width: 100%; }
   .discord-community .btn-sm { width: 100%; max-width: 220px; }
 }
+
+
+/* TikTok embed */
+.tiktok-embed-wrap {
+  width: min(100%, 780px);
+  margin: 0 auto 28px;
+  display: flex;
+  justify-content: center;
+}
+.tiktok-embed-wrap .tiktok-embed {
+  margin: 0 !important;
+  width: 100% !important;
+}
