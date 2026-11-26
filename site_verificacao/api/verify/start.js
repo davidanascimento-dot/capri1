@@ -67,7 +67,10 @@ export default async function handler(req, res) {
   const clientId = process.env.DISCORD_CLIENT_ID;
   const secret = process.env.VERIFY_SECRET;
   if (!clientId || !secret) {
-    return json(res, 500, { error: 'Verificação não configurada no servidor.' });
+    const missing = [];
+    if (!clientId) missing.push('DISCORD_CLIENT_ID');
+    if (!secret) missing.push('VERIFY_SECRET');
+    return json(res, 500, { error: 'Verificação não configurada no servidor.', missing });
   }
 
   let body = req.body;

@@ -47,7 +47,10 @@ export default async function handler(req, res) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const secret = process.env.VERIFY_SECRET;
   if (!clientId || !secret) {
-    return json(res, 500, { error: 'Verificação com Google não configurada no servidor.' });
+    const missing = [];
+    if (!clientId) missing.push('GOOGLE_CLIENT_ID');
+    if (!secret) missing.push('VERIFY_SECRET');
+    return json(res, 500, { error: 'Verificação com Google não configurada no servidor.', missing });
   }
 
   let body = req.body;
