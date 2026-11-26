@@ -15,12 +15,12 @@ Este é o site de verificação de idade do **Projeto_Capri**. Ele é um projeto
 5. Em **Environment Variables**, preencha as variáveis da seção abaixo.
 6. Deploy.
 
-Se o nome do projeto no Vercel for `capri-verificacao`, o site fica em
-`https://capri-verificacao.vercel.app/`.
+Se o nome do projeto no Vercel for `capri1-siteverificacao`, o site fica em
+`https://capri1-siteverificacao.vercel.app/`.
 
 Depois do deploy, o site principal redireciona `/verify/` para esse domínio.
 Se você usar outro nome de projeto, edite `capri1/site/verify/index.html`
-e troque `https://capri-verificacao.vercel.app/` pelo domínio real.
+e troque `https://capri1-siteverificacao.vercel.app/` pelo domínio real.
 
 ## Variáveis de ambiente
 
