@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verificação de idade — Projeto_Capri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/icon_capri.webp" type="image/webp">
+  <meta name="theme-color" content="#050508">
+  <link rel="stylesheet" href="verify.css">
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-a" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow-b" aria-hidden="true"></div>
+
+  <main class="verify-shell">
+    <!-- Troque pelo domínio real do site principal, se for diferente. -->
+    <a class="back" href="https://capri1-site.vercel.app/">← Voltar para o site</a>
+
+    <section class="verify-card" aria-labelledby="verify-title">
+      <div class="brand-row">
+        <img class="brand-mark" src="assets/icon_capri.webp" alt="Ícone da Capri">
+        <div>
+          <p class="eyebrow">Projeto_Capri</p>
+          <h1 id="verify-title">Verificação de idade</h1>
+        </div>
+      </div>
+
+      <p class="lead">
+        Digite sua data de nascimento e confirme com a sua conta Google. Depois você entra
+        com o Discord, e o resultado define o cargo aplicado no servidor.
+      </p>
+
+      <div class="notice">
+        <strong>Como funciona:</strong> a data que você digitar é comparada com a data da sua
+        conta Google. Se as duas não baterem, o cargo <strong>não</strong> é aplicado e a
+        divergência fica registrada para a moderação. Menores de 18 anos recebem o cargo
+        <strong>Menor</strong>.
+      </div>
+
+      <form id="verify-form" novalidate>
+        <label class="field">
+          <span>Data de nascimento</span>
+          <input id="birthdate" name="birthdate" type="date" required autocomplete="bday"
+                 min="1900-01-01" aria-describedby="birthdate-help">
+          <small id="birthdate-help">Use a data real. Ela será comparada com a do Google.</small>
+        </label>
+
+        <div class="age-preview" id="age-preview" hidden>
+          <span>Idade calculada:</span>
+          <strong id="age-value">—</strong>
+          <span class="age-tag" id="age-tag"></span>
+        </div>
+
+        <label class="check">
+          <input id="consent" name="consent" type="checkbox" required>
+          <span>Confirmo que as informações são verdadeiras e aceito a verificação de idade e as regras do servidor.</span>
+        </label>
+
+        <button class="btn btn-primary" id="google-button" type="submit" disabled>
+          Verificar com Google
+        </button>
+
+        <button class="btn btn-secondary" id="manual-button" type="button" hidden disabled>
+          Continuar sem confirmação do Google
+        </button>
+
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="divider"><span>privacidade</span></div>
+      <p class="privacy">
+        Salvamos no Supabase: ID do Discord, nome de usuário, a idade que você informou, a
+        idade da conta Google, se as duas bateram, se é menor, cargo aplicado e data da
+        verificação. Não salvamos a data de nascimento completa.
+        Você pode pedir a remoção dos dados no servidor.
+      </p>
+
+      <div class="join-block" id="join-block" hidden>
+        <p class="join-title">Verificação concluída</p>
+        <p class="join-text" id="join-text">
+          O convite do servidor é gerado só depois da verificação. Clique abaixo para entrar.
+        </p>
+        <button class="btn btn-primary" id="join-button" type="button">
+          Entrar no servidor
+        </button>
+        <p class="status" id="join-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="verify.js" defer></script>
+</body>
+</html>

@@ -248,10 +248,8 @@
   if (!membersEl || !onlineEl) return;
 
   async function fetchDiscord() {
-    const endpoints = [
-      '/api/discord',
-      'https://discord.com/api/v9/invites/zHmfDrqxmz?with_counts=true'
-    ];
+    // Só o proxy do próprio site: o código do convite não aparece no navegador.
+    const endpoints = ['/api/discord'];
     for (const url of endpoints) {
       try {
         const res = await fetch(url, { cache: 'no-store' });
